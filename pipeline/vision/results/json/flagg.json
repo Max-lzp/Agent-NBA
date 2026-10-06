@@ -1,0 +1,400 @@
+{
+  "clip": "flagg",
+  "mode": "json",
+  "calls": [
+    {
+      "model_id": "qwen.qwen3-vl-235b-a22b",
+      "profile": "nba",
+      "region": "us-east-1",
+      "image": "pipeline/vision/work/frames/flagg/t_00016.333.png",
+      "image_bytes": 2705478,
+      "image_meta": {
+        "source": "pipeline/vision/work/frames/flagg/t_00016.333.png",
+        "source_bytes": 2705478,
+        "transcoded": true,
+        "sent_bytes": 422296,
+        "sent_format": "jpeg"
+      },
+      "elapsed_ms": 20701,
+      "latency_ms": 15935,
+      "stop_reason": "end_turn",
+      "text": "{\"frame_t\":16.333,\"scoreboard\":{\"period\":4,\"clock\":\"1:35\",\"home_team\":\"HOU\",\"away_team\":\"DAL\",\"home\":107,\"away\":103},\"players\":[{\"jersey\":\"32\",\"team\":\"DAL\",\"name\":\"Flagg\",\"bbox\":[467,280,522,555]},{\"jersey\":\"28\",\"team\":\"HOU\",\"name\":\"Sengun\",\"bbox\": [357,430,412,700]},{\"jersey\":\"21\",\"team\":\"DAL\",\"name\":\"Gafford\",\"bbox\":[378,500,433,750]},{\"jersey\":\"10\",\"team\":\"HOU\",\"name\":\"Smith\",\"bbox\":[433,530,540,820]},{\"jersey\":\"17\",\"team\":\"HOU\",\"name\":\"Eason\",\"bbox\":[530,380,595,600]},{\"jersey\":\"31\",\"team\":\"DAL\",\"name\":\"Klay\",\"bbox\":[720,540,795,830]},{\"jersey\":\"1\",\"team\":\"HOU\",\"name\":\"Amen\",\"bbox\":[785,570,880,880]},{\"jersey\":\"30\",\"team\":\"DAL\",\"name\":\"Cisse\",\"bbox\":[875,650,975,970]},{\"jersey\":\"13\",\"team\":\"DAL\",\"name\":\"Marshall\",\"bbox\":[495,220,545,420]},{\"jersey\":\"00\",\"team\":\"DAL\",\"name\":\"Christie\",\"bbox\":[410,300,460,580]}],\"ball_handler\":\"Flagg\",\"events\":[{\"type\":\"shot\",\"t\":16.333,\"actor\":\"Flagg\"}]}",
+      "usage": {
+        "inputTokens": 2928,
+        "outputTokens": 423,
+        "totalTokens": 3351
+      },
+      "cost": {
+        "input_tokens": 2928,
+        "output_tokens": 423,
+        "total_tokens": 3351,
+        "input_usd": 0.001552,
+        "output_usd": 0.001125,
+        "total_usd": 0.002677,
+        "price_per_1m_input_usd": 0.53,
+        "price_per_1m_output_usd": 2.66
+      },
+      "json_ok": true,
+      "parsed": {
+        "frame_t": 16.333,
+        "scoreboard": {
+          "period": 4,
+          "clock": "1:35",
+          "home_team": "HOU",
+          "away_team": "DAL",
+          "home": 107,
+          "away": 103
+        },
+        "players": [
+          {
+            "jersey": "32",
+            "team": "DAL",
+            "name": "Flagg",
+            "bbox": [
+              467,
+              280,
+              522,
+              555
+            ]
+          },
+          {
+            "jersey": "28",
+            "team": "HOU",
+            "name": "Sengun",
+            "bbox": [
+              357,
+              430,
+              412,
+              700
+            ]
+          },
+          {
+            "jersey": "21",
+            "team": "DAL",
+            "name": "Gafford",
+            "bbox": [
+              378,
+              500,
+              433,
+              750
+            ]
+          },
+          {
+            "jersey": "10",
+            "team": "HOU",
+            "name": "Smith",
+            "bbox": [
+              433,
+              530,
+              540,
+              820
+            ]
+          },
+          {
+            "jersey": "17",
+            "team": "HOU",
+            "name": "Eason",
+            "bbox": [
+              530,
+              380,
+              595,
+              600
+            ]
+          },
+          {
+            "jersey": "31",
+            "team": "DAL",
+            "name": "Klay",
+            "bbox": [
+              720,
+              540,
+              795,
+              830
+            ]
+          },
+          {
+            "jersey": "1",
+            "team": "HOU",
+            "name": "Amen",
+            "bbox": [
+              785,
+              570,
+              880,
+              880
+            ]
+          },
+          {
+            "jersey": "30",
+            "team": "DAL",
+            "name": "Cisse",
+            "bbox": [
+              875,
+              650,
+              975,
+              970
+            ]
+          },
+          {
+            "jersey": "13",
+            "team": "DAL",
+            "name": "Marshall",
+            "bbox": [
+              495,
+              220,
+              545,
+              420
+            ]
+          },
+          {
+            "jersey": "00",
+            "team": "DAL",
+            "name": "Christie",
+            "bbox": [
+              410,
+              300,
+              460,
+              580
+            ]
+          }
+        ],
+        "ball_handler": "Flagg",
+        "events": [
+          {
+            "type": "shot",
+            "t": 16.333,
+            "actor": "Flagg"
+          }
+        ]
+      },
+      "confirmed": {
+        "frame_t": 16.333,
+        "scoreboard": {
+          "period": 4,
+          "clock": "1:35",
+          "home_team": "HOU",
+          "away_team": "DAL",
+          "home": 107,
+          "away": 103
+        },
+        "players": [
+          {
+            "jersey": "32",
+            "team": "DAL",
+            "name": "Flagg",
+            "bbox": [
+              467,
+              280,
+              55,
+              275
+            ],
+            "name_from_model": "Flagg",
+            "identity_source": "active",
+            "bbox_raw": [
+              467,
+              280,
+              522,
+              555
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "28",
+            "team": "HOU",
+            "name": "Sengun",
+            "bbox": [
+              357,
+              430,
+              55,
+              270
+            ],
+            "name_from_model": "Sengun",
+            "identity_source": "active",
+            "bbox_raw": [
+              357,
+              430,
+              412,
+              700
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "21",
+            "team": "DAL",
+            "name": "Gafford",
+            "bbox": [
+              378,
+              500,
+              55,
+              250
+            ],
+            "name_from_model": "Gafford",
+            "identity_source": "active",
+            "bbox_raw": [
+              378,
+              500,
+              433,
+              750
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "10",
+            "team": "HOU",
+            "name": "Smith",
+            "bbox": [
+              433,
+              530,
+              107,
+              290
+            ],
+            "name_from_model": "Smith",
+            "identity_source": "active",
+            "bbox_raw": [
+              433,
+              530,
+              540,
+              820
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "17",
+            "team": "HOU",
+            "name": "Eason",
+            "bbox": [
+              530,
+              380,
+              65,
+              220
+            ],
+            "name_from_model": "Eason",
+            "identity_source": "active",
+            "bbox_raw": [
+              530,
+              380,
+              595,
+              600
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "31",
+            "team": "DAL",
+            "name": "Klay",
+            "bbox": [
+              720,
+              540,
+              75,
+              290
+            ],
+            "name_from_model": "Klay",
+            "identity_source": "active",
+            "bbox_raw": [
+              720,
+              540,
+              795,
+              830
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "1",
+            "team": "HOU",
+            "name": "Amen",
+            "bbox": [
+              785,
+              570,
+              95,
+              310
+            ],
+            "name_from_model": "Amen",
+            "identity_source": "active",
+            "bbox_raw": [
+              785,
+              570,
+              880,
+              880
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "30",
+            "team": "DAL",
+            "name": "Cisse",
+            "bbox": [
+              875,
+              650,
+              100,
+              320
+            ],
+            "name_from_model": "Cisse",
+            "identity_source": "active",
+            "bbox_raw": [
+              875,
+              650,
+              975,
+              970
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "13",
+            "team": "DAL",
+            "name": "Marshall",
+            "bbox": [
+              495,
+              220,
+              50,
+              200
+            ],
+            "name_from_model": "Marshall",
+            "identity_source": "active",
+            "bbox_raw": [
+              495,
+              220,
+              545,
+              420
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "00",
+            "team": "DAL",
+            "name": "Christie",
+            "bbox": [
+              410,
+              300,
+              50,
+              280
+            ],
+            "name_from_model": "Christie",
+            "identity_source": "active",
+            "bbox_raw": [
+              410,
+              300,
+              460,
+              580
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          }
+        ],
+        "ball_handler": "Flagg",
+        "events": [
+          {
+            "type": "shot",
+            "t": 16.333,
+            "actor": "Flagg"
+          }
+        ],
+        "identity_notes": []
+      },
+      "clip": "flagg",
+      "frame": {
+        "index": 49,
+        "t_sec": 16.333,
+        "filename": "t_00016.333.png"
+      },
+      "mode": "json"
+    }
+  ]
+}

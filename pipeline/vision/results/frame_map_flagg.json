@@ -1,0 +1,339 @@
+{
+  "clip": "flagg",
+  "game_id": "flagg_20260201",
+  "video": "../官方资料/train_video/训练_弗拉格2月1日.mp4",
+  "fps": 3.0,
+  "filter": "fps=3.0",
+  "pts_source": "showinfo.pts_time",
+  "duration_sec": 21.548118,
+  "frame_count": 65,
+  "width_hint": 1920,
+  "height_hint": 1080,
+  "frames": [
+    {
+      "index": 0,
+      "t_sec": 0.0,
+      "filename": "t_00000.000.png"
+    },
+    {
+      "index": 1,
+      "t_sec": 0.333,
+      "filename": "t_00000.333.png"
+    },
+    {
+      "index": 2,
+      "t_sec": 0.667,
+      "filename": "t_00000.667.png"
+    },
+    {
+      "index": 3,
+      "t_sec": 1.0,
+      "filename": "t_00001.000.png"
+    },
+    {
+      "index": 4,
+      "t_sec": 1.333,
+      "filename": "t_00001.333.png"
+    },
+    {
+      "index": 5,
+      "t_sec": 1.667,
+      "filename": "t_00001.667.png"
+    },
+    {
+      "index": 6,
+      "t_sec": 2.0,
+      "filename": "t_00002.000.png"
+    },
+    {
+      "index": 7,
+      "t_sec": 2.333,
+      "filename": "t_00002.333.png"
+    },
+    {
+      "index": 8,
+      "t_sec": 2.667,
+      "filename": "t_00002.667.png"
+    },
+    {
+      "index": 9,
+      "t_sec": 3.0,
+      "filename": "t_00003.000.png"
+    },
+    {
+      "index": 10,
+      "t_sec": 3.333,
+      "filename": "t_00003.333.png"
+    },
+    {
+      "index": 11,
+      "t_sec": 3.667,
+      "filename": "t_00003.667.png"
+    },
+    {
+      "index": 12,
+      "t_sec": 4.0,
+      "filename": "t_00004.000.png"
+    },
+    {
+      "index": 13,
+      "t_sec": 4.333,
+      "filename": "t_00004.333.png"
+    },
+    {
+      "index": 14,
+      "t_sec": 4.667,
+      "filename": "t_00004.667.png"
+    },
+    {
+      "index": 15,
+      "t_sec": 5.0,
+      "filename": "t_00005.000.png"
+    },
+    {
+      "index": 16,
+      "t_sec": 5.333,
+      "filename": "t_00005.333.png"
+    },
+    {
+      "index": 17,
+      "t_sec": 5.667,
+      "filename": "t_00005.667.png"
+    },
+    {
+      "index": 18,
+      "t_sec": 6.0,
+      "filename": "t_00006.000.png"
+    },
+    {
+      "index": 19,
+      "t_sec": 6.333,
+      "filename": "t_00006.333.png"
+    },
+    {
+      "index": 20,
+      "t_sec": 6.667,
+      "filename": "t_00006.667.png"
+    },
+    {
+      "index": 21,
+      "t_sec": 7.0,
+      "filename": "t_00007.000.png"
+    },
+    {
+      "index": 22,
+      "t_sec": 7.333,
+      "filename": "t_00007.333.png"
+    },
+    {
+      "index": 23,
+      "t_sec": 7.667,
+      "filename": "t_00007.667.png"
+    },
+    {
+      "index": 24,
+      "t_sec": 8.0,
+      "filename": "t_00008.000.png"
+    },
+    {
+      "index": 25,
+      "t_sec": 8.333,
+      "filename": "t_00008.333.png"
+    },
+    {
+      "index": 26,
+      "t_sec": 8.667,
+      "filename": "t_00008.667.png"
+    },
+    {
+      "index": 27,
+      "t_sec": 9.0,
+      "filename": "t_00009.000.png"
+    },
+    {
+      "index": 28,
+      "t_sec": 9.333,
+      "filename": "t_00009.333.png"
+    },
+    {
+      "index": 29,
+      "t_sec": 9.667,
+      "filename": "t_00009.667.png"
+    },
+    {
+      "index": 30,
+      "t_sec": 10.0,
+      "filename": "t_00010.000.png"
+    },
+    {
+      "index": 31,
+      "t_sec": 10.333,
+      "filename": "t_00010.333.png"
+    },
+    {
+      "index": 32,
+      "t_sec": 10.667,
+      "filename": "t_00010.667.png"
+    },
+    {
+      "index": 33,
+      "t_sec": 11.0,
+      "filename": "t_00011.000.png"
+    },
+    {
+      "index": 34,
+      "t_sec": 11.333,
+      "filename": "t_00011.333.png"
+    },
+    {
+      "index": 35,
+      "t_sec": 11.667,
+      "filename": "t_00011.667.png"
+    },
+    {
+      "index": 36,
+      "t_sec": 12.0,
+      "filename": "t_00012.000.png"
+    },
+    {
+      "index": 37,
+      "t_sec": 12.333,
+      "filename": "t_00012.333.png"
+    },
+    {
+      "index": 38,
+      "t_sec": 12.667,
+      "filename": "t_00012.667.png"
+    },
+    {
+      "index": 39,
+      "t_sec": 13.0,
+      "filename": "t_00013.000.png"
+    },
+    {
+      "index": 40,
+      "t_sec": 13.333,
+      "filename": "t_00013.333.png"
+    },
+    {
+      "index": 41,
+      "t_sec": 13.667,
+      "filename": "t_00013.667.png"
+    },
+    {
+      "index": 42,
+      "t_sec": 14.0,
+      "filename": "t_00014.000.png"
+    },
+    {
+      "index": 43,
+      "t_sec": 14.333,
+      "filename": "t_00014.333.png"
+    },
+    {
+      "index": 44,
+      "t_sec": 14.667,
+      "filename": "t_00014.667.png"
+    },
+    {
+      "index": 45,
+      "t_sec": 15.0,
+      "filename": "t_00015.000.png"
+    },
+    {
+      "index": 46,
+      "t_sec": 15.333,
+      "filename": "t_00015.333.png"
+    },
+    {
+      "index": 47,
+      "t_sec": 15.667,
+      "filename": "t_00015.667.png"
+    },
+    {
+      "index": 48,
+      "t_sec": 16.0,
+      "filename": "t_00016.000.png"
+    },
+    {
+      "index": 49,
+      "t_sec": 16.333,
+      "filename": "t_00016.333.png"
+    },
+    {
+      "index": 50,
+      "t_sec": 16.667,
+      "filename": "t_00016.667.png"
+    },
+    {
+      "index": 51,
+      "t_sec": 17.0,
+      "filename": "t_00017.000.png"
+    },
+    {
+      "index": 52,
+      "t_sec": 17.333,
+      "filename": "t_00017.333.png"
+    },
+    {
+      "index": 53,
+      "t_sec": 17.667,
+      "filename": "t_00017.667.png"
+    },
+    {
+      "index": 54,
+      "t_sec": 18.0,
+      "filename": "t_00018.000.png"
+    },
+    {
+      "index": 55,
+      "t_sec": 18.333,
+      "filename": "t_00018.333.png"
+    },
+    {
+      "index": 56,
+      "t_sec": 18.667,
+      "filename": "t_00018.667.png"
+    },
+    {
+      "index": 57,
+      "t_sec": 19.0,
+      "filename": "t_00019.000.png"
+    },
+    {
+      "index": 58,
+      "t_sec": 19.333,
+      "filename": "t_00019.333.png"
+    },
+    {
+      "index": 59,
+      "t_sec": 19.667,
+      "filename": "t_00019.667.png"
+    },
+    {
+      "index": 60,
+      "t_sec": 20.0,
+      "filename": "t_00020.000.png"
+    },
+    {
+      "index": 61,
+      "t_sec": 20.333,
+      "filename": "t_00020.333.png"
+    },
+    {
+      "index": 62,
+      "t_sec": 20.667,
+      "filename": "t_00020.667.png"
+    },
+    {
+      "index": 63,
+      "t_sec": 21.0,
+      "filename": "t_00021.000.png"
+    },
+    {
+      "index": 64,
+      "t_sec": 21.333,
+      "filename": "t_00021.333.png"
+    }
+  ]
+}

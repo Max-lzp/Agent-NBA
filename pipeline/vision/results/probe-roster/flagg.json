@@ -1,0 +1,46 @@
+{
+  "clip": "flagg",
+  "mode": "probe-roster",
+  "calls": [
+    {
+      "model_id": "qwen.qwen3-vl-235b-a22b",
+      "profile": "nba",
+      "region": "us-east-1",
+      "image": "pipeline/vision/work/frames/flagg/t_00016.333.png",
+      "image_bytes": 2705478,
+      "image_meta": {
+        "source": "pipeline/vision/work/frames/flagg/t_00016.333.png",
+        "source_bytes": 2705478,
+        "transcoded": true,
+        "sent_bytes": 422296,
+        "sent_format": "jpeg"
+      },
+      "elapsed_ms": 8499,
+      "latency_ms": 3458,
+      "stop_reason": "end_turn",
+      "text": "1.  \n- DAL #21 Gafford（深蓝球衣）  \n- DAL #31 Klay（深蓝球衣）  \n- DAL #10 Williams（深蓝球衣）  \n- HOU #28 Sengun（白球衣）  \n- HOU #10 Smith（白球衣）  \n- HOU #17 Eason（白球衣）  \n- HOU #1 Amen（白球衣）  \n- DAL #30 Cisse（深蓝球衣）  \n- 其余球员号码或球衣颜色不清晰，记为「未知」\n\n2.  \n持球者为 HOU #28 Sengun，当前动作更接近投篮（跳起举球，接近出手姿势）。\n\n3.  \n节次：4TH  \n比赛时钟：1:35  \n比分：DAL 103 - HOU 107",
+      "usage": {
+        "inputTokens": 2483,
+        "outputTokens": 197,
+        "totalTokens": 2680
+      },
+      "cost": {
+        "input_tokens": 2483,
+        "output_tokens": 197,
+        "total_tokens": 2680,
+        "input_usd": 0.001316,
+        "output_usd": 0.000524,
+        "total_usd": 0.00184,
+        "price_per_1m_input_usd": 0.53,
+        "price_per_1m_output_usd": 2.66
+      },
+      "clip": "flagg",
+      "frame": {
+        "index": 49,
+        "t_sec": 16.333,
+        "filename": "t_00016.333.png"
+      },
+      "mode": "probe-roster"
+    }
+  ]
+}

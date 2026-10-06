@@ -1,0 +1,126 @@
+{
+  "clip": "amen",
+  "mode": "probe",
+  "calls": [
+    {
+      "model_id": "qwen.qwen3-vl-235b-a22b",
+      "profile": "nba",
+      "region": "us-east-1",
+      "image": "pipeline/vision/work/frames/amen/t_00005.000.png",
+      "image_bytes": 2921714,
+      "image_meta": {
+        "source": "pipeline/vision/work/frames/amen/t_00005.000.png",
+        "source_bytes": 2921714,
+        "transcoded": true,
+        "sent_bytes": 501516,
+        "sent_format": "jpeg"
+      },
+      "elapsed_ms": 18653,
+      "latency_ms": 3483,
+      "stop_reason": "end_turn",
+      "text": "1.  \n- 白色球衣：1号（Thompson，火箭队）、30号（Carter，独行侠队）、10号（未知，火箭队）  \n- 黑色球衣：15号（未知，独行侠队）、3号（未知，独行侠队）、其他黑色球衣球员未知  \n- 白色球衣持球者：未知（火箭队，背对镜头）  \n- 其他球员：部分可见但无法确认姓名或号码\n\n2.  \n持球者为白色球衣背对镜头球员，正准备传球或组织进攻，动作更接近“传球”。\n\n3.  \n节次：3RD（第三节）  \n比赛时钟：7:40  \n比分：火箭队 60 - 独行侠队 63",
+      "usage": {
+        "inputTokens": 2189,
+        "outputTokens": 178,
+        "totalTokens": 2367
+      },
+      "cost": {
+        "input_tokens": 2189,
+        "output_tokens": 178,
+        "total_tokens": 2367,
+        "input_usd": 0.00116,
+        "output_usd": 0.000473,
+        "total_usd": 0.001634,
+        "price_per_1m_input_usd": 0.53,
+        "price_per_1m_output_usd": 2.66
+      },
+      "clip": "amen",
+      "frame": {
+        "index": 15,
+        "t_sec": 5.0,
+        "filename": "t_00005.000.png"
+      },
+      "mode": "probe"
+    },
+    {
+      "model_id": "qwen.qwen3-vl-235b-a22b",
+      "profile": "nba",
+      "region": "us-east-1",
+      "image": "pipeline/vision/work/frames/amen/t_00011.333.png",
+      "image_bytes": 2910298,
+      "image_meta": {
+        "source": "pipeline/vision/work/frames/amen/t_00011.333.png",
+        "source_bytes": 2910298,
+        "transcoded": true,
+        "sent_bytes": 487295,
+        "sent_format": "jpeg"
+      },
+      "elapsed_ms": 11411,
+      "latency_ms": 8301,
+      "stop_reason": "end_turn",
+      "text": "1.  \n- 球员1：身穿白色球衣，号码30，球队为达拉斯独行侠（Mavericks），姓名未知。  \n- 球员2：身穿黑色球衣，号码32，球队为休斯顿火箭（Rockets），姓名未知。  \n- 球员3：身穿白色球衣，号码10，球队为达拉斯独行侠，姓名 Smith Jr.。  \n- 球员4：身穿黑色球衣，号码3，球队为休斯顿火箭，姓名未知。  \n- 球员5：身穿黑色球衣，号码未知，球队为休斯顿火箭，姓名未知。  \n- 球员6：身穿白色球衣，号码未知，球队为达拉斯独行侠，姓名未知。  \n- 球员7：身穿黑色球衣，号码未知，球队为休斯顿火箭，姓名未知。\n\n2.  \n持球者为身穿白色30号球衣的独行侠球员，当前动作更接近投篮（正举球准备出手）。\n\n3.  \n节次：3RD（第三节）  \n比赛时钟：7:33  \n比分：火箭 60 - 独行侠 63",
+      "usage": {
+        "inputTokens": 2190,
+        "outputTokens": 266,
+        "totalTokens": 2456
+      },
+      "cost": {
+        "input_tokens": 2190,
+        "output_tokens": 266,
+        "total_tokens": 2456,
+        "input_usd": 0.001161,
+        "output_usd": 0.000708,
+        "total_usd": 0.001868,
+        "price_per_1m_input_usd": 0.53,
+        "price_per_1m_output_usd": 2.66
+      },
+      "clip": "amen",
+      "frame": {
+        "index": 34,
+        "t_sec": 11.333,
+        "filename": "t_00011.333.png"
+      },
+      "mode": "probe"
+    },
+    {
+      "model_id": "qwen.qwen3-vl-235b-a22b",
+      "profile": "nba",
+      "region": "us-east-1",
+      "image": "pipeline/vision/work/frames/amen/t_00017.667.png",
+      "image_bytes": 2872924,
+      "image_meta": {
+        "source": "pipeline/vision/work/frames/amen/t_00017.667.png",
+        "source_bytes": 2872924,
+        "transcoded": true,
+        "sent_bytes": 471405,
+        "sent_format": "jpeg"
+      },
+      "elapsed_ms": 7924,
+      "latency_ms": 3857,
+      "stop_reason": "end_turn",
+      "text": "1.  \n- 白色球衣1号：未知（火箭队）  \n- 黑色球衣00号：未知（独行侠队）  \n- 黑色球衣32号：未知（独行侠队）  \n- 白色球衣10号：未知（火箭队）  \n- 白色球衣30号：未知（火箭队）  \n- 黑色球衣13号：未知（独行侠队）  \n- 白色球衣12号：未知（火箭队，站在三分线外）  \n\n2.  \n白色球衣1号球员在空中持球，右臂举球，身体后仰，动作更接近投篮。\n\n3.  \n节次：3RD（第三节）  \n比赛时钟：7:27  \n火箭队：60分  \n独行侠队：63分",
+      "usage": {
+        "inputTokens": 2190,
+        "outputTokens": 191,
+        "totalTokens": 2381
+      },
+      "cost": {
+        "input_tokens": 2190,
+        "output_tokens": 191,
+        "total_tokens": 2381,
+        "input_usd": 0.001161,
+        "output_usd": 0.000508,
+        "total_usd": 0.001669,
+        "price_per_1m_input_usd": 0.53,
+        "price_per_1m_output_usd": 2.66
+      },
+      "clip": "amen",
+      "frame": {
+        "index": 53,
+        "t_sec": 17.667,
+        "filename": "t_00017.667.png"
+      },
+      "mode": "probe"
+    }
+  ]
+}

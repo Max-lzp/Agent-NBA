@@ -1,0 +1,89 @@
+{
+  "source": "ESPN box score, fetched 2026-10-07. Short names match the vision JSON schema.",
+  "games": {
+    "flagg_20260201": {
+      "date": "2026-02-01",
+      "matchup": "DAL @ HOU",
+      "home": "HOU",
+      "away": "DAL",
+      "final": {"HOU": 111, "DAL": 107},
+      "video_hint": "官方资料/train_video/训练_弗拉格2月1日.mp4",
+      "active": {
+        "DAL": {
+          "32": "Flagg",
+          "00": "Christie",
+          "21": "Gafford",
+          "25": "Washington",
+          "13": "Marshall",
+          "7": "Powell",
+          "16": "Martin",
+          "30": "Cisse",
+          "31": "Klay",
+          "10": "Williams",
+          "9": "Nembhard"
+        },
+        "HOU": {
+          "1": "Amen",
+          "7": "Durant",
+          "10": "Smith",
+          "17": "Eason",
+          "28": "Sengun",
+          "2": "Finney-Smith",
+          "30": "Capela",
+          "20": "Okogie",
+          "15": "Sheppard"
+        }
+      },
+      "dnp": {
+        "DAL": {"5": "Russell", "1": "Hardy"},
+        "HOU": {"32": "Green", "8": "Tate", "27": "Crawford", "0": "Holiday"}
+      }
+    },
+    "amen_20260104": {
+      "date": "2026-01-04",
+      "matchup": "HOU @ DAL",
+      "home": "DAL",
+      "away": "HOU",
+      "final": {"DAL": 110, "HOU": 104},
+      "video_hint": "官方资料/train_video/训练_阿门1月4日 .mp4",
+      "active": {
+        "HOU": {
+          "1": "Amen",
+          "7": "Durant",
+          "10": "Smith",
+          "17": "Eason",
+          "28": "Sengun",
+          "2": "Finney-Smith",
+          "8": "Tate",
+          "30": "Capela",
+          "0": "Holiday",
+          "20": "Okogie",
+          "15": "Sheppard"
+        },
+        "DAL": {
+          "32": "Flagg",
+          "3": "Davis",
+          "00": "Christie",
+          "21": "Gafford",
+          "25": "Washington",
+          "16": "Martin",
+          "13": "Marshall",
+          "31": "Klay",
+          "10": "Williams",
+          "9": "Nembhard"
+        }
+      },
+      "dnp": {
+        "HOU": {"32": "Green", "4": "Davison"},
+        "DAL": {"7": "Powell", "5": "Russell", "1": "Hardy"}
+      }
+    }
+  },
+  "number_collisions": [
+    "#1 是 HOU Amen，也是 DAL Hardy（两场 Hardy 都 DNP）",
+    "#7 是 HOU Durant，也是 DAL Powell（1月4日 Powell DNP，2月1日出场）",
+    "#10 是 HOU Smith，也是 DAL Williams",
+    "#30 是 HOU Capela，也是 DAL Cisse（Cisse 只在 2月1日出场）",
+    "#32 是 DAL Flagg，也是 HOU Green（两场 Green 都 DNP）"
+  ]
+}

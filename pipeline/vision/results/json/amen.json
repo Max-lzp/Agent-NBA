@@ -1,0 +1,307 @@
+{
+  "clip": "amen",
+  "mode": "json",
+  "calls": [
+    {
+      "model_id": "qwen.qwen3-vl-235b-a22b",
+      "profile": "nba",
+      "region": "us-east-1",
+      "image": "pipeline/vision/work/frames/amen/t_00017.667.png",
+      "image_bytes": 2872924,
+      "image_meta": {
+        "source": "pipeline/vision/work/frames/amen/t_00017.667.png",
+        "source_bytes": 2872924,
+        "transcoded": true,
+        "sent_bytes": 471405,
+        "sent_format": "jpeg"
+      },
+      "elapsed_ms": 9192,
+      "latency_ms": 4201,
+      "stop_reason": "end_turn",
+      "text": "{\"frame_t\":17.667,\"scoreboard\":{\"period\":3,\"clock\":\"7:27\",\"home_team\":\"DAL\",\"away_team\":\"HOU\",\"home\":63,\"away\":60},\"players\":[{\"jersey\":\"1\",\"team\":\"HOU\",\"name\":\"Amen\",\"bbox\":[290,308,360,644]},{\"jersey\":\"00\",\"team\":\"DAL\",\"name\":\"Christie\",\"bbox\": [370,295,450,600]},{\"jersey\":\"32\",\"team\":\"DAL\",\"name\":\"Flagg\",\"bbox\":[428,462,505,688]},{\"jersey\":\"10\",\"team\":\"HOU\",\"name\":\"Smith\",\"bbox\":[448,620,525,790]},{\"jersey\":\"30\",\"team\":\"HOU\",\"name\":\"Capela\",\"bbox\":[615,416,690,716]},{\"jersey\":\"13\",\"team\":\"DAL\",\"name\":\"Marshall\",\"bbox\":[495,285,550,528]},{\"jersey\":\"21\",\"team\":\"DAL\",\"name\":\"Gafford\",\"bbox\": [438,200,490,416]}],\"ball_handler\":\"Amen\",\"events\":[{\"type\":\"shot\",\"t\":17.667,\"actor\":\"Amen\"}]}",
+      "usage": {
+        "inputTokens": 2930,
+        "outputTokens": 318,
+        "totalTokens": 3248
+      },
+      "cost": {
+        "input_tokens": 2930,
+        "output_tokens": 318,
+        "total_tokens": 3248,
+        "input_usd": 0.001553,
+        "output_usd": 0.000846,
+        "total_usd": 0.002399,
+        "price_per_1m_input_usd": 0.53,
+        "price_per_1m_output_usd": 2.66
+      },
+      "json_ok": true,
+      "parsed": {
+        "frame_t": 17.667,
+        "scoreboard": {
+          "period": 3,
+          "clock": "7:27",
+          "home_team": "DAL",
+          "away_team": "HOU",
+          "home": 63,
+          "away": 60
+        },
+        "players": [
+          {
+            "jersey": "1",
+            "team": "HOU",
+            "name": "Amen",
+            "bbox": [
+              290,
+              308,
+              360,
+              644
+            ]
+          },
+          {
+            "jersey": "00",
+            "team": "DAL",
+            "name": "Christie",
+            "bbox": [
+              370,
+              295,
+              450,
+              600
+            ]
+          },
+          {
+            "jersey": "32",
+            "team": "DAL",
+            "name": "Flagg",
+            "bbox": [
+              428,
+              462,
+              505,
+              688
+            ]
+          },
+          {
+            "jersey": "10",
+            "team": "HOU",
+            "name": "Smith",
+            "bbox": [
+              448,
+              620,
+              525,
+              790
+            ]
+          },
+          {
+            "jersey": "30",
+            "team": "HOU",
+            "name": "Capela",
+            "bbox": [
+              615,
+              416,
+              690,
+              716
+            ]
+          },
+          {
+            "jersey": "13",
+            "team": "DAL",
+            "name": "Marshall",
+            "bbox": [
+              495,
+              285,
+              550,
+              528
+            ]
+          },
+          {
+            "jersey": "21",
+            "team": "DAL",
+            "name": "Gafford",
+            "bbox": [
+              438,
+              200,
+              490,
+              416
+            ]
+          }
+        ],
+        "ball_handler": "Amen",
+        "events": [
+          {
+            "type": "shot",
+            "t": 17.667,
+            "actor": "Amen"
+          }
+        ]
+      },
+      "confirmed": {
+        "frame_t": 17.667,
+        "scoreboard": {
+          "period": 3,
+          "clock": "7:27",
+          "home_team": "DAL",
+          "away_team": "HOU",
+          "home": 63,
+          "away": 60
+        },
+        "players": [
+          {
+            "jersey": "1",
+            "team": "HOU",
+            "name": "Amen",
+            "bbox": [
+              290,
+              308,
+              70,
+              336
+            ],
+            "name_from_model": "Amen",
+            "identity_source": "active",
+            "bbox_raw": [
+              290,
+              308,
+              360,
+              644
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "00",
+            "team": "DAL",
+            "name": "Christie",
+            "bbox": [
+              370,
+              295,
+              80,
+              305
+            ],
+            "name_from_model": "Christie",
+            "identity_source": "active",
+            "bbox_raw": [
+              370,
+              295,
+              450,
+              600
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "32",
+            "team": "DAL",
+            "name": "Flagg",
+            "bbox": [
+              428,
+              462,
+              77,
+              226
+            ],
+            "name_from_model": "Flagg",
+            "identity_source": "active",
+            "bbox_raw": [
+              428,
+              462,
+              505,
+              688
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "10",
+            "team": "HOU",
+            "name": "Smith",
+            "bbox": [
+              448,
+              620,
+              77,
+              170
+            ],
+            "name_from_model": "Smith",
+            "identity_source": "active",
+            "bbox_raw": [
+              448,
+              620,
+              525,
+              790
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "30",
+            "team": "HOU",
+            "name": "Capela",
+            "bbox": [
+              615,
+              416,
+              75,
+              300
+            ],
+            "name_from_model": "Capela",
+            "identity_source": "active",
+            "bbox_raw": [
+              615,
+              416,
+              690,
+              716
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "13",
+            "team": "DAL",
+            "name": "Marshall",
+            "bbox": [
+              495,
+              285,
+              55,
+              243
+            ],
+            "name_from_model": "Marshall",
+            "identity_source": "active",
+            "bbox_raw": [
+              495,
+              285,
+              550,
+              528
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          },
+          {
+            "jersey": "21",
+            "team": "DAL",
+            "name": "Gafford",
+            "bbox": [
+              438,
+              200,
+              52,
+              216
+            ],
+            "name_from_model": "Gafford",
+            "identity_source": "active",
+            "bbox_raw": [
+              438,
+              200,
+              490,
+              416
+            ],
+            "bbox_format": "xyxy_to_xywh"
+          }
+        ],
+        "ball_handler": "Amen",
+        "events": [
+          {
+            "type": "shot",
+            "t": 17.667,
+            "actor": "Amen"
+          }
+        ],
+        "identity_notes": []
+      },
+      "clip": "amen",
+      "frame": {
+        "index": 53,
+        "t_sec": 17.667,
+        "filename": "t_00017.667.png"
+      },
+      "mode": "json"
+    }
+  ]
+}

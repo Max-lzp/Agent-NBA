@@ -1,0 +1,46 @@
+{
+  "clip": "amen",
+  "mode": "probe-roster",
+  "calls": [
+    {
+      "model_id": "qwen.qwen3-vl-235b-a22b",
+      "profile": "nba",
+      "region": "us-east-1",
+      "image": "pipeline/vision/work/frames/amen/t_00017.667.png",
+      "image_bytes": 2872924,
+      "image_meta": {
+        "source": "pipeline/vision/work/frames/amen/t_00017.667.png",
+        "source_bytes": 2872924,
+        "transcoded": true,
+        "sent_bytes": 471405,
+        "sent_format": "jpeg"
+      },
+      "elapsed_ms": 10981,
+      "latency_ms": 7589,
+      "stop_reason": "end_turn",
+      "text": "1.  \n- HOU #1 Amen（白色球衣，持球跳起）  \n- DAL #00 Christie（深色球衣，伸手防守）  \n- DAL #32 Flagg（深色球衣，背对镜头）  \n- HOU #10 Smith（白色球衣，背号10）  \n- HOU #30 Capela（白色球衣，背号30）  \n- 其他球员：未知（包括篮下深色球衣13号、白色球衣17号等，无法确认姓名）\n\n2.  \nHOU #1 Amen 持球，当前动作更接近投篮（跳起举球，身体前倾，瞄准篮筐）。\n\n3.  \n节次：3RD（第三节）  \n比赛时钟：7:27  \n比分：HOU 60 - DAL 63  \n进攻时限：1.7秒",
+      "usage": {
+        "inputTokens": 2485,
+        "outputTokens": 198,
+        "totalTokens": 2683
+      },
+      "cost": {
+        "input_tokens": 2485,
+        "output_tokens": 198,
+        "total_tokens": 2683,
+        "input_usd": 0.001317,
+        "output_usd": 0.000527,
+        "total_usd": 0.001844,
+        "price_per_1m_input_usd": 0.53,
+        "price_per_1m_output_usd": 2.66
+      },
+      "clip": "amen",
+      "frame": {
+        "index": 53,
+        "t_sec": 17.667,
+        "filename": "t_00017.667.png"
+      },
+      "mode": "probe-roster"
+    }
+  ]
+}

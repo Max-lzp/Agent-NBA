@@ -1,0 +1,105 @@
+{
+  "clip": "flagg",
+  "mode": "probe",
+  "calls": [
+    {
+      "model_id": "qwen.qwen3-vl-235b-a22b",
+      "profile": "nba",
+      "region": "us-east-1",
+      "image": "pipeline/vision/work/frames/flagg/t_00005.000.png",
+      "image_bytes": 2623894,
+      "elapsed_ms": 106785,
+      "latency_ms": 4603,
+      "stop_reason": "end_turn",
+      "text": "1.  \n- 达拉斯独行侠（DAL）：31号（未知）、00号（未知）、10号（未知）  \n- 休斯顿火箭（HOU）：7号（未知）、1号（未知）、15号（未知）、2号（未知）  \n- 未识别球员：穿深色球衣的10号（未知）、穿白色球衣的15号（未知）等\n\n2.  \n右侧穿深色球衣的独行侠球员（00号）持球，身体微蹲，面向篮筐，动作更接近准备突破或传球。\n\n3.  \n第4节，比赛剩余1分46秒，达拉斯独行侠103分，休斯顿火箭107分。",
+      "usage": {
+        "inputTokens": 2189,
+        "outputTokens": 168,
+        "totalTokens": 2357
+      },
+      "cost": {
+        "input_tokens": 2189,
+        "output_tokens": 168,
+        "total_tokens": 2357,
+        "input_usd": 0.00116,
+        "output_usd": 0.000447,
+        "total_usd": 0.001607,
+        "price_per_1m_input_usd": 0.53,
+        "price_per_1m_output_usd": 2.66
+      },
+      "clip": "flagg",
+      "frame": {
+        "index": 15,
+        "t_sec": 5.0,
+        "filename": "t_00005.000.png"
+      },
+      "mode": "probe"
+    },
+    {
+      "model_id": "qwen.qwen3-vl-235b-a22b",
+      "profile": "nba",
+      "region": "us-east-1",
+      "image": "pipeline/vision/work/frames/flagg/t_00010.667.png",
+      "image_bytes": 2719556,
+      "elapsed_ms": 70664,
+      "latency_ms": 5518,
+      "stop_reason": "end_turn",
+      "text": "1.  \n- 达拉斯独行侠（DAL）：31号（未知）、00号（未知）  \n- 休斯顿火箭（HOU）：28号（未知）、17号（未知）、10号（未知）、2号（未知）  \n- 其他球员：部分背对镜头或距离过远，无法确认姓名与号码。\n\n2.  \n持球者为火箭队10号球员，正从右侧向篮下运球，动作更接近突破。\n\n3.  \n节次：第4节  \n比赛时钟：1分41秒  \n比分：DAL 103 - HOU 107  \n进攻时限：10秒",
+      "usage": {
+        "inputTokens": 2190,
+        "outputTokens": 152,
+        "totalTokens": 2342
+      },
+      "cost": {
+        "input_tokens": 2190,
+        "output_tokens": 152,
+        "total_tokens": 2342,
+        "input_usd": 0.001161,
+        "output_usd": 0.000404,
+        "total_usd": 0.001565,
+        "price_per_1m_input_usd": 0.53,
+        "price_per_1m_output_usd": 2.66
+      },
+      "clip": "flagg",
+      "frame": {
+        "index": 32,
+        "t_sec": 10.667,
+        "filename": "t_00010.667.png"
+      },
+      "mode": "probe"
+    },
+    {
+      "model_id": "qwen.qwen3-vl-235b-a22b",
+      "profile": "nba",
+      "region": "us-east-1",
+      "image": "pipeline/vision/work/frames/flagg/t_00016.333.png",
+      "image_bytes": 2705478,
+      "elapsed_ms": 31971,
+      "latency_ms": 7446,
+      "stop_reason": "end_turn",
+      "text": "1.  \n- 达拉斯独行侠（DAL）：21号（未知）、31号（未知）、10号（未知）  \n- 休斯顿火箭（HOU）：28号（未知）、17号（未知）、1号（未知）  \n- 其他球员：一名穿深色球衣的球员（号码看不清，疑似独行侠），一名穿白色球衣的球员（号码看不清，疑似火箭）  \n- 无法从画面中确认球员姓名。\n\n2.  \n一名穿深色球衣的独行侠球员（疑似21号）正持球起跳，动作更接近投篮（跳投）。\n\n3.  \n节次：第4节  \n比赛时钟：1分35秒  \n比分：达拉斯独行侠 103，休斯顿火箭 107",
+      "usage": {
+        "inputTokens": 2190,
+        "outputTokens": 187,
+        "totalTokens": 2377
+      },
+      "cost": {
+        "input_tokens": 2190,
+        "output_tokens": 187,
+        "total_tokens": 2377,
+        "input_usd": 0.001161,
+        "output_usd": 0.000497,
+        "total_usd": 0.001658,
+        "price_per_1m_input_usd": 0.53,
+        "price_per_1m_output_usd": 2.66
+      },
+      "clip": "flagg",
+      "frame": {
+        "index": 49,
+        "t_sec": 16.333,
+        "filename": "t_00016.333.png"
+      },
+      "mode": "probe"
+    }
+  ]
+}
