@@ -49,3 +49,7 @@ cd cdk && npm install && cdk deploy --profile nba
 - 训练用自备视频来源：（比赛日补充并披露）
 
 > ⚠️ 仓库必须保持 Private；不要提交任何密钥/凭证（用 Secrets Manager / SSM / GitHub Secrets）。
+
+## 视觉依赖许可
+
+检测和跟踪用 [abdullahtarek/basketball_analysis](https://github.com/abdullahtarek/basketball_analysis)（MIT），源码在 `pipeline/vision/vendor/basketball_analysis/`。推理走 Ultralytics YOLO，Ultralytics 是 **AGPL-3.0**：比赛原型可用，若以后闭源分发需要换掉或遵守 AGPL。球场单应变换用同仓库的 `Homography`，接口对齐 roboflow/sports 的 ViewTransformer。球衣号码用 Roboflow 篮球号码 OCR 数据集的本地权重，运行时不调用 Roboflow API。

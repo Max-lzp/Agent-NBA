@@ -1,0 +1,3 @@
+Source: https://github.com/abdullahtarek/basketball_analysis
+License: MIT (upstream README). The LICENSE file itself returned HTTP 404 when this tree was fetched.
+Local edits: batch size 4, save_stub(None) is a no-op, ball distance is a parameter, class names match case-insensitively.

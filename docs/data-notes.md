@@ -129,3 +129,51 @@
 
 原文在 `pipeline/vision/results/probe/`、`probe-roster/`、`json/`。
 
+## 7. 开源本地推理（2026-10-07）
+
+按第 0 节跑了两段训练视频。检测和跟踪用 `abdullahtarek/basketball_analysis` 的三份 Google Drive 权重，在本机 Apple MPS 上推理，没有上云，也没有逐帧调 Qwen3 VL。采样目标 8 fps，源视频 59.94 fps，实际每 7 帧取 1 帧，约 8.56 fps。
+
+| 片段 | 帧数 | 时长 | 每帧球员中位数 | 球场关键点 | 球检出 | 轨迹 | 本地事件 | 名单姓名 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| flagg | 185 | 21.49s | 9 | 184/185 | 185/185 | 43 | 传球 3，抢断 2 | 0 |
+| amen | 196 | 22.77s | 7 | 166/196 | 196/196 | 43 | 传球 3，抢断 3 | 0 |
+
+两段合计墙钟约 303 秒。结构化结果在 `pipeline/vision/results/local/flagg.json` 和 `amen.json`。本地计算成本 $0。
+
+权重在 `pipeline/vision/models/`，已 gitignore：
+
+| 文件 | 体积 | 说明 |
+| --- | --- | --- |
+| player_detector.pt | 165MB | 类名 Ball、Clock、Hoop、Overlay、Player、Ref、Scoreboard |
+| ball_detector_model.pt | 165MB | 类名与球员权重相同，文件哈希不同 |
+| court_keypoint_detector.pt | 398MB | 球场关键点 |
+| jersey_numbers.pt | 无 | 见下面号码一节 |
+
+球员跟踪能跟上：弗拉格片段每帧大约 9 人，最长轨迹跨 156 帧。球的框在整段里从画面左侧移到右侧，不是钉在一个点上。上游 `remove_wrong_detections` 的 25 像素是按大约 24 fps 的相邻帧写的，8 fps 采样时按步长 7 放宽，否则真球会被删掉。
+
+### 7.1 球衣号码没有跑起来
+
+任务书要的是 Roboflow `basketball-jersey-numbers-ocr` 的本地权重。官方发布形态是 SmolVLM2 LoRA，模型 ID `basketball-jersey-numbers-ocr/3`，下载需要 `ROBOFLOW_API_KEY`。本机没有这个 key。Universe 页面返回 Cloudflare 403，`repo.roboflow.com/.../5/weights.pt` 返回 404。管线因此没有号码文件，运行时也没有调用 Roboflow，没有把任何 token 写进仓库。两段的 `jersey` 和 `name` 都是空。
+
+### 7.2 球衣颜色不能单独当球队
+
+HSV 规则是高明度、低饱和度算白，明度低于 110 算深色。抽查两张持球裁切，投票和画面相反：
+
+| 片段 | 轨迹 | 时间 | HSV 投票 | 裁切上看到的 |
+| --- | --- | --- | --- | --- |
+| flagg | 14 | 2.803s | HOU / 白（V=153，S=78） | 深色 32 号，手里有球 |
+| amen | 27 | 6.306s | DAL / 深（V=98，S=58） | 白色 17 号 |
+
+深色球衣在场馆灯光下明度偏高，白球衣裁切又常被暗背景拉低。颜色只作参考，不能拿来盖号码。
+
+### 7.3 Qwen 只兜了两张难帧
+
+记分牌沿用第 6.2 节，6/6 正确，没有重读。战术事件用本地传球/抢断，没有逐帧问模型。号码权重缺失，所以每段只拿持球帧数最多的那条轨迹，裁一张人，各问一次 `qwen_roles.fallback_number`。
+
+| 片段 | 模型输出 | 名单 | 美元 |
+| --- | --- | --- | --- |
+| flagg t=2.803s | jersey `"22"`，color `"white\|dark"` | 对不上。color 把提示里的两个选项原样写回了 | 0.000134 |
+| amen t=6.306s | jersey `"17"`，color `white` | HOU Eason，和裁切一致 | 0.000125 |
+
+两次合计 $0.0003。加上第 6.4 节的 $0.0237，视觉线累计 **$0.0240**。提示词已改成 color 只能填 white、dark 或 null，没有为这句话再打一次模型。原文在 `pipeline/vision/results/local/hard_frame.json`。
+

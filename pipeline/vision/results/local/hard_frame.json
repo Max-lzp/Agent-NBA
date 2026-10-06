@@ -1,0 +1,48 @@
+{
+  "flagg": {
+    "clip": "flagg",
+    "track_id": 14,
+    "t": 2.803,
+    "local_team_from_hsv": "HOU",
+    "qwen_jersey": "22",
+    "qwen_color": "white|dark",
+    "team_from_qwen_color": null,
+    "name": null,
+    "identity_source": "missing_key",
+    "cost": {
+      "input_tokens": 148,
+      "output_tokens": 21,
+      "total_tokens": 169,
+      "input_usd": 7.8e-05,
+      "output_usd": 5.6e-05,
+      "total_usd": 0.000134,
+      "price_per_1m_input_usd": 0.53,
+      "price_per_1m_output_usd": 2.66
+    },
+    "elapsed_ms": 5890,
+    "text": "{\n  \"jersey\": \"22\",\n  \"color\": \"white|dark\"\n}"
+  },
+  "amen": {
+    "clip": "amen",
+    "track_id": 27,
+    "t": 6.306,
+    "local_team_from_hsv": "DAL",
+    "qwen_jersey": "17",
+    "qwen_color": "white",
+    "team_from_qwen_color": "HOU",
+    "name": "Eason",
+    "identity_source": "active",
+    "cost": {
+      "input_tokens": 140,
+      "output_tokens": 19,
+      "total_tokens": 159,
+      "input_usd": 7.4e-05,
+      "output_usd": 5.1e-05,
+      "total_usd": 0.000125,
+      "price_per_1m_input_usd": 0.53,
+      "price_per_1m_output_usd": 2.66
+    },
+    "elapsed_ms": 2383,
+    "text": "{\n  \"jersey\": \"17\",\n  \"color\": \"white\"\n}"
+  }
+}

@@ -1,0 +1,7 @@
+# 本地视觉推理。Ultralytics 为 AGPL-3.0，见仓库 README。
+ultralytics
+supervision
+opencv-python-headless
+pandas
+pillow
+gdown

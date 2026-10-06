@@ -1,4 +1,7 @@
 # 抽帧与调用中间产物（体积大，用 pipeline/vision/extract_frames.py 复现）
 pipeline/vision/work/
+pipeline/vision/.venv/
+pipeline/vision/models/*.pt
+pipeline/vision/stubs/
 __pycache__/
 *.pyc

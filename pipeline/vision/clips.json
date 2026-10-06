@@ -1,10 +1,12 @@
 {
   "flagg": {
     "game_id": "flagg_20260201",
-    "video": "../官方资料/train_video/训练_弗拉格2月1日.mp4"
+    "video": "../官方资料/train_video/训练_弗拉格2月1日.mp4",
+    "jersey_color_to_team": {"white": "HOU", "dark": "DAL"}
   },
   "amen": {
     "game_id": "amen_20260104",
-    "video": "../官方资料/train_video/训练_阿门1月4日 .mp4"
+    "video": "../官方资料/train_video/训练_阿门1月4日 .mp4",
+    "jersey_color_to_team": {"white": "HOU", "dark": "DAL"}
   }
 }
