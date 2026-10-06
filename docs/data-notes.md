@@ -2,6 +2,24 @@
 
 > 主人：B（视觉线）｜核心问题：官方数据只有出手瞬间点位、没有逐帧轨迹
 
+## 0. 视觉管线方案（10.7 定稿：开源组件 + 全本地推理）
+
+**主干**：[abdullahtarek/basketball_analysis](https://github.com/abdullahtarek/basketball_analysis)（MIT）
+检测+跟踪（预训练权重 Google Drive 下载即用）、球权/传球事件、球场关键点、画面叠加 drawers。
+目录结构照搬为 `pipeline/vision/` 的模块划分。
+
+**零件**：[roboflow/sports](https://github.com/roboflow/sports) + [官方篮球教程](https://roboflow.com/blog/identify-basketball-players)
+- `ViewTransformer`：球场坐标 ↔ 画面像素单应变换（服务本文第 3 节）
+- 球衣号码 OCR：[篮球号码数据集](https://universe.roboflow.com/roboflow-jvuqo/basketball-jersey-numbers-ocr)，本地推理
+- 备选检测器 RF-DETR（Apache 2.0），在意 Ultralytics AGPL 时替换
+
+**规则**：
+- 数据集/权重只从网站**下载到本地**，Pipeline 零 Roboflow API 调用、零外部 token
+- 比赛日识别全在本地 CPU 跑（22 秒 ≈ 几分钟），只把结构化 JSON 传 S3
+- Qwen3 VL 只保留三件事：读记分牌时钟、判战术事件、兜底难帧
+- Ultralytics 为 AGPL-3.0：可用，README 需注明
+- 球员身份 = 球衣号码 OCR + 号码→花名册映射表（弗拉格 32 号 / 阿门 1 号，两队 roster 赛前整理）
+
 ## 1. 数据获取记录
 
 | 项 | 内容 |
