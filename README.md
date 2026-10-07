@@ -1,5 +1,6 @@
 # 项目名（待起）
 
+> 主人：A（部署线）。别人可以提意见，只有主人改。
 > 队名：待定 ｜ NBA × AWS Broadcast Code 12H ｜ 珠海 10.10 初赛 / 澳门 10.11 决赛
 
 **一句话价值主张**（评委第一眼看的，30 字以内）：让每一次出手被重新讲述一遍——深度数据驱动的 AI 增强比赛画面。
@@ -23,7 +24,8 @@ ffmpeg 预渲染增强成片（保底：打开即看，不点任何交互也成�
 ## 快速开始
 
 ```bash
-# 0. 前提：AWS CLI v2 + 双 profile（nba-sso / nba），详见 docs/runbook.md
+# 0. 前提：AWS CLI v2 + 双 profile（nba-sso / nba）
+#    比赛日时间表见飞书《比赛日 Runbook》
 aws sso login --profile nba-sso
 aws sts get-caller-identity --profile nba --region us-east-1   # 须含 NBAHackathonParticipantRole
 
@@ -46,18 +48,28 @@ cd cdk && npm install && cdk deploy --profile nba
 
 ## 目录
 
-```
-├── README.md          ← 本文件（评分要件：项目名/队名/价值主张/一键部署）
+本仓库只放交付物。每个文件一个主人。
+
+```text
+repo/
+├── README.md            ← 项目名/队名/一句话价值主张/一键部署步骤（评分要件，主人：A）
 ├── docs/
-│   ├── architecture.md  架构说明（主人：A｜部署线）
-│   ├── data-notes.md    深度数据格式与对齐方案（主人：B｜视觉线）
-│   ├── decisions.md     关键决策记录 → 路演讲稿素材（主人：C｜呈现线）
-│   └── runbook.md       比赛日作战手册
-├── cdk/               基础设施即代码
-├── agent/             AgentCore Agent
-├── pipeline/          抽帧 → 视觉识别 → ffmpeg 叠加渲染
-└── web/               Web 交互界面
+│   ├── architecture.md  ← 架构说明（决赛技术分 18 分的素材库，主人：A）
+│   ├── data-notes.md    ← 深度数据格式、字段口径、对齐方案（主人：B）
+│   └── decisions.md     ← 关键决策记录（主人：呈现线）
+├── cdk/                 ← 基础设施
+├── agent/               ← AgentCore Agent 代码
+├── pipeline/            ← 视觉识别 + ffmpeg 渲染管线
+└── web/                 ← 前端
 ```
+
+协作文档不进本仓库，权威版本在飞书文件夹：<https://hu6srn8qnl.feishu.cn/drive/folder/Ndbufq6uLlAgawdFtnkczyGaneh>
+
+| 飞书文档 | 主人 |
+| --- | --- |
+| 作战中枢 | 当次记录人，当场确认 |
+| 踩坑记录 | 踩坑的人当天写入 |
+| 比赛日 Runbook | 呈现线。9 号碰面定稿 |
 
 ## 声明
 
