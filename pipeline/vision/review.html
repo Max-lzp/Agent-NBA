@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>视觉回放台</title>
+  <style>
+    :root {
+      --ink: #14120e;
+      --panel: #1d1a15;
+      --line: #3a342a;
+      --paper: #f3ecdf;
+      --muted: #b3a790;
+      --amber: #e2a122;
+      --pass: #e2a122;
+      --steal: #e25b45;
+      --hou: #f4efe4;
+      --dal: #6ea2e0;
+      --ball: #ef6a2a;
+      --unknown: #8d8678;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper); }
+    body {
+      font-family: "Avenir Next Condensed", "Avenir Next", "PingFang SC", "Hiragino Sans GB", sans-serif;
+      letter-spacing: 0.01em;
+    }
+    header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 20px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0; font-weight: 600; font-size: 22px; letter-spacing: 0.04em; }
+    h1 span { color: var(--muted); font-weight: 500; margin-left: 8px; font-size: 14px; }
+    .clips { display: flex; gap: 8px; }
+    button, .clip {
+      font: inherit;
+      color: var(--paper);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 12px;
+      cursor: pointer;
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+    button:hover, .clip:hover { border-color: var(--amber); }
+    .clip.active { background: var(--amber); color: #1a1408; border-color: var(--amber); }
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 16px;
+      padding: 16px 20px 24px;
+      height: calc(100% - 58px);
+    }
+    .stage-wrap { display: flex; flex-direction: column; min-width: 0; }
+    .stage { position: relative; background: #000; line-height: 0; }
+    video { display: block; width: 100%; height: auto; max-height: calc(100vh - 280px); object-fit: contain; background: #000; }
+    canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
+    .banner {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 6px 10px;
+      background: rgba(20, 18, 14, 0.82);
+      border-left: 4px solid var(--amber);
+      font-size: 20px;
+      letter-spacing: 0.08em;
+      display: none;
+    }
+    .banner.steal { border-left-color: var(--steal); }
+    .banner.show { display: block; }
+    .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 0 6px; }
+    .time { font-family: "SF Mono", "Menlo", monospace; font-size: 13px; color: var(--muted); min-width: 220px; }
+    .rate button.active { background: var(--paper); color: var(--ink); }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--amber);
+    }
+    .rail { position: relative; height: 28px; margin-top: 4px; }
+    .rail input { position: absolute; inset: 8px 0 auto 0; width: 100%; }
+    .ticks { position: absolute; inset: 0; pointer-events: none; }
+    .tick {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 8px;
+      transform: translateX(-1px);
+    }
+    .tick.pass { background: var(--pass); }
+    .tick.interception { background: var(--steal); }
+    aside {
+      border-left: 1px solid var(--line);
+      padding-left: 16px;
+      overflow: auto;
+      min-height: 0;
+    }
+    h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+    .event {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 8px;
+      width: 100%;
+      text-align: left;
+      border-radius: 6px;
+      padding: 8px;
+      margin-bottom: 6px;
+    }
+    .event .when { font-family: "SF Mono", Menlo, monospace; color: var(--amber); }
+    .event small { display: block; color: var(--muted); }
+    .legend { margin-top: 18px; font-size: 14px; line-height: 1.55; color: var(--muted); }
+    .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; border: 2px solid currentColor; }
+    .note { margin-top: 12px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>视觉回放台<span>检测框按采样时间贴回原视频</span></h1>
+    <div class="clips" id="clips"></div>
+  </header>
+  <main>
+    <div class="stage-wrap">
+      <div class="stage" id="stage">
+        <video id="video" playsinline></video>
+        <canvas id="overlay"></canvas>
+        <div class="banner" id="banner"></div>
+      </div>
+      <div class="transport">
+        <button id="play" type="button">播放</button>
+        <button id="prev" type="button">上一检测帧</button>
+        <button id="next" type="button">下一检测帧</button>
+        <span class="rate">
+          <button type="button" data-rate="0.5">0.5×</button>
+          <button type="button" data-rate="1" class="active">1×</button>
+        </span>
+        <span class="time" id="time">—</span>
+      </div>
+      <div class="rail">
+        <div class="ticks" id="ticks"></div>
+        <input id="scrub" type="range" min="0" max="1000" value="0" />
+      </div>
+    </div>
+    <aside>
+      <h2>事件</h2>
+      <div id="events"></div>
+      <div class="legend">
+        <div><span class="swatch" style="color:var(--hou)"></span>HSV 判成火箭白</div>
+        <div><span class="swatch" style="color:var(--dal)"></span>HSV 判成独行侠深色</div>
+        <div><span class="swatch" style="color:var(--unknown)"></span>颜色没判出来</div>
+        <div><span class="swatch" style="color:var(--ball);border-radius:50%"></span>球</div>
+        <div><span class="swatch" style="color:var(--amber)"></span>这一帧的持球轨迹</div>
+      </div>
+      <p class="note">框只在约 8.5 fps 的检测帧上刷新，中间画面保持上一张检测结果。号码识别没有跑，姓名是空的。球衣颜色已知会投反，核对时以画面为准。空格播放，左右方向键跳检测帧。</p>
+    </aside>
+  </main>
+  <script type="module">
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("overlay");
+    const ctx = canvas.getContext("2d");
+    const banner = document.getElementById("banner");
+    const timeEl = document.getElementById("time");
+    const scrub = document.getElementById("scrub");
+    const ticks = document.getElementById("ticks");
+    const eventsEl = document.getElementById("events");
+    const playBtn = document.getElementById("play");
+
+    const TYPE = { pass: "传球", interception: "抢断" };
+    let doc = null;
+    let duration = 0;
+    let scrubbing = false;
+
+    function sampleIndex(t) {
+      const rows = doc.timeline;
+      let lo = 0;
+      let hi = rows.length - 1;
+      let ans = 0;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        if (rows[mid].t <= t + 0.001) {
+          ans = mid;
+          lo = mid + 1;
+        } else {
+          hi = mid - 1;
+        }
+      }
+      return ans;
+    }
+
+    function activeEvents(t) {
+      return (doc.events || []).filter((event) => Math.abs(event.t - t) <= 0.45);
+    }
+
+    function resizeCanvas() {
+      if (!video.videoWidth) return;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+    }
+
+    function drawBox(bbox, color, width, label) {
+      const [x, y, w, h] = bbox;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.setLineDash(h > 700 ? [10, 8] : []);
+      ctx.strokeRect(x, y, w, h);
+      ctx.setLineDash([]);
+      if (!label) return;
+      ctx.font = "28px Avenir Next Condensed, PingFang SC, sans-serif";
+      const pad = 6;
+      const textW = ctx.measureText(label).width;
+      ctx.fillStyle = "rgba(12,10,8,0.78)";
+      ctx.fillRect(x, Math.max(0, y - 34), textW + pad * 2, 32);
+      ctx.fillStyle = color;
+      ctx.fillText(label, x + pad, Math.max(24, y - 8));
+    }
+
+    function draw() {
+      if (!doc || !video.videoWidth) return;
+      resizeCanvas();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const t = video.currentTime || 0;
+      const sample = doc.timeline[sampleIndex(t)];
+      const events = activeEvents(t);
+      const eventTracks = new Set(events.map((event) => event.track_id));
+      for (const player of sample.players) {
+        const handler = player.track_id === sample.ball_handler_track;
+        const eventHit = eventTracks.has(player.track_id);
+        const color = player.team === "HOU" ? "#f4efe4" : player.team === "DAL" ? "#6ea2e0" : "#8d8678";
+        const label = (handler ? "持球 " : "") + (player.team || "?") + " #" + player.track_id;
+        drawBox(player.bbox, eventHit ? "#e25b45" : handler ? "#e2a122" : color, handler || eventHit ? 5 : 2, label);
+      }
+      if (sample.ball) {
+        const [x, y, w, h] = sample.ball;
+        ctx.beginPath();
+        ctx.strokeStyle = "#ef6a2a";
+        ctx.lineWidth = 3;
+        ctx.arc(x + w / 2, y + h / 2, Math.max(w, h) / 2 + 4, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      if (events.length) {
+        const text = events.map((event) => TYPE[event.type] + " 轨迹 " + event.track_id).join("  ·  ");
+        banner.textContent = text;
+        banner.className = "banner show" + (events.some((event) => event.type === "interception") ? " steal" : "");
+      } else {
+        banner.className = "banner";
+      }
+      const shown = sample.t.toFixed(3);
+      const lag = Math.max(0, t - sample.t);
+      timeEl.textContent = t.toFixed(2) + "s  ·  检测帧 " + shown + "s  ·  滞后 " + lag.toFixed(2) + "s  ·  球员 " + sample.players.length;
+      if (!scrubbing) scrub.value = String(duration ? Math.round((t / duration) * 1000) : 0);
+    }
+
+    function renderEvents() {
+      eventsEl.innerHTML = "";
+      ticks.innerHTML = "";
+      for (const event of doc.events || []) {
+        const button = document.createElement("button");
+        button.className = "event";
+        button.type = "button";
+        button.innerHTML = `<span class="when">${event.t.toFixed(2)}s</span><span>${TYPE[event.type] || event.type}<small>轨迹 ${event.track_id}</small></span>`;
+        button.addEventListener("click", () => {
+          video.currentTime = Math.max(0, event.t - 0.35);
+          draw();
+        });
+        eventsEl.appendChild(button);
+        const tick = document.createElement("div");
+        tick.className = "tick " + event.type;
+        tick.style.left = (duration ? (event.t / duration) * 100 : 0) + "%";
+        ticks.appendChild(tick);
+      }
+      if (!(doc.events || []).length) {
+        eventsEl.textContent = "这段没有检出传球或抢断。";
+      }
+    }
+
+    async function loadClip(id) {
+      document.querySelectorAll(".clip").forEach((node) => node.classList.toggle("active", node.dataset.id === id));
+      const response = await fetch("/api/result/" + id);
+      doc = await response.json();
+      video.src = "/media/" + id;
+      await new Promise((resolve) => video.addEventListener("loadedmetadata", resolve, { once: true }));
+      duration = video.duration || doc.duration_sec || 0;
+      scrub.max = "1000";
+      renderEvents();
+      draw();
+    }
+
+    function step(dir) {
+      if (!doc) return;
+      const index = sampleIndex(video.currentTime || 0);
+      const sample = doc.timeline[index];
+      let next = index + dir;
+      if (dir < 0 && video.currentTime - sample.t > 0.05) next = index;
+      next = Math.min(doc.timeline.length - 1, Math.max(0, next));
+      video.pause();
+      playBtn.textContent = "播放";
+      video.currentTime = doc.timeline[next].t;
+    }
+
+    playBtn.addEventListener("click", () => {
+      if (video.paused) video.play();
+      else video.pause();
+    });
+    video.addEventListener("play", () => { playBtn.textContent = "暂停"; });
+    video.addEventListener("pause", () => { playBtn.textContent = "播放"; });
+    document.getElementById("prev").addEventListener("click", () => step(-1));
+    document.getElementById("next").addEventListener("click", () => step(1));
+    document.querySelectorAll("[data-rate]").forEach((button) => {
+      button.addEventListener("click", () => {
+        video.playbackRate = Number(button.dataset.rate);
+        document.querySelectorAll("[data-rate]").forEach((node) => node.classList.toggle("active", node === button));
+      });
+    });
+    scrub.addEventListener("pointerdown", () => { scrubbing = true; });
+    scrub.addEventListener("pointerup", () => { scrubbing = false; });
+    scrub.addEventListener("input", () => {
+      if (!duration) return;
+      video.currentTime = (Number(scrub.value) / 1000) * duration;
+    });
+    video.addEventListener("timeupdate", draw);
+    video.addEventListener("seeked", draw);
+    window.addEventListener("resize", draw);
+    window.addEventListener("keydown", (event) => {
+      if (event.target.matches("input, button")) return;
+      if (event.code === "Space") {
+        event.preventDefault();
+        playBtn.click();
+      } else if (event.code === "ArrowLeft") {
+        event.preventDefault();
+        step(-1);
+      } else if (event.code === "ArrowRight") {
+        event.preventDefault();
+        step(1);
+      }
+    });
+
+    const catalog = await fetch("/api/clips").then((response) => response.json());
+    const clips = document.getElementById("clips");
+    for (const clip of catalog) {
+      const button = document.createElement("button");
+      button.className = "clip";
+      button.type = "button";
+      button.dataset.id = clip.id;
+      button.textContent = clip.label + (clip.result_ready ? "" : "（无结果）");
+      button.disabled = !clip.result_ready || !clip.video_ready;
+      button.addEventListener("click", () => loadClip(clip.id));
+      clips.appendChild(button);
+    }
+    const first = catalog.find((clip) => clip.result_ready && clip.video_ready);
+    if (first) loadClip(first.id);
+  </script>
+</body>
+</html>
