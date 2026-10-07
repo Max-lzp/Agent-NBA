@@ -46,15 +46,15 @@ class ReviewHandler(BaseHTTPRequestHandler):
 
     def _route(self, head_only: bool) -> None:
         path = unquote(urlparse(self.path).path)
-        if path in ("/", "/review.html"):
+        if path in ("/", "/index.html", "/review.html"):
             self._send_bytes(PAGE.read_bytes(), "text/html; charset=utf-8", head_only)
             return
-        if path == "/api/clips":
+        if path in ("/api/clips", "/data/catalog.json"):
             body = json.dumps(self._catalog(), ensure_ascii=False).encode("utf-8")
             self._send_bytes(body, "application/json; charset=utf-8", head_only)
             return
-        if path.startswith("/api/result/"):
-            clip_id = path.removeprefix("/api/result/")
+        if path.startswith("/api/result/") or (path.startswith("/data/") and path.endswith(".json")):
+            clip_id = path.removeprefix("/api/result/").removeprefix("/data/").removesuffix(".json")
             target = result_path(clip_id)
             if clip_id not in CLIPS or not target.is_file():
                 self.send_error(404)
@@ -62,7 +62,7 @@ class ReviewHandler(BaseHTTPRequestHandler):
             self._send_bytes(target.read_bytes(), "application/json; charset=utf-8", head_only)
             return
         if path.startswith("/media/"):
-            clip_id = path.removeprefix("/media/")
+            clip_id = path.removeprefix("/media/").removesuffix(".mp4")
             if clip_id not in CLIPS:
                 self.send_error(404)
                 return

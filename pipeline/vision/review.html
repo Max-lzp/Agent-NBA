@@ -277,9 +277,9 @@
 
     async function loadClip(id) {
       document.querySelectorAll(".clip").forEach((node) => node.classList.toggle("active", node.dataset.id === id));
-      const response = await fetch("/api/result/" + id);
+      const response = await fetch("data/" + id + ".json");
       doc = await response.json();
-      video.src = "/media/" + id;
+      video.src = "media/" + id + ".mp4";
       await new Promise((resolve) => video.addEventListener("loadedmetadata", resolve, { once: true }));
       duration = video.duration || doc.duration_sec || 0;
       scrub.max = "1000";
@@ -336,7 +336,7 @@
       }
     });
 
-    const catalog = await fetch("/api/clips").then((response) => response.json());
+    const catalog = await fetch("data/catalog.json").then((response) => response.json());
     const clips = document.getElementById("clips");
     for (const clip of catalog) {
       const button = document.createElement("button");
