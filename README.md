@@ -29,10 +29,18 @@ ffmpeg 预渲染增强成片（保底：打开即看，不点任何交互也成�
 aws sso login --profile nba-sso
 aws sts get-caller-identity --profile nba --region us-east-1   # 须含 NBAHackathonParticipantRole
 
-# 1. 部署（cdk.json 已配权限边界，主办方已 bootstrap，不要执行 cdk bootstrap）
-cd cdk && npm install && cdk deploy --profile nba
+# 1. 部署（cdk.json 已配权限边界 NBAHackathonParticipantBoundary，主办方已 bootstrap，不要执行 cdk bootstrap）
+cd cdk && npm install && npx cdk deploy Team04DeepCourt --profile nba
 
-# 2. 提交作品 URL（门户 Submit your entry，截止 2026-10-10 20:00 北京时间）
+# 2. 验收闭环（把 <api> 换成栈输出 ApiUrl，不要带末尾多余空格）
+curl -sS -X POST "<api>jobs" -H 'content-type: application/json' \
+  -d '{"gameMeta":"dal-vs-hou","filename":"clip.mp4","contentType":"video/mp4"}'
+# 用返回的 uploadUrl 上传视频：curl -X PUT -H "Content-Type: video/mp4" --upload-file clip.mp4 "<uploadUrl>"
+# 轮询直到 status 为 DONE：curl -sS "<api>jobs/<jobId>"
+# 读事件：curl -sS "<api>jobs/<jobId>/events"
+# 浏览器打开栈输出 CloudFrontUrl。首页可上传；game.html?jobId= 显示事件时间线。
+
+# 3. 提交作品 URL（门户 Submit your entry，截止 2026-10-10 20:00 北京时间）
 ```
 
 ## 技术栈

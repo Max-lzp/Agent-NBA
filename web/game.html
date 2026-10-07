@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DEEP COURT 播放器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="court court-tr"></div>
+  <main class="page">
+    <p class="kicker"><span class="mark">NBA × AWS BROADCAST CODE 12</span>　·　回放</p>
+    <h1 class="player-title">DEEP COURT <span class="accent">播放器</span></h1>
+    <p class="subhead" id="subhead">视频打底（ffmpeg 成片） + 交互拿分（Canvas 叠加 · 暂停展开）· 评委打开 CloudFront 链接即见此页</p>
+    <hr class="rule">
+
+    <section class="stage" id="stage">
+      <svg class="court-art" id="court-art" viewBox="0 0 960 540" aria-hidden="true">
+        <defs>
+          <linearGradient id="arena" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#1a120e"/>
+            <stop offset="1" stop-color="#0c0a09"/>
+          </linearGradient>
+        </defs>
+        <rect width="960" height="540" fill="url(#arena)"/>
+        <g fill="none" stroke="#3a2a22" stroke-width="2" transform="translate(180 70) scale(1.15)">
+          <rect x="40" y="40" width="480" height="280"/>
+          <circle cx="280" cy="180" r="58"/>
+          <path d="M150 250h260"/>
+          <path d="M190 250c20-70 160-70 180 0"/>
+          <rect x="230" y="210" width="100" height="40"/>
+        </g>
+        <g fill="#f3ede2" opacity="0.85">
+          <circle cx="430" cy="250" r="7"/>
+          <circle cx="560" cy="230" r="7"/>
+          <circle cx="500" cy="300" r="7"/>
+          <circle cx="610" cy="280" r="7" fill="#f1681e"/>
+        </g>
+      </svg>
+      <video id="reel" class="hidden" playsinline></video>
+      <div class="hud" id="diff">投篮难度 <b>62%</b></div>
+      <div class="live" id="live">● LIVE · Q4 01:40</div>
+      <div class="grav" id="grav"><span id="grav-name">弗拉格</span><i>GRAV</i><span class="num" id="grav-val">87</span></div>
+      <div class="zone" id="zone">空位区 · 2.1m</div>
+      <div class="pull" id="pull">引力牵引 ×2</div>
+      <div class="xfg" id="xfg">
+        <p>本次出手 <span class="num" id="xfg-val">xFG% 38%</span></p>
+        <div class="bar"><i id="xfg-fill"></i></div>
+        <p id="xfg-sub">DEF DIST 1.2m · 高于联盟均值 +6%</p>
+      </div>
+      <aside class="dps" id="dps">
+        <header><strong>防守压力盒 DPS</strong><span>暂停展开 · 0–1</span></header>
+        <div id="dps-rows"></div>
+        <p class="note" id="dps-note">主防：<b>阿门</b> · 换防指令来自申京<br>底线协防迟到 0.4s → 空位形成</p>
+        <p class="note">本回合胜率摆幅 <span class="num lvg" id="lvg">LVG +1.8</span></p>
+      </aside>
+    </section>
+
+    <div class="transport">
+      <button class="pause" id="pause" type="button" aria-label="暂停或播放">
+        <svg id="pause-icon" width="12" height="14" viewBox="0 0 12 14" aria-hidden="true"><rect x="1" y="0" width="3.2" height="14" fill="#14110E"/><rect x="7.6" y="0" width="3.2" height="14" fill="#14110E"/></svg>
+      </button>
+      <div class="scrub" id="scrub">
+        <div class="track"></div>
+        <div class="fill" id="fill"></div>
+      </div>
+      <div>
+        <div class="clock" id="clock">01:14 / 01:40</div>
+        <div class="aside"><span class="teal">◆</span> 解说由 AI 生成 · 已声明<br><span class="brand">TEAM 04 · DEEP COURT</span></div>
+      </div>
+    </div>
+
+    <div class="events" id="events"></div>
+
+    <section class="spec">
+      <hr class="rule">
+      <h2>三层信息 · 组件规范</h2>
+      <button class="layer on" type="button" data-layer="resident"><b>常驻层</b><span>投篮难度徽标 · 引力标签（GRAV&gt;80 触发警报）· xFG% 出手条 —— 默认画面 ≤2 个元素</span></button>
+      <button class="layer on" type="button" data-layer="event"><b>事件层</b><span>空位区虚线圈 · 引力牵引线 · 事件条高亮 —— 回合节点出现，事后淡出</span></button>
+      <button class="layer on" type="button" data-layer="expand"><b>展开层</b><span>暂停 / 点击 → DPS 防守压力盒 · LVG 胜率摆幅 · 数据-画面双向绑定</span></button>
+      <p class="baseline">视觉基线：深炭黑 #14110E · 篮球橙 #F1681E · 米白 #F3EDE2 · 得意黑标题 / MiSans 正文 / Jersey15 数字</p>
+    </section>
+
+    <footer class="foot">
+      <a href="index.html">返回首页</a>
+      <b>TEAM 04 · 2026.10.07</b>
+    </footer>
+  </main>
+  <script src="config.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

@@ -5,3 +5,6 @@ pipeline/vision/models/*.pt
 pipeline/vision/stubs/
 __pycache__/
 *.pyc
+cdk/node_modules/
+cdk/cdk.out/
+cdk/dist/
