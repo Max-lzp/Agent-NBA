@@ -1,15 +1,19 @@
 const SAMPLE = {
-  duration: 100,
-  live: "● LIVE · Q4 01:40",
+  live: "● LIVE · Q4 01:39",
   active: 3,
+  // 比赛时间锚点：clipTime（秒，相对 10s 示例成片）↔ gameSec（Q4 比赛时钟，秒）
+  // 数值取自画面转播比分牌（1:39 → 1:34），保证数据层时钟与画面一致
+  anchors: [
+    { clipTime: 0, gameSec: 99 },
+  ],
   events: [
-    { timecode: "01:22", posSec: 82, clipTime: 0.8, label: "高位持球 · GRAV 87", eventType: "hold" },
-    { timecode: "01:18", posSec: 78, clipTime: 2.8, label: "挡拆 · 双人收缩", eventType: "screen" },
-    { timecode: "01:16", posSec: 76, clipTime: 4.3, label: "分球底角 · 空位 2.1m", eventType: "pass" },
+    { timecode: "01:39", clipTime: 0.8, gameSec: 99, label: "高位持球 · GRAV 87", eventType: "hold" },
+    { timecode: "01:37", clipTime: 2.8, gameSec: 97, label: "挡拆 · 双人收缩", eventType: "screen" },
+    { timecode: "01:36", clipTime: 4.3, gameSec: 96, label: "分球底角 · 空位 2.1m", eventType: "pass" },
     {
-      timecode: "01:14",
-      posSec: 74,
+      timecode: "01:34",
       clipTime: 6.3,
+      gameSec: 94,
       label: "出手 · xFG% 38%",
       eventType: "shot",
       difficulty: "62%",
@@ -26,7 +30,7 @@ const SAMPLE = {
       ],
       note: "主防：<b>阿门</b> · 换防指令来自申京<br>底线协防迟到 0.4s → 空位形成",
     },
-    { timecode: "01:13", posSec: 73, clipTime: 8.6, label: "磕筐而出 · 长篮板", eventType: "rebound" },
+    { timecode: "01:34", clipTime: 8.6, gameSec: 94, label: "磕筐而出 · 长篮板", eventType: "rebound" },
   ],
 };
 
@@ -62,8 +66,8 @@ const els = {
 const jobId = new URLSearchParams(location.search).get("jobId");
 const state = {
   events: SAMPLE.events,
+  anchors: SAMPLE.anchors.concat(SAMPLE.events.map((event) => ({ clipTime: event.clipTime, gameSec: event.gameSec }))),
   active: SAMPLE.active,
-  duration: SAMPLE.duration,
   clipDuration: 10,
   paused: true,
   layers: { resident: true, event: true, expand: true },
@@ -74,24 +78,16 @@ init();
 
 function init() {
   if (els.chromeUrl) els.chromeUrl.textContent = location.host + location.pathname;
-  state.events.forEach((event) => {
-    if (event.posSec == null) event.posSec = toSeconds(event.timecode);
-    if (event.pos == null) event.pos = event.posSec / state.duration;
-  });
   els.reel.addEventListener("timeupdate", onTimeUpdate);
   els.reel.addEventListener("loadedmetadata", () => {
-    if (Number.isFinite(els.reel.duration) && els.reel.duration > 0) {
-      state.clipDuration = els.reel.duration;
-      if (state.mode === "job") {
-        state.duration = els.reel.duration;
-        state.events.forEach((event) => {
-          event.posSec = event.clipTime;
-          event.pos = event.clipTime / state.clipDuration;
-        });
-      }
-      renderTicks();
-      render();
+    if (!Number.isFinite(els.reel.duration) || els.reel.duration <= 0) return;
+    state.clipDuration = els.reel.duration;
+    state.events.forEach((event) => { event.pos = event.clipTime / state.clipDuration; });
+    if (state.mode === "sample" && els.reel.currentTime < 0.1) {
+      els.reel.currentTime = SAMPLE.events[SAMPLE.active].clipTime;
     }
+    renderTicks();
+    render();
   });
   els.reel.addEventListener("ended", () => {
     pause(true);
@@ -118,6 +114,7 @@ function init() {
     els.live.textContent = SAMPLE.live;
     els.reel.currentTime = SAMPLE.events[SAMPLE.active].clipTime;
   }
+  state.events.forEach((event) => { event.pos = event.clipTime / state.clipDuration; });
   renderTicks();
   render();
   if (jobId) pollJob();
@@ -154,7 +151,7 @@ function onScrub(event) {
   const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
   els.reel.currentTime = ratio * state.clipDuration;
   let active = 0;
-  state.events.forEach((item, index) => { if (ratio >= item.pos - 0.01) active = index; });
+  state.events.forEach((item, index) => { if (ratio >= item.clipTime / state.clipDuration - 0.01) active = index; });
   state.active = active;
   pause(true);
   render();
@@ -173,25 +170,28 @@ function onTimeUpdate() {
   }
 }
 
-function displayPosition() {
-  if (state.paused) return state.events[state.active]?.posSec ?? 0;
-  const t = els.reel.currentTime || 0;
-  const evs = state.events;
-  let prev = { clipTime: 0, posSec: 0 };
-  let next = null;
-  for (const ev of evs) {
-    if (ev.clipTime <= t) prev = ev;
-    else { next = ev; break; }
+// 比赛时钟（Q4 倒计时，秒）：按锚点在 clipTime 上线性插值，保证与画面比分牌一致
+function gameClockAt(t) {
+  const anchors = state.anchors;
+  if (!anchors.length) return 0;
+  if (t <= anchors[0].clipTime) return anchors[0].gameSec;
+  for (let i = 1; i < anchors.length; i += 1) {
+    if (t <= anchors[i].clipTime) {
+      const a = anchors[i - 1];
+      const b = anchors[i];
+      const span = Math.max(0.001, b.clipTime - a.clipTime);
+      return lerp(a.gameSec, b.gameSec, Math.min(1, (t - a.clipTime) / span));
+    }
   }
-  if (!next) return evs[evs.length - 1]?.posSec ?? 0;
-  const span = Math.max(0.001, next.clipTime - prev.clipTime);
-  return lerp(prev.posSec, next.posSec, Math.min(1, (t - prev.clipTime) / span));
+  return anchors[anchors.length - 1].gameSec;
 }
 
 function updateProgress() {
-  const position = displayPosition();
-  els.fill.style.width = `${(position / state.duration) * 100}%`;
-  els.clock.textContent = `${format(position)} / ${format(state.duration)}`;
+  const t = els.reel.currentTime || 0;
+  els.fill.style.width = `${Math.min(100, (t / state.clipDuration) * 100)}%`;
+  els.clock.textContent = state.mode === "sample"
+    ? `Q4 ${format(gameClockAt(t))}`
+    : `${format(t)} / ${format(state.clipDuration)}`;
 }
 
 function render() {
@@ -270,14 +270,11 @@ async function pollJob() {
         const listed = await getJson(`/jobs/${encodeURIComponent(jobId)}/events`);
         if (listed.events?.length) {
           state.events = listed.events.map(presentEvent);
+          state.anchors = [];
           state.active = state.events.length - 1;
-          const last = Math.max(...state.events.map((item) => item.clipTime), 1);
-          state.duration = state.clipDuration > 1 ? state.clipDuration : last;
-          state.clipDuration = Math.max(state.clipDuration, last);
-          state.events.forEach((item) => {
-            item.posSec = item.clipTime;
-            item.pos = item.clipTime / state.clipDuration;
-          });
+          state.clipDuration = Math.max(Number.isFinite(els.reel.duration) ? els.reel.duration : 0,
+            ...state.events.map((item) => item.clipTime), 1);
+          state.events.forEach((item) => { item.pos = item.clipTime / state.clipDuration; });
           renderTicks();
           seekEvent(state.active);
         }
