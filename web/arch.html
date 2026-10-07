@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DEEP COURT · 架构与开源合规</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="court court-tr"></div>
+  <main class="page">
+    <p class="kicker"><span class="mark">NBA × AWS BROADCAST CODE 12</span>　·　架构与开源合规</p>
+    <h1>系统架构与<span class="accent">开源合规</span></h1>
+    <p class="lede">数据流水线全部可本地复现，云侧只做模型推理与静态分发，控制成本与延迟</p>
+
+    <p class="sec-no"><span class="n">01</span>数据流水线</p>
+    <section class="flow" aria-label="五阶段流水线">
+      <article class="stage-card">
+        <h3><span class="no">STAGE 1</span>输入</h3>
+        <p>视频文件 / 录像 URL</p>
+      </article>
+      <article class="stage-card">
+        <h3><span class="no">STAGE 2</span>画面理解</h3>
+        <p>检测 · 跟踪 · 本地 GPU</p>
+      </article>
+      <article class="stage-card cloud">
+        <h3><span class="no">STAGE 3</span>数据对齐</h3>
+        <p>记分屏时段反推 · 事件抽取</p>
+      </article>
+      <article class="stage-card cloud">
+        <h3><span class="no">STAGE 4</span>渲染呈现</h3>
+        <p>ffmpeg 成片 · Web Canvas</p>
+      </article>
+      <article class="stage-card">
+        <h3><span class="no">STAGE 5</span>发布分享</h3>
+        <p>S3 + CloudFront 分发</p>
+      </article>
+    </section>
+    <p class="flow-arrows" aria-hidden="true"><span>→</span><span>→</span><span>→</span><span>→</span></p>
+
+    <section class="cloud-band" aria-label="AWS 云侧">
+      <span class="tag">AWS 云侧</span>
+      <span class="svc">Amazon Bedrock <b>(Claude / Qwen3 VL 事件理解)</b></span>
+      <span>·</span>
+      <span class="svc">Amazon S3 <b>(成片与数据)</b></span>
+      <span>·</span>
+      <span class="svc">Amazon CloudFront <b>(分发)</b></span>
+      <span>·</span>
+      <span class="svc">AWS Lambda <b>(异步任务)</b></span>
+    </section>
+    <p class="flow-note">Stage 2 纯本地推理不依赖云；仅 Stage 3 / 4 调用大模型，teal 描边为云侧协同环节。</p>
+
+    <p class="sec-no"><span class="n">02</span>开源技术清单</p>
+    <section class="oss-table" aria-label="开源技术清单">
+      <div class="oss-row">
+        <div>
+          <p class="name">Ultralytics YOLO11 <span class="repo">github.com/ultralytics/ultralytics</span></p>
+          <p class="use">球员 / 篮球检测</p>
+        </div>
+        <span class="lic warn">AGPL-3.0</span>
+      </div>
+      <div class="oss-row">
+        <div>
+          <p class="name">ByteTrack <span class="repo">github.com/ifzhang/ByteTrack</span></p>
+          <p class="use">多目标跟踪 · 球员 ID 保持</p>
+        </div>
+        <span class="lic">MIT</span>
+      </div>
+      <div class="oss-row">
+        <div>
+          <p class="name">Roboflow Supervision <span class="repo">github.com/roboflow/supervision</span></p>
+          <p class="use">标注渲染 · 热力图 · 跟踪可视化</p>
+        </div>
+        <span class="lic">MIT</span>
+      </div>
+      <div class="oss-row">
+        <div>
+          <p class="name">FFmpeg <span class="repo">ffmpeg.org</span></p>
+          <p class="use">视频切片 · 烧录叠加 · 格式转换</p>
+        </div>
+        <span class="lic">LGPL-2.1 / GPL-2.0</span>
+      </div>
+      <div class="oss-row">
+        <div>
+          <p class="name">Vite + React <span class="repo">github.com/vitejs · github.com/facebook/react</span></p>
+          <p class="use">回放页前端 · Canvas 叠加层</p>
+        </div>
+        <span class="lic">MIT</span>
+      </div>
+    </section>
+
+    <p class="sec-no"><span class="n">03</span>开源合规说明</p>
+    <section aria-label="开源合规说明">
+      <div class="lic-note warn">
+        <span class="ic">AG</span>
+        <p><b>AGPL-3.0（YOLO）—— 当前用法不触发 copyleft</b>
+        <span>本作品作为评审用内部工具、不对外提供网络服务，不构成「向外部传播」；若赛后对外发布，改用 MIT 系检测模型或获取 Ultralytics 商业授权。</span></p>
+      </div>
+      <div class="lic-note ok">
+        <span class="ic">MIT</span>
+        <p><b>MIT（ByteTrack / Supervision / React）</b>
+        <span>保留原始版权声明与许可文本，随仓库附 LICENSE 副本即可。</span></p>
+      </div>
+      <div class="lic-note ok">
+        <span class="ic">LG</span>
+        <p><b>FFmpeg（LGPL 构建）</b>
+        <span>使用官方动态链接构建、未修改源码、未启用 GPL 编码器，无衍生作品开源义务。</span></p>
+      </div>
+      <div class="lic-note">
+        <span class="ic">©</span>
+        <p><b>比赛画面与数据版权</b>
+        <span>比赛录像及数据版权归 NBA / 赛事方所有，仅用于本次黑客松评审，不做二次分发。</span></p>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span class="foot-links"><a href="index.html">返回首页</a><a href="game.html">播放器样例</a><span>合规清单：docs/LICENSING.md</span></span>
+      <b>TEAM 04 · 2026.10.07</b>
+    </footer>
+  </main>
+</body>
+</html>

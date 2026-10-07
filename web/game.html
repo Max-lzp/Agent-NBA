@@ -9,13 +9,21 @@
 <body>
   <div class="court court-tr"></div>
   <main class="page">
-    <p class="kicker"><span class="mark">NBA × AWS BROADCAST CODE 12</span>　·　回放</p>
+    <p class="kicker"><span class="mark">NBA × AWS BROADCAST CODE 12</span>　·　DEEP COURT 播放器</p>
     <h1 class="player-title">DEEP COURT <span class="accent">播放器</span></h1>
     <p class="subhead" id="subhead">视频打底（ffmpeg 成片） + 交互拿分（Canvas 叠加 · 暂停展开）· 评委打开 CloudFront 链接即见此页</p>
     <hr class="rule">
 
+    <section class="chrome" aria-hidden="true">
+      <span class="dot dot-r"></span>
+      <span class="dot dot-y"></span>
+      <span class="dot dot-g"></span>
+      <span class="url" id="chrome-url">d3ejckbpw87ih4.cloudfront.net/game.html</span>
+      <span class="live-chip" id="live">● LIVE · Q4 01:40</span>
+    </section>
+
     <section class="stage" id="stage">
-      <svg class="court-art" id="court-art" viewBox="0 0 960 540" aria-hidden="true">
+      <svg class="court-art hidden" id="court-art" viewBox="0 0 960 540" aria-hidden="true">
         <defs>
           <linearGradient id="arena" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0" stop-color="#1a120e"/>
@@ -37,9 +45,8 @@
           <circle cx="610" cy="280" r="7" fill="#f1681e"/>
         </g>
       </svg>
-      <video id="reel" class="hidden" playsinline></video>
+      <video id="reel" playsinline preload="metadata" poster="assets/demo-poster.jpg" src="assets/demo-possession.mp4"></video>
       <div class="hud" id="diff">投篮难度 <b>62%</b></div>
-      <div class="live" id="live">● LIVE · Q4 01:40</div>
       <div class="grav" id="grav"><span id="grav-name">弗拉格</span><i>GRAV</i><span class="num" id="grav-val">87</span></div>
       <div class="zone" id="zone">空位区 · 2.1m</div>
       <div class="pull" id="pull">引力牵引 ×2</div>
@@ -63,6 +70,7 @@
       <div class="scrub" id="scrub">
         <div class="track"></div>
         <div class="fill" id="fill"></div>
+        <div class="ticks" id="ticks"></div>
       </div>
       <div>
         <div class="clock" id="clock">01:14 / 01:40</div>
@@ -82,7 +90,7 @@
     </section>
 
     <footer class="foot">
-      <a href="index.html">返回首页</a>
+      <span id="foot-note">示例回合为本地样例数据（训练自备录像）· 带 <code>?jobId=</code> 打开时展示真实分析结果</span>
       <b>TEAM 04 · 2026.10.07</b>
     </footer>
   </main>
