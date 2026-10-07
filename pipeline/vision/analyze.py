@@ -12,7 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections import Counter, defaultdict
+from collections import defaultdict
 from pathlib import Path
 
 import cv2
@@ -28,7 +28,7 @@ sys.path.insert(0, str(VENDOR))
 
 from jersey_ocr import JerseyNumberReader, number_crops  # noqa: E402
 from roster_map import lookup  # noqa: E402
-from team_color import jersey_color  # noqa: E402
+from team_color import jersey_color, stable_color  # noqa: E402
 
 
 def quiet_predict(model):
@@ -103,8 +103,7 @@ def identify_tracks(frames, tracks, game_id: str, color_map: dict, reader: Jerse
                 colors[track_id].append(color)
     identified = {}
     for track_id, pairs in samples.items():
-        color_votes = Counter(colors.get(track_id, []))
-        color = color_votes.most_common(1)[0][0] if color_votes else None
+        color = stable_color(colors.get(track_id, []))
         team = color_map.get(color) if color else None
         jersey, conf, votes = (None, 0.0, 0)
         if reader is not None:
@@ -190,8 +189,9 @@ def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_second
     for track in player_tracks:
         assignment.append(
             {
-                track_id: 1 if identified.get(track_id, {}).get("team") == "HOU" else 2
+                track_id: {"HOU": 1, "DAL": 2}[identified[track_id]["team"]]
                 for track_id in track
+                if identified.get(track_id, {}).get("team") in {"HOU", "DAL"}
             }
         )
     pass_detector = PassAndInterceptionDetector()

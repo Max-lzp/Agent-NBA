@@ -1,0 +1,32 @@
+[
+  {
+    "id": "basketball_analysis",
+    "label": "basketball_analysis",
+    "repo": "https://github.com/abdullahtarek/basketball_analysis",
+    "license": "MIT",
+    "runtime_license": "Ultralytics AGPL-3.0",
+    "role": "篮球专用检测、ByteTrack、球、传球/抢断",
+    "note": "任务书里的管线主干。框、球和事件来自这份预训练权重。球衣颜色按这一帧的下摆判断。号码 OCR 的权重没下载到，姓名基本是空的。",
+    "file": "{clip}.json"
+  },
+  {
+    "id": "yolov8n_coco",
+    "label": "YOLOv8n COCO",
+    "repo": "https://github.com/ultralytics/ultralytics",
+    "license": "AGPL-3.0",
+    "runtime_license": "AGPL-3.0",
+    "role": "通用预训练：人 + sports ball，再加 ByteTrack",
+    "note": "不是篮球专用权重。裁判、板凳上的人也会被框进去。用来看专用模型到底比通用检测准在哪里。",
+    "file": "{clip}.yolov8n_coco.json"
+  },
+  {
+    "id": "rfdetr",
+    "label": "RF-DETR",
+    "repo": "https://github.com/roboflow/rf-detr",
+    "license": "Apache-2.0",
+    "runtime_license": "Apache-2.0",
+    "role": "任务书里的备选检测器，COCO 预训练",
+    "note": "用来替换 Ultralytics 的检测器。同样不是篮球微调。和上面两版对着看框是否套住人。",
+    "file": "{clip}.rfdetr.json"
+  }
+]

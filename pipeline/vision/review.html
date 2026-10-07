@@ -22,6 +22,8 @@
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: var(--ink); color: var(--paper); }
     body {
+      display: flex;
+      flex-direction: column;
       font-family: "Avenir Next Condensed", "Avenir Next", "PingFang SC", "Hiragino Sans GB", sans-serif;
       letter-spacing: 0.01em;
     }
@@ -30,9 +32,32 @@
       align-items: baseline;
       justify-content: space-between;
       gap: 16px;
-      padding: 14px 20px 10px;
+      padding: 14px 20px 8px;
+    }
+    .engine-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 0 20px 10px;
       border-bottom: 1px solid var(--line);
     }
+    .engine-bar .tag {
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.14em;
+    }
+    button.engine.active { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+    button.engine:disabled { opacity: 0.45; cursor: default; }
+    .component {
+      margin: 0 0 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .component a { color: var(--amber); }
+    .component .role { color: var(--paper); }
     h1 { margin: 0; font-weight: 600; font-size: 22px; letter-spacing: 0.04em; }
     h1 span { color: var(--muted); font-weight: 500; margin-left: 8px; font-size: 14px; }
     .clips { display: flex; gap: 8px; }
@@ -54,7 +79,8 @@
       grid-template-columns: minmax(0, 1fr) 280px;
       gap: 16px;
       padding: 16px 20px 24px;
-      height: calc(100% - 58px);
+      flex: 1;
+      min-height: 0;
     }
     .stage-wrap { display: flex; flex-direction: column; min-width: 0; }
     .stage { position: relative; background: #000; line-height: 0; }
@@ -118,9 +144,13 @@
 </head>
 <body>
   <header>
-    <h1>视觉回放台<span>检测框按采样时间贴回原视频</span></h1>
+    <h1>视觉回放台<span id="subtitle">先选组件，再看这一版准不准</span></h1>
     <div class="clips" id="clips"></div>
   </header>
+  <div class="engine-bar">
+    <span class="tag">组件</span>
+    <div class="clips" id="engines"></div>
+  </div>
   <main>
     <div class="stage-wrap">
       <div class="stage" id="stage">
@@ -144,16 +174,17 @@
       </div>
     </div>
     <aside>
+      <div class="component" id="component">正在读组件说明。</div>
       <h2>事件</h2>
       <div id="events"></div>
       <div class="legend">
-        <div><span class="swatch" style="color:var(--hou)"></span>HSV 判成火箭白</div>
-        <div><span class="swatch" style="color:var(--dal)"></span>HSV 判成独行侠深色</div>
-        <div><span class="swatch" style="color:var(--unknown)"></span>颜色没判出来</div>
+        <div><span class="swatch" style="color:var(--hou)"></span>这一帧下摆是白球衣，火箭</div>
+        <div><span class="swatch" style="color:var(--dal)"></span>这一帧下摆是深色球衣，独行侠</div>
+        <div><span class="swatch" style="color:var(--unknown)"></span>这一帧颜色不稳定</div>
         <div><span class="swatch" style="color:var(--ball);border-radius:50%"></span>球</div>
         <div><span class="swatch" style="color:var(--amber)"></span>这一帧的持球轨迹</div>
       </div>
-      <p class="note">框只在约 8.5 fps 的检测帧上刷新，中间画面保持上一张检测结果。号码识别没有跑，姓名是空的。球衣颜色已知会投反，核对时以画面为准。空格播放，左右方向键跳检测帧。</p>
+      <p class="note">同一段视频、同一播放时间，切换上面的组件就会换成那一版的框和事件。选型先看准不准，不在这里替你决定。框约 8.5 fps 刷新一次。空格播放，左右方向键跳检测帧。</p>
     </aside>
   </main>
   <script type="module">
@@ -171,6 +202,9 @@
     let doc = null;
     let duration = 0;
     let scrubbing = false;
+    let catalog = null;
+    let engineId = "basketball_analysis";
+    let clipId = null;
 
     function sampleIndex(t) {
       const rows = doc.timeline;
@@ -228,7 +262,10 @@
         const handler = player.track_id === sample.ball_handler_track;
         const eventHit = eventTracks.has(player.track_id);
         const color = player.team === "HOU" ? "#f4efe4" : player.team === "DAL" ? "#6ea2e0" : "#8d8678";
-        const label = (handler ? "持球 " : "") + (player.team || "?") + " #" + player.track_id;
+        const who = player.name
+          ? player.name + " #" + player.jersey
+          : (player.team || "?") + " #" + player.track_id;
+        const label = (handler ? "持球 " : "") + who;
         drawBox(player.bbox, eventHit ? "#e25b45" : handler ? "#e2a122" : color, handler || eventHit ? 5 : 2, label);
       }
       if (sample.ball) {
@@ -240,7 +277,7 @@
         ctx.stroke();
       }
       if (events.length) {
-        const text = events.map((event) => TYPE[event.type] + " 轨迹 " + event.track_id).join("  ·  ");
+        const text = events.map((event) => TYPE[event.type] + " " + (event.actor || ("轨迹 " + event.track_id))).join("  ·  ");
         banner.textContent = text;
         banner.className = "banner show" + (events.some((event) => event.type === "interception") ? " steal" : "");
       } else {
@@ -259,7 +296,8 @@
         const button = document.createElement("button");
         button.className = "event";
         button.type = "button";
-        button.innerHTML = `<span class="when">${event.t.toFixed(2)}s</span><span>${TYPE[event.type] || event.type}<small>轨迹 ${event.track_id}</small></span>`;
+        const who = event.actor || ("轨迹 " + event.track_id);
+        button.innerHTML = `<span class="when">${event.t.toFixed(2)}s</span><span>${TYPE[event.type] || event.type}<small>${who}</small></span>`;
         button.addEventListener("click", () => {
           video.currentTime = Math.max(0, event.t - 0.35);
           draw();
@@ -271,18 +309,70 @@
         ticks.appendChild(tick);
       }
       if (!(doc.events || []).length) {
-        eventsEl.textContent = "这段没有检出传球或抢断。";
+        eventsEl.textContent = "这个组件在这段里没有检出传球或抢断。";
       }
     }
 
-    async function loadClip(id) {
+    function currentEngine() {
+      return (catalog.engines || []).find((engine) => engine.id === engineId) || null;
+    }
+
+    function resultUrl(id) {
+      if (engineId === "basketball_analysis") return "data/" + id + ".json";
+      return "data/" + id + "." + engineId + ".json";
+    }
+
+    function showComponent() {
+      const engine = currentEngine();
+      const fromDoc = (doc && doc.component) || {};
+      const label = fromDoc.label || (engine && engine.label) || engineId;
+      const repo = fromDoc.repo || (engine && engine.repo) || "";
+      const license = fromDoc.license || (engine && engine.license) || "";
+      const role = fromDoc.role || (engine && engine.role) || "";
+      const note = fromDoc.note || (engine && engine.note) || "";
+      const link = repo ? `<a href="${repo}" target="_blank" rel="noreferrer">${label}</a>` : label;
+      document.getElementById("component").innerHTML =
+        `<div class="role">${link}</div>` +
+        `<div>${role}</div>` +
+        `<div>许可 ${license}</div>` +
+        `<div>${note}</div>`;
+      document.getElementById("subtitle").textContent = "当前组件 " + label;
+    }
+
+    function paintEngineButtons() {
+      document.querySelectorAll(".engine").forEach((node) => {
+        const engine = catalog.engines.find((item) => item.id === node.dataset.id);
+        const readyMap = (engine && engine.ready) || {};
+        const ready = clipId ? !!readyMap[clipId] : Object.values(readyMap).some(Boolean);
+        node.dataset.ready = ready ? "1" : "0";
+        node.classList.toggle("active", node.dataset.id === engineId);
+        node.disabled = !ready;
+        node.textContent = engine.label + (ready ? "" : "（还没跑）");
+      });
+    }
+
+    async function loadClip(id, keepTime) {
+      clipId = id;
+      const held = keepTime ? video.currentTime || 0 : 0;
       document.querySelectorAll(".clip").forEach((node) => node.classList.toggle("active", node.dataset.id === id));
-      const response = await fetch("data/" + id + ".json");
+      paintEngineButtons();
+      const response = await fetch(resultUrl(id));
+      if (!response.ok) {
+        doc = null;
+        showComponent();
+        eventsEl.textContent = "这个组件还没有这段的结果。";
+        return;
+      }
       doc = await response.json();
-      video.src = "media/" + id + ".mp4";
-      await new Promise((resolve) => video.addEventListener("loadedmetadata", resolve, { once: true }));
+      const nextSrc = new URL("media/" + id + ".mp4", window.location.href).href;
+      if (video.currentSrc !== nextSrc) {
+        video.src = "media/" + id + ".mp4";
+        await new Promise((resolve) => video.addEventListener("loadedmetadata", resolve, { once: true }));
+      }
       duration = video.duration || doc.duration_sec || 0;
       scrub.max = "1000";
+      if (keepTime) video.currentTime = Math.min(held, Math.max(0, duration - 0.05));
+      showComponent();
       renderEvents();
       draw();
     }
@@ -336,20 +426,34 @@
       }
     });
 
-    const catalog = await fetch("data/catalog.json").then((response) => response.json());
+    catalog = await fetch("data/catalog.json").then((response) => response.json());
+    const engines = document.getElementById("engines");
+    for (const engine of catalog.engines) {
+      const button = document.createElement("button");
+      button.className = "engine";
+      button.type = "button";
+      button.dataset.id = engine.id;
+      button.addEventListener("click", () => {
+        if (button.disabled || engine.id === engineId) return;
+        engineId = engine.id;
+        if (clipId) loadClip(clipId, true);
+      });
+      engines.appendChild(button);
+    }
     const clips = document.getElementById("clips");
-    for (const clip of catalog) {
+    for (const clip of catalog.clips) {
       const button = document.createElement("button");
       button.className = "clip";
       button.type = "button";
       button.dataset.id = clip.id;
-      button.textContent = clip.label + (clip.result_ready ? "" : "（无结果）");
-      button.disabled = !clip.result_ready || !clip.video_ready;
-      button.addEventListener("click", () => loadClip(clip.id));
+      button.textContent = clip.label;
+      button.disabled = !clip.video_ready;
+      button.addEventListener("click", () => loadClip(clip.id, false));
       clips.appendChild(button);
     }
-    const first = catalog.find((clip) => clip.result_ready && clip.video_ready);
-    if (first) loadClip(first.id);
+    paintEngineButtons();
+    const first = catalog.clips.find((clip) => clip.video_ready);
+    if (first) loadClip(first.id, false);
   </script>
 </body>
 </html>

@@ -23,6 +23,45 @@ def normalize_jersey(value) -> str | None:
     return text
 
 
+def lookup_number(game_id: str, jersey, color: str | None = None, color_to_team: dict | None = None) -> dict:
+    """号码能唯一对上出场名单时直接用。两队同号才看球衣颜色。"""
+    game = ROSTER["games"].get(game_id)
+    number = normalize_jersey(jersey)
+    if game is None or not number:
+        return {"name": None, "source": "missing_key", "dnp": False, "jersey": number, "team": None}
+    active_hits = []
+    dnp_hits = []
+    for team in ("DAL", "HOU"):
+        active = game["active"].get(team, {})
+        dnp = game["dnp"].get(team, {})
+        if number in active:
+            active_hits.append((team, active[number]))
+        elif number in dnp:
+            dnp_hits.append((team, dnp[number]))
+    if len(active_hits) == 1:
+        team, name = active_hits[0]
+        return {"name": name, "source": "qwen_unique", "dnp": False, "jersey": number, "team": team}
+    if len(active_hits) > 1:
+        mapped = None
+        if color in {"white", "dark"}:
+            mapped = (color_to_team or {}).get(color)
+        for team, name in active_hits:
+            if team == mapped:
+                return {"name": name, "source": "qwen_color", "dnp": False, "jersey": number, "team": team}
+        return {
+            "name": None,
+            "source": "qwen_collision",
+            "dnp": False,
+            "jersey": number,
+            "team": None,
+            "candidates": [f"{team} {name}" for team, name in active_hits],
+        }
+    if len(dnp_hits) == 1:
+        team, name = dnp_hits[0]
+        return {"name": name, "source": "dnp", "dnp": True, "jersey": number, "team": team}
+    return {"name": None, "source": "not_in_roster", "dnp": False, "jersey": number, "team": None}
+
+
 def lookup(game_id: str, team: str | None, jersey) -> dict:
     game = ROSTER["games"].get(game_id)
     if game is None:

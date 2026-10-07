@@ -116,13 +116,12 @@ def converse(image: Path, user_text: str, system_text: str | None, max_tokens: i
         "converse",
         "--cli-input-json",
         f"file://{payload_path}",
-        "--profile",
-        PROFILE,
-        "--region",
-        REGION,
-        "--output",
-        "json",
     ]
+    # profile nba 走 nba-sso。那个会话过期、但 team04 仍可用时，
+    # 调用方先假定 ParticipantRole 并写入环境变量，这里就不再带 --profile。
+    if not os.environ.get("AWS_ACCESS_KEY_ID"):
+        cmd.extend(["--profile", PROFILE])
+    cmd.extend(["--region", REGION, "--output", "json"])
     started = time.perf_counter()
     try:
         proc = subprocess.run(cmd, check=False, capture_output=True, text=True)

@@ -178,3 +178,17 @@ HSV 规则是高明度、低饱和度算白，明度低于 110 算深色。抽�
 
 两次合计 $0.0003。加上第 6.4 节的 $0.0237，视觉线累计 **$0.0240**。提示词已改成 color 只能填 white、dark 或 null，没有为这句话再打一次模型。原文在 `pipeline/vision/results/local/hard_frame.json`。
 
+## 8. 回放台对照组件（2026-10-07）
+
+回放台的首要用途是看准确度，不在页面里选型。同一段视频、同一个播放时间，切换组件就换成那一版的框。清单在 `pipeline/vision/components.json`。
+
+| 组件 | 状态 | 本地看到的差别 |
+| --- | --- | --- |
+| [basketball_analysis](https://github.com/abdullahtarek/basketball_analysis) | 两段都有结果 | 每帧大约 7–9 个球员框。球几乎每帧都有。弗拉格 5 个传球/抢断，阿门 6 个。 |
+| [Ultralytics YOLOv8n COCO](https://github.com/ultralytics/ultralytics) | 两段都有结果，`*.yolov8n_coco.json` | 人框数量接近，但会多框到场边的人。球几乎检不出来（弗拉格 185 帧里只有 1 帧有球）。没有传球/抢断。 |
+| [RF-DETR](https://github.com/roboflow/rf-detr) | 还没跑 | 任务书里的备选检测器。权重还没下到本地，按钮是灰的。 |
+
+球衣颜色不再用上身平均明度。深色球衣的白背心和浅色地板会把平均明度抬高，白球衣框进深色前景又会把明度压低。现在看下摆和短裤，而且按这一帧单独上色。跟踪串人时，一条轨迹不再被涂成同一个队。
+
+号码仍没有开源 OCR 权重。又试了两次单张裁切：弗拉格轨迹 14 侧面的 32 被读成 12，没有写进画面；阿门轨迹 27 读成 17，对上 Eason。两次 $0.000466。视觉线累计 **$0.0245**。
+

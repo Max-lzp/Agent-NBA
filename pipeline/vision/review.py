@@ -20,6 +20,7 @@ VISION = Path(__file__).resolve().parent
 ROOT = VISION.parents[1]
 PAGE = VISION / "review.html"
 CLIPS = json.loads((VISION / "clips.json").read_text(encoding="utf-8"))
+COMPONENTS = json.loads((VISION / "components.json").read_text(encoding="utf-8"))
 LABELS = {"flagg": "弗拉格 2月1日", "amen": "阿门 1月4日"}
 
 
@@ -27,8 +28,19 @@ def video_path(clip_id: str) -> Path:
     return (ROOT / CLIPS[clip_id]["video"]).resolve()
 
 
-def result_path(clip_id: str) -> Path:
-    return VISION / "results" / "local" / f"{clip_id}.json"
+def result_path(clip_id: str, engine: str = "basketball_analysis") -> Path:
+    if engine in ("", "basketball_analysis"):
+        return VISION / "results" / "local" / f"{clip_id}.json"
+    return VISION / "results" / "local" / f"{clip_id}.{engine}.json"
+
+
+def parse_result_name(name: str) -> tuple[str, str] | None:
+    if name in CLIPS:
+        return name, "basketball_analysis"
+    clip_id, dot, engine = name.partition(".")
+    if dot and clip_id in CLIPS and engine:
+        return clip_id, engine
+    return None
 
 
 class ReviewHandler(BaseHTTPRequestHandler):
@@ -53,10 +65,15 @@ class ReviewHandler(BaseHTTPRequestHandler):
             body = json.dumps(self._catalog(), ensure_ascii=False).encode("utf-8")
             self._send_bytes(body, "application/json; charset=utf-8", head_only)
             return
-        if path.startswith("/api/result/") or (path.startswith("/data/") and path.endswith(".json")):
-            clip_id = path.removeprefix("/api/result/").removeprefix("/data/").removesuffix(".json")
-            target = result_path(clip_id)
-            if clip_id not in CLIPS or not target.is_file():
+        if path.startswith("/api/result/") or (path.startswith("/data/") and path.endswith(".json") and path != "/data/catalog.json"):
+            name = path.removeprefix("/api/result/").removeprefix("/data/").removesuffix(".json")
+            parsed = parse_result_name(name)
+            if parsed is None:
+                self.send_error(404)
+                return
+            clip_id, engine = parsed
+            target = result_path(clip_id, engine)
+            if not target.is_file():
                 self.send_error(404)
                 return
             self._send_bytes(target.read_bytes(), "application/json; charset=utf-8", head_only)
@@ -74,29 +91,24 @@ class ReviewHandler(BaseHTTPRequestHandler):
             return
         self.send_error(404)
 
-    def _catalog(self) -> list[dict]:
+    def _catalog(self) -> dict:
+        engines = []
+        for item in COMPONENTS:
+            ready = {
+                clip_id: result_path(clip_id, item["id"]).is_file()
+                for clip_id in CLIPS
+            }
+            engines.append({**item, "ready": ready})
         rows = []
         for clip_id, clip in CLIPS.items():
-            result = result_path(clip_id)
-            summary = {}
-            if result.is_file():
-                doc = json.loads(result.read_text(encoding="utf-8"))
-                summary = {
-                    "frame_count": doc.get("frame_count"),
-                    "duration_sec": doc.get("duration_sec"),
-                    "sampled_fps": doc.get("sampled_fps"),
-                    "events": len(doc.get("events") or []),
-                }
             rows.append(
                 {
                     "id": clip_id,
                     "label": LABELS.get(clip_id, clip_id),
                     "video_ready": video_path(clip_id).is_file(),
-                    "result_ready": result.is_file(),
-                    **summary,
                 }
             )
-        return rows
+        return {"engines": engines, "clips": rows}
 
     def _send_bytes(self, body: bytes, content_type: str, head_only: bool) -> None:
         self.send_response(200)

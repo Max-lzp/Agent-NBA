@@ -1,0 +1,44 @@
+[
+  {
+    "clip": "flagg",
+    "track_id": 14,
+    "t": 1.401,
+    "jersey_color": "dark",
+    "qwen_jersey": "12",
+    "qwen_color": "dark",
+    "name": null,
+    "team": "DAL",
+    "source": "not_in_roster",
+    "cost": {
+      "input_tokens": 375,
+      "output_tokens": 19,
+      "total_tokens": 394,
+      "input_usd": 0.000199,
+      "output_usd": 5.1e-05,
+      "total_usd": 0.000249,
+      "price_per_1m_input_usd": 0.53,
+      "price_per_1m_output_usd": 2.66
+    }
+  },
+  {
+    "clip": "amen",
+    "track_id": 27,
+    "t": 5.372,
+    "jersey_color": "white",
+    "qwen_jersey": "17",
+    "qwen_color": "white",
+    "name": "Eason",
+    "team": "HOU",
+    "source": "qwen_unique",
+    "cost": {
+      "input_tokens": 315,
+      "output_tokens": 19,
+      "total_tokens": 334,
+      "input_usd": 0.000167,
+      "output_usd": 5.1e-05,
+      "total_usd": 0.000217,
+      "price_per_1m_input_usd": 0.53,
+      "price_per_1m_output_usd": 2.66
+    }
+  }
+]
