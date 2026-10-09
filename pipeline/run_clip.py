@@ -230,14 +230,25 @@ def enrich_official(clip_id: str, path: Path | str) -> bool:
     return False
 
 
-def upload(path: Path, job_id: str) -> None:
-    bucket = subprocess.run(
-        ["aws", "cloudformation", "describe-stacks", "--stack-name", STACK, "--region", REGION,
-         "--profile", PROFILE, "--query", "Stacks[0].Outputs[?OutputKey=='MediaBucketName'].OutputValue",
-         "--output", "text"], check=True, capture_output=True, text=True).stdout.strip()
+def upload(path: Path, job_id: str, bucket: str = "") -> None:
+    """传到 S3 structured/{jobId}.json。失败只报警告：本地清单已经是完整产物。"""
+    bucket = bucket or os.environ.get("DEEPCOURT_BUCKET", "")
+    if not bucket:
+        found = subprocess.run(
+            ["aws", "cloudformation", "describe-stacks", "--stack-name", STACK, "--region", REGION,
+             "--profile", PROFILE, "--query", "Stacks[0].Outputs[?OutputKey=='MediaBucketName'].OutputValue",
+             "--output", "text"], capture_output=True, text=True)
+        bucket = found.stdout.strip() if found.returncode == 0 else ""
+        if not bucket or bucket == "None":
+            print(f"[上传] 跳过：查不到栈 {STACK} 的桶（{found.stderr.strip()[:120] or '没有输出'}）。"
+                  f"用 --bucket 或 DEEPCOURT_BUCKET 指定；本地清单在 {path}")
+            return
     key = f"structured/{job_id}.json"
-    subprocess.run(["aws", "s3", "cp", str(path), f"s3://{bucket}/{key}", "--region", REGION,
-                    "--profile", PROFILE, "--content-type", "application/json"], check=True)
+    sent = subprocess.run(["aws", "s3", "cp", str(path), f"s3://{bucket}/{key}", "--region", REGION,
+                           "--profile", PROFILE, "--content-type", "application/json"], capture_output=True, text=True)
+    if sent.returncode != 0:
+        print(f"[上传] 失败：{sent.stderr.strip()[:200]}；本地清单在 {path}")
+        return
     print(f"[上传] s3://{bucket}/{key}，回放页 game.html?jobId={job_id}")
 
 
@@ -251,7 +262,8 @@ def main() -> None:
     ap.add_argument("--game-id", help="官方 gameId，例如 0022500701")
     ap.add_argument("--job-id", help="云上任务 id；默认等于片段 id")
     ap.add_argument("--skip-vision", action="store_true", help="视觉产物已在，只重建清单（调事件规则时用）")
-    ap.add_argument("--upload", action="store_true", help="把清单传到 S3 structured/{jobId}.json")
+    ap.add_argument("--upload", action="store_true", help="把清单传到 S3 structured/{jobId}.json；失败不影响本地产物")
+    ap.add_argument("--bucket", default="", help="S3 桶名；默认读环境变量 DEEPCOURT_BUCKET，再不行查 CloudFormation 输出")
     args = ap.parse_args()
 
     t0 = time.time()
@@ -263,7 +275,7 @@ def main() -> None:
         path = build(clip_id, args.job_id or clip_id)
         enrich_official(clip_id, path)
     if args.upload:
-        upload(path, args.job_id or clip_id)
+        upload(path, args.job_id or clip_id, args.bucket)
     print(f"[完成] {time.time() - t0:.0f}s")
 
 
