@@ -192,6 +192,19 @@ export class DeepCourtStack extends cdk.Stack {
       ].join('\n')),
     });
 
+    const readmePath = new cloudfront.Function(this, 'ReadmePath', {
+      comment: 'Map /readme to readme.html',
+      code: cloudfront.FunctionCode.fromInline([
+        'function handler(event) {',
+        '  var request = event.request;',
+        '  if (request.uri === "/readme" || request.uri === "/readme/") {',
+        '    request.uri = "/readme.html";',
+        '  }',
+        '  return request;',
+        '}',
+      ].join('\n')),
+    });
+
     const webOrigin = origins.S3BucketOrigin.withOriginAccessControl(webBucket);
     const distribution = new cloudfront.Distribution(this, 'Site', {
       comment: 'Deep Court Team 04',
@@ -201,6 +214,12 @@ export class DeepCourtStack extends cdk.Stack {
         origin: webOrigin,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        functionAssociations: [
+          {
+            function: readmePath,
+            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+          },
+        ],
       },
       additionalBehaviors: {
         '/api/*': {

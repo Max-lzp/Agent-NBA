@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Team 04 · Deep Court 作品说明</title>
+  <style>
+    body { margin: 0; background: #14110E; color: #F3EDE2; font: 18px/1.6 sans-serif; }
+    main { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    h1 { font-size: 1.8rem; line-height: 1.25; margin: 0 0 0.4rem; }
+    h2 { font-size: 1.15rem; margin: 2rem 0 0.4rem; }
+    p, li { color: #F3EDE2; }
+    .muted { color: #A3988A; }
+    a { color: #F1681E; }
+    code { color: #5FBFA9; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="muted">NBA × AWS Broadcast Code 12 · Team 04</p>
+    <h1>Deep Court</h1>
+    <p>让每一次出手被重新讲述一遍。把比赛录像变成可交互的深度回放：事件落在时间线上，数据长在画面上。</p>
+
+    <h2>作品亮点</h2>
+    <ol>
+      <li>回放页按时间码列出出手、篮板、失误等事件。点某一条，画面和数据一起跳到那个回合。</li>
+      <li>暂停时展开防守压力等深度数据。默认画面自己能看懂，展开层是越看越有，不是不点就不懂。</li>
+      <li>视频经 S3 预签名直传，不经过应用服务器。上传完成后自动分析，状态从等待、分析中到完成或失败。</li>
+      <li>分析跑在 Amazon Bedrock AgentCore。有画面时用 Qwen3 VL 看帧，否则用 Claude Sonnet 写结构化事件；一个模型失败就换另一个。</li>
+      <li>任务和事件分表存在 DynamoDB。页面通过 CloudFront 同源调用 API Gateway，背后是四支 Lambda：建任务、分析、读状态、读事件。</li>
+      <li>整套资源用 AWS CDK 定义，角色挂参赛权限边界，权限收到各自的表和 S3 前缀。</li>
+    </ol>
+
+    <h2>这条链路怎么走</h2>
+    <p>浏览器打开站点 → <code>POST /api/jobs</code> 建任务并拿到上传地址 → 视频进 S3 <code>raw/</code> → Lambda 调 AgentCore → 事件写入 DynamoDB → <code>game.html?jobId=</code> 轮询并画出时间线。</p>
+    <p class="muted">数字解说和社媒一键分享还在做，播放器上标着即将推出。本页只说明已经接上的部分。</p>
+
+    <h2>页面</h2>
+    <ul>
+      <li><a href="/">首页</a>：上传或粘贴视频，给我们自己生产用。</li>
+      <li><a href="/game.html">回放页</a>：带 <code>jobId</code> 时显示该次分析的事件。</li>
+      <li>本页路径是 <code>/readme</code>。</li>
+    </ul>
+    <p class="muted">Team 04 · Deep Court</p>
+  </main>
+</body>
+</html>

@@ -21,26 +21,40 @@ ffmpeg 预渲染增强成片（保底：打开即看，不点任何交互也成�
 
 两条纪律：①演示视频照录，是提交要件 + 评委无脑看的保底路径；②默认画面必须自解释，展开层是「越看越有」不是「不点不懂」。
 
+## 提交口径（10.9 组委会补充）
+
+1. **作品页标明 Team ID。** 本队是 Team 04，评委打开页面就能看见，不要只写在仓库名里。
+2. **提交的 CloudFront 链接必须直接打开最终成片。** 评委看的是视频效果，不会在我们的页面上选文件、等分析跑完。界面若是「Open file / 选择视频，然后再处理」，会拖慢评审；处理卡住出不来，0 分概率很大，而且责任分不清。上传入口可以留给自己用，不能当作品链接。
+3. **同一域名下加 `/readme`。** 组委会强烈建议作品链接后面有这一页，介绍作品亮点。不求美观，把亮点写清楚即可。例如成片在 `https://xxxx.cloudfront.net/`，说明在 `https://xxxx.cloudfront.net/readme`。
+
 ## 快速开始
 
 ```bash
-# 0. 前提：AWS CLI v2 + 双 profile（nba-sso / nba）
-#    比赛日时间表见飞书《比赛日 Runbook》
-aws sso login --profile nba-sso
-aws sts get-caller-identity --profile nba --region us-east-1   # 须含 NBAHackathonParticipantRole
+# 0. 前提：AWS CLI v2。本地构建不需要比赛共享账号。
+#    部署用 profile team04（本队账号 405496568869，us-east-1）。
+#    主办方共享账号 278477606068 已关闭。
+aws sso login --profile team04
+aws sts get-caller-identity --profile team04 --region us-east-1
 
-# 1. 部署（cdk.json 已配权限边界 NBAHackathonParticipantBoundary，主办方已 bootstrap，不要执行 cdk bootstrap）
-cd cdk && npm install && npx cdk deploy Team04DeepCourt --profile nba
+# 1. 本地构建
+cd cdk && npm install && npm run build && npx cdk synth
 
-# 2. 验收闭环（把 <api> 换成栈输出 ApiUrl，不要带末尾多余空格）
+# 2. 构建通过并推到 Git 之后，再部署。
+#    本队账号若提示找不到 bootstrap，再执行：
+#    npx cdk bootstrap aws://405496568869/us-east-1 --profile team04
+npx cdk deploy Team04DeepCourt --profile team04
+
+# 3. 验收闭环（把 <api> 换成栈输出 ApiUrl，不要带末尾多余空格）
 curl -sS -X POST "<api>jobs" -H 'content-type: application/json' \
   -d '{"gameMeta":"dal-vs-hou","filename":"clip.mp4","contentType":"video/mp4"}'
 # 用返回的 uploadUrl 上传视频：curl -X PUT -H "Content-Type: video/mp4" --upload-file clip.mp4 "<uploadUrl>"
 # 轮询直到 status 为 DONE：curl -sS "<api>jobs/<jobId>"
 # 读事件：curl -sS "<api>jobs/<jobId>/events"
-# 浏览器打开栈输出 CloudFrontUrl。首页可上传；game.html?jobId= 显示事件时间线。
+# 浏览器打开栈输出 CloudFrontUrl 做自测。
+# 提交门户的链接是成片回放页（页面上有 Team 04），不是上传首页。
+# 同域名 /readme 写作品亮点，不求美观。
 
-# 3. 提交作品 URL（门户 Submit your entry，截止 2026-10-10 20:00 北京时间）
+# 4. 提交作品 URL（门户 Submit your entry，截止 2026-10-10 20:00 北京时间）
 ```
 
 ## 技术栈

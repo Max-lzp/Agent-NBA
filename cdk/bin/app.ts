@@ -4,13 +4,19 @@ import { DeepCourtStack } from '../lib/deepcourt-stack.js';
 
 const app = new cdk.App();
 
+// 主办方共享账号 278477606068 已关闭。栈部署到本队账号。
+// 只有回到那个共享账号时才挂 NBAHackathonParticipantBoundary。
+const account = process.env.CDK_DEFAULT_ACCOUNT || '405496568869';
+const hackathonAccount = '278477606068';
+
 new DeepCourtStack(app, 'Team04DeepCourt', {
   env: {
-    account: '278477606068',
-    region: 'us-east-1',
+    account,
+    region: process.env.CDK_DEFAULT_REGION || 'us-east-1',
   },
-  // 团队账号只允许创建挂了该权限边界的 IAM 角色。不要 cdk bootstrap。
-  permissionsBoundary: cdk.PermissionsBoundary.fromName('NBAHackathonParticipantBoundary'),
+  permissionsBoundary: account === hackathonAccount
+    ? cdk.PermissionsBoundary.fromName('NBAHackathonParticipantBoundary')
+    : undefined,
   description: 'Deep Court P0: S3 upload, AgentCore/Bedrock analysis, CloudFront playback',
   tags: {
     team: '04',
