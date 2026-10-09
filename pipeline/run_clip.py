@@ -184,8 +184,19 @@ def enrich_official(clip_id: str, path: Path | str) -> bool:
     from pipeline.enrich.official import load_game
     import common
 
+    from pipeline.enrich.find_game import best, find
+
     clip = json.loads(CLIPS_FILE.read_text(encoding="utf-8"))[clip_id]
-    game_id = clip.get("official_game_id") or clip["game_id"]
+    board = json.loads((BOARD_DIR / f"{clip_id}.scoreboard.json").read_text(encoding="utf-8"))
+    game_id = clip.get("official_game_id") or ""
+    if not game_id:
+        game_id = best(board) or ""
+        top = find(board)[:2]
+        print(f"[认比赛] 记分牌比分对官方：" + "，".join(f"{g['game_id']} {g['share']:.0%}" for g in top)
+              + (f" → {game_id}" if game_id else " → 没有唯一对上的，跳过官方补全（可用 --game-id 指定）"))
+        if not game_id:
+            return False
+        clip = _set_clip(clip_id, official_game_id=game_id)
     game = load_game(game_id)
     if not game["plays"]:
         print(f"[官方] data/ 下没有 {game_id} 的逐回合数据，跳过")
@@ -198,7 +209,6 @@ def enrich_official(clip_id: str, path: Path | str) -> bool:
         print(f"[官方] 出场名单写入 roster.json games[{clip['game_id']}]，重建清单")
         return True
     path = Path(path)
-    board = json.loads((BOARD_DIR / f"{clip_id}.scoreboard.json").read_text(encoding="utf-8"))
     doc = enrich(json.loads(path.read_text(encoding="utf-8")), board, game, game_id)
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     info = doc["official"]
