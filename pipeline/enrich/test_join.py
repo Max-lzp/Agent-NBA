@@ -7,8 +7,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from .join import OUT, RESULTS, Clock, enrich
-from .official import clock_seconds, load_game
+from .join import OUT, RESULTS, Clock, _side, _zone, enrich
+from .official import calibrate_side, clock_seconds, load_game, normalize_play
 
 PBP_V3 = {"game": {"gameId": "0022500491", "actions": [
     {"actionNumber": 400, "clock": "PT07M40.00S", "period": 3, "teamTricode": "HOU", "personId": 3,
@@ -83,6 +83,32 @@ class JoinTest(unittest.TestCase):
         p1 = self.out["possessions"][0]["official"]
         self.assertEqual(p1["score_start"], {"HOU": 60, "DAL": 63})
         self.assertEqual(self.out["possessions"][-1]["official"]["score_end"], {"HOU": 62, "DAL": 63})
+
+
+class SideTest(unittest.TestCase):
+    LABELLED = [normalize_play({"actionNumber": i, "period": 1, "clock": "PT05M00.00S", "isFieldGoal": 1,
+                                "actionType": "3pt", "shotResult": "Missed", "xLegacy": x, "yLegacy": 30,
+                                "area": area}) for i, (x, area) in enumerate(
+        [(-225, "Right Corner 3"), (-210, "Right Corner 3"), (230, "Left Corner 3"), (-150, "Above the Break 3")])]
+
+    def test_official_label_wins(self):
+        self.assertEqual(self.LABELLED[0]["side"], "right")
+        self.assertEqual(_side(self.LABELLED[0], "left"), "right")
+
+    def test_calibrated_from_labels(self):
+        self.assertEqual(calibrate_side(self.LABELLED), ("right", "official_calibrated"))
+        unlabeled = dict(self.LABELLED[3], side="")
+        self.assertEqual(_side(unlabeled, "right"), "right")
+
+    def test_assumed_without_labels(self):
+        plays = [dict(p, side="") for p in self.LABELLED]
+        self.assertEqual(calibrate_side(plays), ("left", "assumed"))
+
+    def test_zone_needs_side_for_wings_and_corners(self):
+        self.assertEqual(_zone(-22.0, 4.0, 3, "right"), "corner3_r")
+        self.assertIsNone(_zone(-22.0, 4.0, 3, ""))
+        self.assertEqual(_zone(2.0, 25.0, 3, ""), "top3")
+        self.assertEqual(_zone(0.0, 1.0, 2, ""), "restricted")
 
 
 if __name__ == "__main__":

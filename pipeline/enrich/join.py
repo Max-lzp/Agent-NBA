@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from .official import DATA, clock_seconds, game_roster, load_game, period_number
+from .official import DATA, calibrate_side, clock_seconds, game_roster, load_game, period_number
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "pipeline" / "vision" / "results" / "local"
@@ -67,15 +67,26 @@ def _ref(players: dict, pid: Optional[int], team: str = "", name: str = "") -> d
     return {"team": team, "number": "", **({"name": name} if name else {})}
 
 
-def _zone(x: Optional[float], y: Optional[float], value: Optional[int]) -> Optional[str]:
+def _side(play: dict, x_negative: str) -> str:
+    if play.get("side") in {"left", "right"}:
+        return play["side"]
+    x = play.get("x_ft")
+    if x is None or abs(x) < 1e-6:
+        return ""
+    return x_negative if x < 0 else ("right" if x_negative == "left" else "left")
+
+
+def _zone(x: Optional[float], y: Optional[float], value: Optional[int], side: str = "") -> Optional[str]:
+    """出手区域；左右按投篮人面向篮筐，side 为空时不分左右的区域照常给。"""
     if x is None or y is None:
         return None
+    s = {"left": "l", "right": "r"}.get(side)
     if value == 3:
-        if y <= 9.0:
-            return "corner3_l" if x < 0 else "corner3_r"
         if abs(x) < 8:
             return "top3"
-        return "wing3_l" if x < 0 else "wing3_r"
+        if not s:
+            return None
+        return f"corner3_{s}" if y <= 9.0 else f"wing3_{s}"
     d = (x * x + y * y) ** 0.5
     if d <= 4.0:
         return "restricted"
@@ -151,6 +162,7 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
     clock = Clock(scoreboard)
     players, shots = game["players"], game["shots"]
     clip_plays = plays_in_clip(game, clock)
+    x_negative, side_basis = calibrate_side(game["plays"])
     by_score = _made_by_score(game, clock, scoreboard)
     used: set[int] = set()
 
@@ -170,9 +182,13 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
         if play["kind"] == "shot" and play["x_ft"] is not None:
             geom = ev.setdefault("geometry", {})
             geom.update({"x_ft": play["x_ft"], "y_ft": play["y_ft"]})
-            zone = _zone(play["x_ft"], play["y_ft"], play["value"])
+            side = _side(play, x_negative)
+            zone = _zone(play["x_ft"], play["y_ft"], play["value"], side)
             if zone:
                 geom["shot_zone"] = zone
+            if side:
+                ev["official"]["side"] = side
+                ev["official"]["side_basis"] = "official" if play.get("side") else side_basis
 
     # 1. 清单里已有的出手：先按比分精确对，再按时间窗口对
     for poss in stream["possessions"]:
@@ -233,6 +249,8 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
         "period": clock.period,
         "clock_window_s": list(win) if win else None,
         "matched_by_score": len(by_score),
+        "x_negative_side": x_negative,
+        "side_basis": side_basis,
         "added_events": added,
         "dropped_cv_turnovers": dropped,
         "plays": [{k: p[k] for k in ("t", "action_number", "clock_s", "team", "name", "kind", "made", "value",

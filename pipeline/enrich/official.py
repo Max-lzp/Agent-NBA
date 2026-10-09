@@ -11,6 +11,9 @@ from pathlib import Path
 from typing import Optional
 
 DATA = Path(os.environ.get("DEEPCOURT_DATA") or Path(__file__).resolve().parents[3] / "data")
+# 左右一律按投篮人面向篮筐时的左右（NBA 官方区域名 Left Corner 3 的惯例）。
+# 官方坐标 x 为负对应哪一侧：数据里有左右标签时自动校准，没有时用这个默认值；核实画面后可用环境变量翻转。
+X_NEGATIVE_SIDE = os.environ.get("DEEPCOURT_X_NEGATIVE", "left")
 CLOCK_ISO = re.compile(r"PT(?:(\d+)M)?([\d.]+)S")
 ASSIST = re.compile(r"\(([^()]+?) \d+ AST\)")
 
@@ -77,6 +80,10 @@ def normalize_play(a: dict) -> dict:
         m = ASSIST.search(desc)
         assist_name = m.group(1) if m else None
     x, y = a.get("xLegacy"), a.get("yLegacy")
+    area = " ".join(str(a.get(k) or "") for k in ("area", "areaDetail", "shotZoneArea", "shotZoneBasic")).lower()
+    side = str(a.get("side") or "").lower()
+    if side not in {"left", "right"}:
+        side = "left" if "left" in area else "right" if "right" in area else ""
     return {
         "action_number": _int(a.get("actionNumber")),
         "period": _int(a.get("period")),
@@ -91,6 +98,7 @@ def normalize_play(a: dict) -> dict:
         "distance_ft": a.get("shotDistance"),
         "x_ft": round(x / 10, 1) if isinstance(x, (int, float)) else None,
         "y_ft": round(y / 10, 1) if isinstance(y, (int, float)) else None,
+        "side": side,
         "assist_id": _int(a.get("assistPersonId")),
         "assist_name": assist_name,
         "score_home": _int(a.get("scoreHome")),
@@ -166,3 +174,16 @@ def game_roster(players: dict[int, dict]) -> dict:
             continue
         (active if p["played"] else dnp).setdefault(p["team"], {})[p["jersey"]] = p["name"]
     return {"active": active, "dnp": dnp, "source": "official boxscore"}
+
+
+def calibrate_side(plays: list[dict]) -> tuple[str, str]:
+    """返回（x 为负对应的一侧, 依据）。依据：official_calibrated = 数据里既有坐标又有左右标签，按多数定；
+    assumed = 没有可用标签，用 X_NEGATIVE_SIDE。"""
+    votes = {"left": 0, "right": 0}
+    for p in plays:
+        x = p.get("x_ft")
+        if p.get("side") in votes and x not in (None, 0) and abs(x) >= 3:
+            votes[p["side"] if x < 0 else ("left" if p["side"] == "right" else "right")] += 1
+    if votes["left"] + votes["right"] >= 3 and votes["left"] != votes["right"]:
+        return max(votes, key=votes.get), "official_calibrated"
+    return X_NEGATIVE_SIDE, "assumed"

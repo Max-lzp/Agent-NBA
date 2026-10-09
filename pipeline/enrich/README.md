@@ -36,8 +36,17 @@ python3 -m unittest pipeline.enrich.test_join
 - 回合 `official`：period / clock_start_s / clock_end_s / score_start / score_end。
 - 顶层 `official`：game_id / 用到的文件 / 时间窗 / 对上与补入统计 / 片段内全部官方记录 `plays`（含罚球、犯规、换人）。
 
+## 左右怎么定
+
+- 左右一律按**投篮人面向篮筐时的左右**（NBA 官方区域名 Left Corner 3 的惯例），出手区域 `corner3_l / wing3_r` 等都按这个。
+- 依据按优先级写在事件 `official.side_basis`：
+  1. `official`：这条记录自带左右（CDN 的 `side`，或区域名里的 Left / Right）。
+  2. `official_calibrated`：这份数据里至少 3 条记录同时有坐标和左右标签，按多数定「x 为负是哪一侧」，再套用到没标签的记录。
+  3. `assumed`：没有可用标签，用默认「x 为负 = 左」。顶层 `official.side_basis` 会写明。
+- 是 `assumed` 时，考试当天看一帧投篮画面核实：投篮人面向篮筐，球在他左手边就是左。反了就 `export DEEPCOURT_X_NEGATIVE=right` 再跑一次。坐标约定全联盟一致，核实一次就够。
+- 不知道左右时，底角和 45 度三分不分左右也不出区域名（不硬猜），正面三分、禁区、中距离照常给。
+
 ## 已知限制
 
-- 比赛钟只认 `M:SS`。每节最后一分钟转播显示 `SS.s`，现在读不到，片子落在最后一分钟时要先补。
-- 坐标左右（`_l` / `_r`）按官方 x 的正负分，未对照画面核实。
 - 只在合成数据上测过；2025-26 真实数据落盘后先用两段训练片验证（阿门 0022500491、弗拉格 0022500701）。
+- 比赛钟最后一分钟（SS.s）已支持，但两段训练片都不在最后一分钟，只有单测覆盖。
