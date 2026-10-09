@@ -110,19 +110,37 @@ YOLO 号码模型（Roboflow `jersey_numbers.pt`）目前下不到权重，没�
 - **持球人只在真看见球的帧换人**；插值帧、两队贴身争抢的帧只能延续当前持球人。
 - 同一人 3 秒内重新确认持球，接回原来那段，避免切碎。
 
-## 8. 已知短板与考试视频上要复核的
+## 8. 官方数据怎么帮识别
 
-- 阈值只在两段片上调过，有过拟合风险。考试视频 18:00 发布后先跑 `python -m pipeline.events.evaluate` 对照抽帧复核。
-- 阿门片号码和颜色仍弱，很多轨迹没名字。完整名单到位后重跑。
-- 记分牌位置假设在画面下方 25%、客队在前。换转播方要先看一帧确认。
-- 官方深度赛场数据、掩护识别、英尺距离（单应矩阵）留到考试视频发布后。
+有官方逐回合时（`pipeline/enrich`，见 `pipeline/enrich/README.md`）：
+
+- **认比赛**：记分牌每次读数（节次 + 比赛钟 + 比分）对各场官方比分，训练片 81% / 72% 对上，其他场 0%。
+- **投篮人、助攻**：进球按进球后的比分精确对上官方记录；投篮人的名字回填到同一条轨迹上没名字的引用，助攻者回填到传给投篮人的那一传。号码认出的人不被覆盖，打架时记 `track_conflicts`。
+- **场上 10 人**：逐回合里的换人推出片段开始和结束时在场的人，写进 `roster.json` 的 `on_court`。识别时号码不在场上就不给名字。
+- **出场名单按号码比**：官方短名（Thompson）和赛季名单的叫法（Amen / Klay）不一样，按名字比会失效。
+
+## 9. 左右
+
+- 一律按**投篮人面向篮筐时的左右**，和官方区域名 Left Corner 3 一致。
+- 官方坐标 `xLegacy` 为负 = 左：四场 259 次带左右区域名的投篮全部如此。
+- CDN 逐回合的 `side` 字段**不是**投篮人左右，是电视画面里的左 / 右半场（随 `x < 50` 走），存成 `court_half`。
+
+## 10. 已知短板与考试视频上要复核的
+
+- 阈值只在两段片上调过，有过拟合风险。考试视频先跑一条命令，看终端的记分牌读全比例和白衣投票。
+- 持球人的号码常读不到（弗拉格片多数传球人没名字）；有官方数据时投篮人、助攻者、被认出的轨迹能补上，其余仍是「独行侠球员」。
+- 记分牌位置假设在画面下方 25%，找不到时整帧找；客主队以记分牌读到的队名为准。
+- 比赛钟最后一分钟（`SS.s`）有单测，训练片里没出现过。
+- 掩护识别、英尺距离（单应矩阵）还没做。
 
 ## 命令
 
 ```bash
 cd team-repo
-pipeline/vision/.venv/bin/python pipeline/vision/scoreboard.py --clip all   # 记分牌，约 80 秒 / 两段
-python -m pipeline.events.evaluate                                          # 带记分牌评估
-python -m pipeline.events.evaluate --no-scoreboard                          # 对照：不读记分牌
-python -m pipeline.events.evaluate --dump pipeline/events/out               # 写出结构化清单
+python3 -m pipeline.run_clip --video "../官方资料/<视频>.mp4" --clip exam      # 一条命令，见 docs/exam-day.md
+pipeline/vision/.venv/bin/python pipeline/vision/scoreboard.py --clip all   # 只跑记分牌
+python3 -m pipeline.events.evaluate                                         # 带记分牌评估
+python3 -m pipeline.events.evaluate --no-scoreboard                         # 对照：不读记分牌
 ```
+
+`evaluate --dump pipeline/events/out` 会用不带官方补全的清单覆盖 `out/`，之后要再跑一次 `run_clip --skip-vision`。
