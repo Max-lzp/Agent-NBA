@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 
 import cv2
@@ -216,13 +217,31 @@ def read_clip(clip_id: str) -> dict:
             "reads": reads}
 
 
+def _teams_from_official(doc: dict) -> tuple:
+    """记分牌没读到队名：用比分认出是哪一场，取这场 boxscore 的客主队。"""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from pipeline.enrich.find_game import best
+    from pipeline.enrich.official import load_game
+
+    game_id = best(doc)
+    if not game_id:
+        return None, None
+    game = load_game(game_id)
+    print(f"[记分牌] 没读到队名，按比分认出 {game_id}：{game['away']} @ {game['home']}")
+    doc["teams_from_game"] = game_id
+    return game["away"], game["home"]
+
+
 def derive(doc: dict) -> dict:
     away, home = doc["away"], doc["home"]
     if doc.get("detected_reads", 0) >= MIN_TEAM_READS and doc.get("detected_away"):
         away, home = doc["detected_away"], doc["detected_home"]
         doc["away"], doc["home"] = away, home
     if not away or not home:
-        raise SystemExit(f"{doc['clip']}：记分牌上认不出客主队，请用 --away / --home 指定")
+        away, home = _teams_from_official(doc)
+        doc["away"], doc["home"] = away, home
+    if not away or not home:
+        raise SystemExit(f"{doc['clip']}：记分牌上认不出客主队，官方数据里也没对上比赛，请用 --away / --home 指定")
     resets = []
     prev_shot = None
     for r in doc["reads"]:

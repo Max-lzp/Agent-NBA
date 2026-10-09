@@ -146,14 +146,17 @@ def players_from_box(doc) -> dict[int, dict]:
 
 
 def load_game(game_id: str, data_dir: Path = DATA) -> dict:
-    """{plays, players, shots, files}；缺哪类就是空。"""
-    found = {"plays": [], "players": {}, "shots": [], "files": []}
+    """{plays, players, shots, files, away, home}；缺哪类就是空。"""
+    found = {"plays": [], "players": {}, "shots": [], "files": [], "away": None, "home": None}
     for path in sorted(data_dir.rglob(f"{game_id}_*.json")):
         try:
             doc = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             continue
         game = doc.get("game") if isinstance(doc, dict) else None
+        if isinstance(game, dict) and isinstance(game.get("homeTeam"), dict) and not found["home"]:
+            found["away"] = (game.get("awayTeam") or {}).get("teamTricode")
+            found["home"] = game["homeTeam"].get("teamTricode")
         if isinstance(game, dict) and isinstance(game.get("actions"), list) and not found["plays"]:
             found["plays"] = [normalize_play(a) for a in game["actions"]]
             found["files"].append(path.name)
