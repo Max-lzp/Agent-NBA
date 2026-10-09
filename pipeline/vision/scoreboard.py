@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """本地 OCR 读记分牌：比分、节次、比赛钟、进攻钟。不调大模型。
 
-只读画面下方 1/4。比赛钟是离得最近的 M:SS；进攻钟是钟右侧 ≤24 的数；
+只读画面下方 1/4；第一次读全后锁定记分牌那一块，之后只读这一块，连续读丢就回到整条重新定位。比赛钟是离得最近的 M:SS；进攻钟是钟右侧 ≤24 的数；
 两个比分是离钟最近的两个 2–3 位数，按先上后下、先左后右排，客队在前（NBA 转播惯例）。
 比分要连续 CONFIRM_READS 次读到同一个新值才算跳变，挡掉 OCR 偶发错字。
 
@@ -31,6 +31,8 @@ STRIP_TOP = 0.75           # 只读画面下方这一截
 CONFIRM_READS = 2
 RESET_JUMP = 3.0           # 进攻钟比上一读数多这么多秒才算重置
 RESET_LOOKBACK_S = 3.0     # 比分跳变向前找进攻钟重置的窗口
+ROI_MARGIN = 60            # 锁定区域四周留白（像素）
+ROI_LOST_READS = 3         # 锁定区域里连续这么多次读不到比赛钟，就回到整条
 
 CLOCK = re.compile(r"^(\d{1,2}):(\d{2})$")
 PERIOD = re.compile(r"^(1ST|2ND|3RD|4TH|OT\d?)$")
@@ -83,6 +85,21 @@ def parse(tokens: list[tuple[str, tuple[float, float]]]) -> dict:
     return out
 
 
+def _roi(res, parsed: dict, width: int, height: int):
+    """记分牌在下方条带里的外框：比赛钟、进攻钟、比分、节次这几块文字的并集。"""
+    wanted = {parsed["clock"], parsed["period"]}
+    if parsed["shot_clock"] is not None:
+        wanted.add(f"{parsed['shot_clock']:g}")
+    wanted.update(str(v) for v in parsed["scores"] or [])
+    boxes = [r[0] for r in res if r[1].replace(" ", "") in wanted or _digits(r[1]) in wanted]
+    if not boxes or parsed["clock"] is None or not parsed["scores"]:
+        return None
+    xs = [p[0] for b in boxes for p in b]
+    ys = [p[1] for b in boxes for p in b]
+    return (max(0, int(min(xs)) - ROI_MARGIN), max(0, int(min(ys)) - ROI_MARGIN),
+            min(width, int(max(xs)) + ROI_MARGIN), min(height, int(max(ys)) + ROI_MARGIN))
+
+
 def read_clip(clip_id: str) -> dict:
     from rapidocr_onnxruntime import RapidOCR
 
@@ -92,17 +109,30 @@ def read_clip(clip_id: str) -> dict:
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     step = max(1, round(fps / SAMPLE_FPS))
     reads = []
+    roi, lost = None, 0
     index = 0
-    while True:
-        ok, frame = cap.read()
-        if not ok:
-            break
+    while cap.grab():
         if index % step == 0:
+            _, frame = cap.retrieve()
             h = frame.shape[0]
-            top = int(h * STRIP_TOP)
-            res, _ = ocr(frame[top:, :])
-            tokens = [(r[1], _center(r[0])) for r in (res or []) if r[2] >= 0.6]
-            reads.append({"t": round(index / fps, 3), **parse(tokens)})
+            strip = frame[int(h * STRIP_TOP):, :]
+            x0, y0 = 0, 0
+            view = strip
+            if roi:
+                x0, y0, x1, y1 = roi
+                view = strip[y0:y1, x0:x1]
+            res, _ = ocr(view)
+            res = [([(px + x0, py + y0) for px, py in r[0]], r[1], r[2]) for r in (res or []) if r[2] >= 0.6]
+            parsed = parse([(r[1], _center(r[0])) for r in res])
+            if roi and parsed["clock"] is None:
+                lost += 1
+                if lost >= ROI_LOST_READS:
+                    roi, lost = None, 0
+            elif roi:
+                lost = 0
+            elif parsed["clock"]:
+                roi = _roi(res, parsed, strip.shape[1], strip.shape[0])
+            reads.append({"t": round(index / fps, 3), **parsed})
         index += 1
     cap.release()
     return {"clip": clip_id, "sampled_fps": round(fps / step, 3), "away": clip["away"], "home": clip["home"],

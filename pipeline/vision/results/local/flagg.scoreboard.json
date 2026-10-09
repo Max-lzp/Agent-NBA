@@ -49,7 +49,10 @@
    "period": "4TH",
    "clock": "1:50",
    "shot_clock": 20.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 1.668,
@@ -106,14 +109,20 @@
    "period": "4TH",
    "clock": "1:48",
    "shot_clock": 18.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 3.67,
    "period": "4TH",
    "clock": "1:48",
    "shot_clock": 18.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 4.004,
@@ -230,7 +239,10 @@
    "period": "4TH",
    "clock": "1:44",
    "shot_clock": 14.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 8.008,
@@ -257,27 +269,24 @@
    "period": "4TH",
    "clock": "1:43",
    "shot_clock": 13.0,
-   "scores": [
-    103,
-    107
-   ]
+   "scores": null
   },
   {
    "t": 9.009,
    "period": "4TH",
    "clock": "1:43",
    "shot_clock": 12.0,
-   "scores": [
-    103,
-    107
-   ]
+   "scores": null
   },
   {
    "t": 9.343,
    "period": "4TH",
    "clock": "1:42",
    "shot_clock": 12.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 9.676,
@@ -294,17 +303,13 @@
    "period": "4TH",
    "clock": "1:42",
    "shot_clock": 11.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 10.344,
-   "period": "4TH",
-   "clock": "1:41",
-   "shot_clock": 11.0,
-   "scores": null
-  },
-  {
-   "t": 10.677,
    "period": "4TH",
    "clock": "1:41",
    "shot_clock": 11.0,
@@ -312,6 +317,13 @@
     103,
     107
    ]
+  },
+  {
+   "t": 10.677,
+   "period": "4TH",
+   "clock": "1:41",
+   "shot_clock": 11.0,
+   "scores": null
   },
   {
    "t": 11.011,
@@ -328,10 +340,7 @@
    "period": "4TH",
    "clock": "1:40",
    "shot_clock": 10.0,
-   "scores": [
-    103,
-    107
-   ]
+   "scores": null
   },
   {
    "t": 11.678,
@@ -348,7 +357,10 @@
    "period": "4TH",
    "clock": "1:40",
    "shot_clock": 9.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 12.346,
@@ -365,7 +377,10 @@
    "period": "4TH",
    "clock": "1:39",
    "shot_clock": 9.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 13.013,
@@ -392,7 +407,10 @@
    "period": "4TH",
    "clock": "1:38",
    "shot_clock": 8.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 14.014,
@@ -419,7 +437,10 @@
    "period": "4TH",
    "clock": "1:37",
    "shot_clock": 7.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 15.015,
@@ -436,7 +457,10 @@
    "period": "4TH",
    "clock": "1:36",
    "shot_clock": 6.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 15.682,
@@ -444,8 +468,8 @@
    "clock": "1:36",
    "shot_clock": 6.0,
    "scores": [
-    35,
-    103
+    103,
+    107
    ]
   },
   {
@@ -454,8 +478,8 @@
    "clock": "1:36",
    "shot_clock": 5.0,
    "scores": [
-    35,
-    103
+    103,
+    107
    ]
   },
   {
@@ -464,8 +488,8 @@
    "clock": "1:35",
    "shot_clock": 5.0,
    "scores": [
-    35,
-    103
+    103,
+    107
    ]
   },
   {
@@ -533,7 +557,10 @@
    "period": "4TH",
    "clock": "1:34",
    "shot_clock": 24.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 19.019,
@@ -550,14 +577,20 @@
    "period": "4TH",
    "clock": "1:34",
    "shot_clock": 24.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 19.686,
    "period": "4TH",
    "clock": "1:34",
    "shot_clock": 24.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ]
   },
   {
    "t": 20.02,
@@ -588,7 +621,10 @@
    "period": "4TH",
    "clock": "1:34",
    "shot_clock": 24.0,
-   "scores": null
+   "scores": [
+    105,
+    107
+   ]
   },
   {
    "t": 21.355,

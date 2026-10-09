@@ -53,10 +53,10 @@ def detect(clip_id: str, clip: dict, target_fps: float) -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="球原始检测掩码（不插值）")
-    ap.add_argument("--clip", choices=["flagg", "amen", "all"], default="all")
+    clips = json.loads((VISION / "clips.json").read_text(encoding="utf-8"))
+    ap.add_argument("--clip", choices=[*clips, "all"], default="all")
     ap.add_argument("--fps", type=float, default=8.0)
     args = ap.parse_args()
-    clips = json.loads((VISION / "clips.json").read_text(encoding="utf-8"))
     for clip_id in (clips if args.clip == "all" else [args.clip]):
         out = RESULTS / f"{clip_id}.ball_raw.json"
         out.write_text(json.dumps(detect(clip_id, clips[clip_id], args.fps), ensure_ascii=False),
