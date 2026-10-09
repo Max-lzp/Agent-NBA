@@ -67,11 +67,14 @@ def _ref(players: dict, pid: Optional[int], team: str = "", name: str = "") -> d
     return {"team": team, "number": "", **({"name": name} if name else {})}
 
 
+CENTER_FT = 3.0   # 离中线不到 3 英尺算正中，不分左右
+
+
 def _side(play: dict, x_negative: str) -> str:
     if play.get("side") in {"left", "right"}:
         return play["side"]
     x = play.get("x_ft")
-    if x is None or abs(x) < 1e-6:
+    if x is None or abs(x) < CENTER_FT:
         return ""
     return x_negative if x < 0 else ("right" if x_negative == "left" else "left")
 
@@ -96,12 +99,20 @@ def _zone(x: Optional[float], y: Optional[float], value: Optional[int], side: st
 
 
 def _shot_quality(shots: list, play: dict) -> dict:
-    for s in shots:
-        if (period_number(s.get("period")) == play["period"]
-                and abs((clock_seconds(s.get("gameClock")) or -99) - (play["clock_s"] or -1)) <= 1.0
-                and (s.get("playerId") in (None, play["person_id"]))):
-            return {k: s.get(k) for k in ("xFGPercentage", "defenderId", "shotType", "distance") if s.get(k) is not None}
-    return {}
+    """投篮质量日志：先按 eventNum == actionNumber 精确对，对不上再按节次 + 比赛钟 ±1s + 投篮人。"""
+    hit = next((s for s in shots if s.get("eventNum") is not None and s.get("eventNum") == play["action_number"]), None)
+    if hit is None:
+        hit = next((s for s in shots
+                    if period_number(s.get("period")) == play["period"]
+                    and abs((clock_seconds(s.get("gameClock")) or -99) - (play["clock_s"] or -1)) <= 1.0
+                    and s.get("playerId") in (None, play["person_id"])), None)
+    if hit is None:
+        return {}
+    xfg = next((hit[k] for k in ("shotQuality", "xFGPercentage") if hit.get(k) is not None), None)
+    out = {"xfg": xfg, "defender_id": hit.get("defenderId"),
+           "video_url": hit.get("largeUrl") or hit.get("mediumUrl") or None,
+           "thumbnail": hit.get("largeThumbnail") or hit.get("mediumThumbnail") or None}
+    return {k: v for k, v in out.items() if v not in (None, "")}
 
 
 def plays_in_clip(game: dict, clock: Clock) -> list[dict]:
@@ -151,10 +162,11 @@ def official_detail(play: dict, players: dict, shots: list) -> dict:
         if play["assist_id"] or play["assist_name"]:
             detail["assist"] = _ref(players, play["assist_id"], play["team"], play["assist_name"] or "")
         quality = _shot_quality(shots, play)
-        if quality.get("xFGPercentage") is not None:
-            detail["xfg"] = quality["xFGPercentage"]
-        if quality.get("defenderId"):
-            detail["defender"] = _ref(players, quality["defenderId"])
+        for key in ("xfg", "video_url", "thumbnail"):
+            if key in quality:
+                detail[key] = quality[key]
+        if quality.get("defender_id"):
+            detail["defender"] = _ref(players, quality["defender_id"])
     return detail
 
 
@@ -165,6 +177,8 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
     x_negative, side_basis = calibrate_side(game["plays"])
     by_score = _made_by_score(game, clock, scoreboard)
     used: set[int] = set()
+    named: dict[int, dict] = {}      # 轨迹 → 官方确认的人
+    assists: list[tuple] = []        # （出手时刻, 投篮人轨迹, 助攻者）
 
     def possession_at(t: float) -> dict:
         poss = stream["possessions"]
@@ -173,10 +187,18 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
     def apply(ev: dict, play: dict) -> None:
         used.add(play["action_number"])
         actor = _ref(players, play["person_id"], play["team"], play["name"])
+        track = ev["actor"].get("track_id")
         if ev["actor"].get("name") != actor.get("name"):
             ev["actor"] = actor
         else:
             ev["actor"].update(actor)
+        if track is not None:
+            ev["actor"]["track_id"] = track
+            if actor.get("name"):
+                named[track] = {k: actor[k] for k in ("team", "number", "name") if k in actor}
+                if play["kind"] == "shot" and play.get("made") and (play["assist_id"] or play["assist_name"]):
+                    assists.append((ev["t"], track, _ref(players, play["assist_id"], play["team"],
+                                                         play["assist_name"] or "")))
         ev["confidence"] = max(ev["confidence"], OFFICIAL_CONF)
         ev["official"] = official_detail(play, players, shots)
         if play["kind"] == "shot" and play["x_ft"] is not None:
@@ -186,6 +208,8 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
             zone = _zone(play["x_ft"], play["y_ft"], play["value"], side)
             if zone:
                 geom["shot_zone"] = zone
+            if play.get("court_half"):
+                ev["official"]["court_half"] = play["court_half"]
             if side:
                 ev["official"]["side"] = side
                 ev["official"]["side_basis"] = "official" if play.get("side") else side_basis
@@ -216,6 +240,9 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
         apply(ev, play)
         poss["events"].append(ev)
         added += 1
+
+    # 2.5 官方确认的人回填到同一条轨迹上没名字的引用；轨迹已被号码认成别人时不改，记冲突
+    filled, conflicts = _fill_tracks(stream, named, assists)
 
     # 3. 官方在片段里没记的失误，是视觉误判，删掉
     official_to = [p["t"] for p in clip_plays if p["kind"] == "turnover"]
@@ -253,10 +280,38 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
         "side_basis": side_basis,
         "added_events": added,
         "dropped_cv_turnovers": dropped,
+        "named_from_official": filled,
+        "track_conflicts": conflicts,
         "plays": [{k: p[k] for k in ("t", "action_number", "clock_s", "team", "name", "kind", "made", "value",
                                      "description")} for p in clip_plays],
     }
     return stream
+
+
+def _fill_tracks(stream: dict, named: dict[int, dict], assists: list[tuple]) -> tuple[int, list[dict]]:
+    filled, conflicts = 0, []
+    events = sorted((e for p in stream["possessions"] for e in p["events"]), key=lambda e: e["t"])
+    for shot_t, track, helper in assists:
+        last = next((e for e in reversed(events) if e["t"] < shot_t and e["type"] == "pass"
+                     and e.get("target", {}).get("track_id") == track), None)
+        actor = last["actor"] if last else {}
+        if helper.get("name") and actor.get("track_id") is not None and not actor.get("name") \
+                and actor.get("team") == helper.get("team"):
+            named.setdefault(actor["track_id"], {k: helper[k] for k in ("team", "number", "name") if k in helper})
+    for ev in events:
+        for key in ("actor", "target"):
+            ref = ev.get(key)
+            who = named.get(ref.get("track_id")) if ref else None
+            if not who or ref.get("team") not in (None, "", who["team"]):
+                continue
+            if ref.get("name") and ref["name"] != who["name"]:
+                conflicts.append({"event_id": ev["event_id"], "track_id": ref["track_id"],
+                                  "cv": ref["name"], "official": who["name"]})
+            elif not ref.get("name"):
+                ref.update(who)
+                ref["named_by"] = "official"
+                filled += 1
+    return filled, conflicts
 
 
 def write_game_roster(game_id: str, players: dict) -> None:

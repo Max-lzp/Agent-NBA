@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from .join import OUT, RESULTS, Clock, _side, _zone, enrich
+from .join import OUT, RESULTS, Clock, _fill_tracks, _side, _zone, enrich
 from .official import calibrate_side, clock_seconds, load_game, normalize_play
 
 PBP_V3 = {"game": {"gameId": "0022500491", "actions": [
@@ -62,7 +62,7 @@ class JoinTest(unittest.TestCase):
 
     def test_made_shot_matched_by_score(self):
         shot = next(e for e in self.events() if e["type"] == "shot" and e.get("official", {}).get("made"))
-        self.assertEqual(shot["actor"], {"team": "HOU", "number": "30", "name": "Capela"})
+        self.assertEqual(shot["actor"], {"team": "HOU", "number": "30", "name": "Capela", "track_id": 32})
         self.assertEqual(shot["official"]["assist"]["name"], "Sengun")
         self.assertEqual(shot["geometry"]["shot_zone"], "restricted")
         self.assertEqual(self.out["official"]["matched_by_score"], 1)
@@ -100,6 +100,12 @@ class SideTest(unittest.TestCase):
         unlabeled = dict(self.LABELLED[3], side="")
         self.assertEqual(_side(unlabeled, "right"), "right")
 
+    def test_cdn_side_is_court_half_not_shooter_side(self):
+        play = normalize_play({"actionNumber": 1, "period": 3, "clock": "PT07M25.00S", "isFieldGoal": 1,
+                               "actionType": "2pt", "shotResult": "Made", "x": 19.3, "y": 46.6, "side": "left",
+                               "xLegacy": 17, "yLegacy": 129, "area": "In The Paint (Non-RA)", "areaDetail": "8-16 Center"})
+        self.assertEqual((play["side"], play["court_half"]), ("", "left"))
+
     def test_assumed_without_labels(self):
         plays = [dict(p, side="") for p in self.LABELLED]
         self.assertEqual(calibrate_side(plays), ("left", "assumed"))
@@ -109,6 +115,28 @@ class SideTest(unittest.TestCase):
         self.assertIsNone(_zone(-22.0, 4.0, 3, ""))
         self.assertEqual(_zone(2.0, 25.0, 3, ""), "top3")
         self.assertEqual(_zone(0.0, 1.0, 2, ""), "restricted")
+
+
+class FillTracksTest(unittest.TestCase):
+    def test_official_name_spreads_along_track_and_assist(self):
+        ref = lambda track, name="": {"team": "DAL", "number": "", "track_id": track, **({"name": name} if name else {})}
+        stream = {"possessions": [{"events": [
+            {"event_id": "E1", "t": 1.0, "type": "pass", "actor": ref(9), "target": ref(21)},
+            {"event_id": "E2", "t": 2.0, "type": "pass", "actor": ref(21), "target": ref(27, "Christie")},
+            {"event_id": "E3", "t": 3.0, "type": "pass", "actor": ref(27, "Christie"), "target": ref(21)},
+            {"event_id": "E4", "t": 4.0, "type": "shot", "actor": {**ref(21), "name": "Flagg"}},
+            {"event_id": "E5", "t": 5.0, "type": "receive", "actor": ref(21, "Klay")},
+        ]}]}
+        named = {21: {"team": "DAL", "number": "32", "name": "Flagg"}}
+        assists = [(4.0, 21, {"team": "DAL", "number": "3", "name": "Davis"})]
+        filled, conflicts = _fill_tracks(stream, named, assists)
+        evs = stream["possessions"][0]["events"]
+        self.assertEqual(evs[0]["target"]["name"], "Flagg")
+        self.assertEqual(evs[1]["actor"]["name"], "Flagg")
+        self.assertEqual(evs[2]["actor"]["name"], "Christie")      # 号码认出的传球人不被助攻者覆盖
+        self.assertEqual(evs[4]["actor"]["name"], "Klay")          # 号码和官方打架：不改，记冲突
+        self.assertEqual(conflicts, [{"event_id": "E5", "track_id": 21, "cv": "Klay", "official": "Flagg"}])
+        self.assertEqual(filled, 3)
 
 
 if __name__ == "__main__":

@@ -40,7 +40,7 @@
         "geometry": {"$ref": "#/$defs/geometry"},
         "confidence": {"type": "number", "minimum": 0, "maximum": 1},
         "source": {"type": "string", "enum": ["cv", "vlm", "manual", "official"]},
-        "official": {"type": "object", "description": "pipeline/enrich 对上的官方逐回合记录：action_number / period / clock_s / made / value / shot_type / distance_ft / assist / xfg / defender / description"}
+        "official": {"type": "object", "description": "pipeline/enrich 对上的官方逐回合记录：action_number / period / clock_s / made / value / shot_type / distance_ft / assist / xfg（投篮质量 0–1）/ defender / video_url / thumbnail（官方这一球的视频）/ side（投篮人左右）/ side_basis / court_half（电视画面左右半场）/ description"}
       },
       "additionalProperties": false
     },

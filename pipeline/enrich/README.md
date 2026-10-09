@@ -40,10 +40,12 @@ python3 -m unittest pipeline.enrich.test_join
 
 - 左右一律按**投篮人面向篮筐时的左右**（NBA 官方区域名 Left Corner 3 的惯例），出手区域 `corner3_l / wing3_r` 等都按这个。
 - 依据按优先级写在事件 `official.side_basis`：
-  1. `official`：这条记录自带左右（CDN 的 `side`，或区域名里的 Left / Right）。
-  2. `official_calibrated`：这份数据里至少 3 条记录同时有坐标和左右标签，按多数定「x 为负是哪一侧」，再套用到没标签的记录。
+  1. `official`：这条记录的区域名里带 Left / Right（如 `Left Corner 3`、`Right Side(R)`）。
+  2. `official_calibrated`：这份数据里至少 3 条记录同时有坐标和左右区域名，按多数定「x 为负是哪一侧」，再套用到没标签的记录。
   3. `assumed`：没有可用标签，用默认「x 为负 = 左」。顶层 `official.side_basis` 会写明。
-- 是 `assumed` 时，考试当天看一帧投篮画面核实：投篮人面向篮筐，球在他左手边就是左。反了就 `export DEEPCOURT_X_NEGATIVE=right` 再跑一次。坐标约定全联盟一致，核实一次就够。
+- 实测 2025-26 四场：259 次带左右区域名的投篮，全部是 `xLegacy` 为负 = 左、为正 = 右，没有例外。默认值就是这个，一般不用动。
+- **CDN 的 `side` 不是投篮人左右**，是电视画面里的左 / 右半场（和 CDN 的 `x < 50` 一一对应）。它存成 `official.court_half`，可以用来核对「这一回合往画面哪边的篮筐打」。
+- 想自己核实：找一个区域名是 Left Corner 3 的进球，看画面里投篮人面向篮筐时人在他左手边的底角就对了。真要翻转用 `export DEEPCOURT_X_NEGATIVE=right`。
 - 不知道左右时，底角和 45 度三分不分左右也不出区域名（不硬猜），正面三分、禁区、中距离照常给。
 
 ## 已知限制

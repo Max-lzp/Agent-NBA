@@ -12,7 +12,8 @@ from typing import Optional
 
 DATA = Path(os.environ.get("DEEPCOURT_DATA") or Path(__file__).resolve().parents[3] / "data")
 # 左右一律按投篮人面向篮筐时的左右（NBA 官方区域名 Left Corner 3 的惯例）。
-# 官方坐标 x 为负对应哪一侧：数据里有左右标签时自动校准，没有时用这个默认值；核实画面后可用环境变量翻转。
+# 官方坐标 x 为负对应哪一侧：数据里有左右区域名时自动校准，没有时用这个默认值。
+# 2025-26 四场 259 次带左右区域名的投篮全部是「x 为负 = 左」，默认值就按这个。
 X_NEGATIVE_SIDE = os.environ.get("DEEPCOURT_X_NEGATIVE", "left")
 CLOCK_ISO = re.compile(r"PT(?:(\d+)M)?([\d.]+)S")
 ASSIST = re.compile(r"\(([^()]+?) \d+ AST\)")
@@ -81,9 +82,9 @@ def normalize_play(a: dict) -> dict:
         assist_name = m.group(1) if m else None
     x, y = a.get("xLegacy"), a.get("yLegacy")
     area = " ".join(str(a.get(k) or "") for k in ("area", "areaDetail", "shotZoneArea", "shotZoneBasic")).lower()
-    side = str(a.get("side") or "").lower()
-    if side not in {"left", "right"}:
-        side = "left" if "left" in area else "right" if "right" in area else ""
+    # 投篮人左右只看区域名；CDN 的 side 是电视画面里的左 / 右半场（随 x < 50 走），另存 court_half
+    side = "left" if "left" in area else "right" if "right" in area else ""
+    court_half = str(a.get("side") or "").lower() if a.get("x") is not None else ""
     return {
         "action_number": _int(a.get("actionNumber")),
         "period": _int(a.get("period")),
@@ -99,6 +100,7 @@ def normalize_play(a: dict) -> dict:
         "x_ft": round(x / 10, 1) if isinstance(x, (int, float)) else None,
         "y_ft": round(y / 10, 1) if isinstance(y, (int, float)) else None,
         "side": side,
+        "court_half": court_half if court_half in {"left", "right"} else "",
         "assist_id": _int(a.get("assistPersonId")),
         "assist_name": assist_name,
         "score_home": _int(a.get("scoreHome")),
