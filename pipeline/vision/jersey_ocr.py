@@ -1,13 +1,15 @@
 """本地读取球衣号码。
 
-权重来自 Roboflow basketball-jersey-numbers-ocr 数据集训练出的 YOLO，
-类名是单个数字（0-9）或完整号码。推理只读本地 .pt，不调用 Roboflow API。
+两套读取器，接口一样：read_crop / vote。
+YOLO 读取器要本地 jersey_numbers.pt，那份 Roboflow 权重目前下不到。
+RapidOCR 读取器不需要那份权重，只认 1 到 2 位数字，00 保留。
 """
 
 from __future__ import annotations
 
 from collections import Counter
 
+import cv2
 import numpy as np
 
 from team_color import torso_crop
@@ -65,6 +67,61 @@ class JerseyNumberReader:
         if not votes:
             return None, 0.0, 0
         number, count = votes.most_common(1)[0]
+        mean_conf = sum(confs[number]) / len(confs[number])
+        return number, mean_conf, count
+
+
+def parse_jersey_text(text: str) -> str | None:
+    token = "".join(ch for ch in str(text).upper() if ch.isalnum()).replace("O", "0")
+    if not token.isdigit() or not 1 <= len(token) <= 2:
+        return None
+    if token in {"0", "00"}:
+        return token
+    return str(int(token))
+
+
+class RapidJerseyReader:
+    """通用场景文字模型，只留下像球衣号码的结果。"""
+
+    def __init__(self):
+        from rapidocr_onnxruntime import RapidOCR
+
+        self.ocr = RapidOCR()
+
+    def read_crop(self, crop: np.ndarray) -> tuple[str | None, float]:
+        if crop is None or crop.size == 0:
+            return None, 0.0
+        height = crop.shape[0]
+        if height < 160:
+            scale = 160 / max(height, 1)
+            crop = cv2.resize(crop, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+        result, _elapsed = self.ocr(crop)
+        best_number = None
+        best_conf = 0.0
+        for item in result or []:
+            number = parse_jersey_text(item[1])
+            conf = float(item[2])
+            if number is None or conf < best_conf:
+                continue
+            best_number = number
+            best_conf = conf
+        return best_number, best_conf
+
+    def vote(self, frame_crops: list[np.ndarray]) -> tuple[str | None, float, int]:
+        votes: Counter[str] = Counter()
+        confs: dict[str, list[float]] = {}
+        for crop in frame_crops:
+            number, conf = self.read_crop(crop)
+            if not number:
+                continue
+            votes[number] += 1
+            confs.setdefault(number, []).append(conf)
+        if not votes:
+            return None, 0.0, 0
+        ranking = votes.most_common(2)
+        number, count = ranking[0]
+        if len(ranking) == 2 and ranking[1][1] >= count:
+            return None, 0.0, count
         mean_conf = sum(confs[number]) / len(confs[number])
         return number, mean_conf, count
 
