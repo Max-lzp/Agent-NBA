@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DeepCourt Season Roster",
+  "description": "一个赛季、两支球队的固定名单。号码 + 队伍 → 球员；两队同号或队伍不明时按上场时间取人。文件名 {season}.json，例如 2025-26.json。",
+  "type": "object",
+  "required": ["season", "source", "teams"],
+  "properties": {
+    "season": {"type": "string", "pattern": "^\\d{4}-\\d{2}$", "description": "如 2025-26"},
+    "source": {"type": "string", "description": "数据来源，如 nba_api commonteamroster + playergamelogs"},
+    "fetched_at": {"type": "string", "description": "拉取日期 YYYY-MM-DD；统计口径截至这一天"},
+    "teams": {
+      "type": "object",
+      "propertyNames": {"enum": ["HOU", "DAL"]},
+      "additionalProperties": {
+        "type": "object",
+        "required": ["players"],
+        "properties": {
+          "team_id": {"type": "integer", "description": "NBA team_id，HOU 1610612745，DAL 1610612742"},
+          "name": {"type": "string"},
+          "players": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["jersey", "name"],
+              "properties": {
+                "jersey": {"type": "string", "description": "字符串，保留 \"00\" 与 \"0\" 的区别"},
+                "name": {"type": "string", "description": "短名，画面和事件流里显示的名字，如 Flagg、Smith"},
+                "full_name": {"type": ["string", "null"]},
+                "player_id": {"type": ["integer", "null"], "description": "NBA player_id，用来对官方深度数据"},
+                "position": {"type": ["string", "null"]},
+                "games": {"type": ["integer", "null"], "description": "本赛季出场次数（截至 fetched_at）"},
+                "minutes": {"type": ["number", "null"], "description": "本赛季总上场分钟（截至 fetched_at）。查人时优先按它排序"},
+                "since": {"type": ["string", "null"], "description": "穿这个号码 / 在这支队的开始日期 YYYY-MM-DD；为空表示整季"},
+                "until": {"type": ["string", "null"], "description": "结束日期 YYYY-MM-DD；交易或改号时填"}
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

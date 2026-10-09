@@ -19,6 +19,10 @@ class PlayerRef:
     name: Optional[str] = None
     track_id: Optional[int] = None
 
+    def key(self) -> tuple[str, str]:
+        """同一个人的判定键。没读出号码时只能按轨迹区分，否则同队所有无名轨迹会被当成一个人。"""
+        return (self.team, self.number) if self.number else (self.team, f"track:{self.track_id}")
+
     def to_dict(self) -> dict:
         return {k: v for k, v in asdict(self).items() if v is not None}
 

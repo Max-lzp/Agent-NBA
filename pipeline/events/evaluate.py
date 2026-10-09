@@ -83,15 +83,17 @@ def main() -> None:
     ap.add_argument("--clip", choices=(*CLIPS, "all"), default="all")
     ap.add_argument("--source", default="cv", help="cv / qwen3_vl / ebard_yolov8n")
     ap.add_argument("--no-ball-raw", action="store_true", help="不用原始球掩码（插值球按真检测对待）")
-    ap.add_argument("--ticks-dir", help="目录下 {clip}.ticks.json 作为记分牌跳变输入")
+    ap.add_argument("--ticks-dir", help="目录下 {clip}.ticks.json 作为记分牌跳变输入（默认读 {clip}.scoreboard.json）")
+    ap.add_argument("--no-scoreboard", action="store_true", help="不用记分牌（得分跳变与进攻钟重置）")
     ap.add_argument("--dump", help="把每段的结构化 JSON 写到此目录，便于抽查")
     args = ap.parse_args()
 
     for clip in (CLIPS if args.clip == "all" else (args.clip,)):
         suffix = "" if args.source == "cv" else f".{args.source}"
         ball_raw = VISION_RESULTS / "local" / f"{clip}.ball_raw.json"
-        ticks = Path(args.ticks_dir) / f"{clip}.ticks.json" if args.ticks_dir else None
-        stream = run(f"eval-{clip}", "vlm",
+        ticks = (Path(args.ticks_dir) / f"{clip}.ticks.json" if args.ticks_dir
+                 else None if args.no_scoreboard else VISION_RESULTS / "local" / f"{clip}.scoreboard.json")
+        stream = run(f"eval-{clip}", "full" if args.source == "cv" else "vlm",
                      str(VISION_RESULTS / "local" / f"{clip}{suffix}.json"),
                      str(VISION_RESULTS / f"frame_map_{clip}.json"),
                      None if args.no_ball_raw or not ball_raw.is_file() else str(ball_raw),

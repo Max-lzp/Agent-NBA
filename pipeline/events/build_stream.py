@@ -11,7 +11,7 @@
 
 两种输入模式：
   vlm  —— VLM 帧级观测（球框 + 球员框 → 距离判定持球人，不信任 VLM 的持球结论）
-  full —— ByteTrack 追踪输出（pipeline/vision 追踪层），接口已定，实现待填
+  full —— 本地追踪输出（pipeline/vision/analyze.py），身份按轨迹查赛季名单
 """
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ from typing import Callable, Optional
 
 from .possession import (FrameObs, PlayerXY, HolderSeg, INTERP_BALL_CONF,
                          holder_segments, possession_spans)
+from .identity import resolve as resolve_identities
 from .passes import possession_events
 from .shots import ScoreTick, detect_shots
 from .schema import (Event, EventStream, Possession, Keyframe, Position,
@@ -37,9 +38,12 @@ def load_ball_raw(path: str) -> list[tuple[float, Optional[dict]]]:
         return [(fr["t"], fr["ball"]) for fr in json.load(f)["frames"]]
 
 
-def load_local_obs(obs_path: str, ball_raw_path: Optional[str] = None) -> list[FrameObs]:
+def load_local_obs(obs_path: str, ball_raw_path: Optional[str] = None,
+                   identities: Optional[dict[int, tuple[PlayerRef, float]]] = None) -> list[FrameObs]:
     """timeline 每行 → FrameObs。球员取脚底点（框底边中点），球取中心点。
-    给了 ball_raw 时，真检测帧取检测置信度，其余（插值补的）降到 INTERP_BALL_CONF。"""
+    给了 ball_raw 时，真检测帧按检测分数折到 0.75–1.0（ball_raw 已滤掉 0.5 以下），
+    其余（插值补的）降到 INTERP_BALL_CONF 并标 ball_real=False。
+    给了 identities（identity.resolve 的结果）时，按轨迹换成名单身份，不用帧上的 name / jersey。"""
     with open(obs_path, encoding="utf-8") as f:
         doc = json.load(f)
     raw = load_ball_raw(ball_raw_path) if ball_raw_path else None
@@ -49,20 +53,26 @@ def load_local_obs(obs_path: str, ball_raw_path: Optional[str] = None) -> list[F
         for p in row.get("players", []):
             if p.get("role") == "referee":
                 continue
-            if not p.get("team"):
-                continue                       # 没分出队伍的观测不参与持球判定
             box = p.get("bbox")                # [x, y, w, h] 像素
             if not box:
                 continue
+            if identities is not None:
+                found = identities.get(p.get("track_id"))
+                if not found:
+                    continue
+                ref = found[0]
+            elif p.get("team"):
+                ref = PlayerRef(team=p["team"], number=str(p["jersey"]) if p.get("jersey") else "",
+                                name=p.get("name"), track_id=p.get("track_id"))
+            else:
+                continue
             players.append(PlayerXY(
-                player=PlayerRef(team=p["team"],
-                                 number=str(p["jersey"]) if p.get("jersey") else "",
-                                 name=p.get("name"), track_id=p.get("track_id")),
+                player=ref,
                 x=box[0] + box[2] / 2,
                 y=box[1] + box[3],
                 height_px=box[3],
             ))
-        ball, ball_conf = None, 1.0
+        ball, ball_conf, ball_real = None, 1.0, True
         if row.get("ball"):
             b = row["ball"]
             ball = (b[0] + b[2] / 2, b[1] + b[3] / 2)
@@ -70,11 +80,11 @@ def load_local_obs(obs_path: str, ball_raw_path: Optional[str] = None) -> list[F
             t_raw, det = min(raw, key=lambda r: abs(r[0] - row["t"]))
             if det and abs(t_raw - row["t"]) < 0.05:
                 x1, y1, x2, y2 = det["bbox"]
-                ball, ball_conf = ((x1 + x2) / 2, (y1 + y2) / 2), det["conf"]
+                ball, ball_conf = ((x1 + x2) / 2, (y1 + y2) / 2), 0.5 + det["conf"] / 2
             elif ball is not None:
-                ball_conf = INTERP_BALL_CONF
+                ball_conf, ball_real = INTERP_BALL_CONF, False
         obs_list.append(FrameObs(t_sec=float(row["t"]), players=players, ball=ball,
-                                 calibration="none", ball_conf=ball_conf))
+                                 calibration="none", ball_conf=ball_conf, ball_real=ball_real))
     obs_list.sort(key=lambda o: o.t_sec)
     return obs_list
 
@@ -108,7 +118,7 @@ def segments_from_probe(frames: list[dict]) -> list[HolderSeg]:
     for fr in frames:
         holder = _find_player(fr, fr.get("ball_handler"))
         t = float(fr.get("frame_t", 0.0))
-        key = (holder.team, holder.number) if holder else None
+        key = holder.key() if holder else None
         if key and key == cur_key and cur:
             cur.t_end = t
             continue
@@ -137,9 +147,11 @@ def ticks_from_probe(frames: list[dict]) -> list[ScoreTick]:
 
 # ---------- full 模式装载 ----------
 
-def load_full_obs(tracks_path: str) -> list[FrameObs]:
-    """ByteTrack 输出 → FrameObs 序列。追踪层定稿后实现。"""
-    raise NotImplementedError("等 pipeline/vision 追踪层输出格式定稿")
+def load_full_obs(tracks_path: str, ball_raw_path: Optional[str] = None) -> list[FrameObs]:
+    """pipeline/vision/analyze.py 的追踪输出 → FrameObs。身份按轨迹查赛季名单，不用帧上的 name。"""
+    with open(tracks_path, encoding="utf-8") as f:
+        identities = resolve_identities(json.load(f))
+    return load_local_obs(tracks_path, ball_raw_path, identities)
 
 
 # ---------- 关键帧 ----------
@@ -149,7 +161,7 @@ def keyframe_from_obs(obs: Optional[FrameObs], holder: Optional[PlayerRef], why:
         return None
     positions: list[Position] = []
     for p in obs.players:
-        if holder and (p.player.team, p.player.number) == (holder.team, holder.number):
+        if holder and p.player.key() == holder.key():
             role = "ballhandler"
         elif holder and p.player.team == holder.team:
             role = "off_ball"
@@ -165,9 +177,12 @@ def build(job_id: str, mode: str,
           segs: list[HolderSeg],
           ticks: list[ScoreTick],
           obs_list: list[FrameObs],
-          video_meta: dict) -> EventStream:
+          video_meta: dict,
+          clock_resets: Optional[list[float]] = None) -> EventStream:
     stream = EventStream(job_id=job_id, video=video_meta, mode=mode)
-    spans = possession_spans(segs, ticks)
+    clip_end = video_meta.get("duration_s") or (obs_list[-1].t_sec if obs_list else None)
+    spans = possession_spans(segs, ticks, clip_start=obs_list[0].t_sec if obs_list else None, clip_end=clip_end,
+                             clock_resets=clock_resets)
 
     for idx, span in enumerate(spans, 1):
         pid = f"P{idx:02d}"
@@ -195,13 +210,18 @@ def build(job_id: str, mode: str,
     return stream
 
 
-def load_ticks(path: Optional[str]) -> list[ScoreTick]:
-    """记分牌跳变 [{t_sec, team, delta}]，来自 lambdas/ocr_scoreboard 或人工。"""
+def load_ticks(path: Optional[str]) -> tuple[list[ScoreTick], Optional[list[float]]]:
+    """记分牌：pipeline/vision/scoreboard.py 的产物（含进攻钟重置），或人工写的 [{t_sec, team, delta}]。
+    返回 (得分跳变, 进攻钟重置时刻)；没读记分牌时重置为 None，球权层不拿它卡换回合。"""
     if not path:
-        return []
+        return [], None
     with open(path, encoding="utf-8") as f:
-        return [ScoreTick(t_sec=float(k["t_sec"]), team=k["team"], delta=int(k["delta"]))
-                for k in json.load(f)]
+        doc = json.load(f)
+    rows = doc["ticks"] if isinstance(doc, dict) else doc
+    ticks = [ScoreTick(t_sec=float(k["t_sec"]), team=k["team"], delta=int(k["delta"]), t_reset=k.get("t_reset"))
+             for k in rows]
+    resets = [float(r["t_sec"]) for r in doc["resets"]] if isinstance(doc, dict) and "resets" in doc else None
+    return ticks, resets
 
 
 def run(job_id: str, mode: str, obs_path: str, frame_map: Optional[str] = None,
@@ -213,24 +233,21 @@ def run(job_id: str, mode: str, obs_path: str, frame_map: Optional[str] = None,
         video_meta.update({"source": fm.get("video", ""), "game_id": fm.get("game_id", ""),
                            "duration_s": fm.get("duration_sec", 0.0), "fps": fm.get("fps", 0.0)})
 
-    if mode == "full":
-        load_full_obs(obs_path)               # 抛 NotImplementedError
-
     with open(obs_path, encoding="utf-8") as f:
         sniff = json.load(f)
-    if "timeline" in sniff:                   # results/local 整段过片
-        obs_list = load_local_obs(obs_path, ball_raw)
+    if mode == "full" or "timeline" in sniff:  # full：本地追踪；vlm：大模型整段过片
+        obs_list = load_full_obs(obs_path, ball_raw) if mode == "full" else load_local_obs(obs_path, ball_raw)
         segs = holder_segments(obs_list)
-        ticks = load_ticks(ticks_path)
+        ticks, resets = load_ticks(ticks_path)
         video_meta["fps"] = video_meta["fps"] or sniff.get("sampled_fps") or 0.0
         video_meta["duration_s"] = video_meta["duration_s"] or sniff.get("duration_sec", 0.0)
     else:                                     # results/json 单帧探针
         frames = load_probe_frames(obs_path)
         obs_list = []
         segs = segments_from_probe(frames)
-        ticks = ticks_from_probe(frames)
+        ticks, resets = ticks_from_probe(frames), None
 
-    return build(job_id, mode, segs, ticks, obs_list, video_meta)
+    return build(job_id, mode, segs, ticks, obs_list, video_meta, resets)
 
 
 def main() -> None:
@@ -238,10 +255,10 @@ def main() -> None:
     ap.add_argument("--job-id", required=True)
     ap.add_argument("--mode", choices=["vlm", "full"], default="vlm")
     ap.add_argument("--obs", required=True,
-                    help="vlm: results/local/*.json 或 results/json/*.json（自动识别）；full: 追踪输出")
+                    help="full: results/local/{clip}.json（本地追踪）；vlm: results/local/{clip}.{模型}.json 或 results/json/*.json")
     ap.add_argument("--frame-map", help="frame_map_*.json，取视频元信息")
     ap.add_argument("--ball-raw", help="results/local/*.ball_raw.json，区分真检测与插值球")
-    ap.add_argument("--ticks", help="记分牌跳变 JSON [{t_sec, team, delta}]")
+    ap.add_argument("--ticks", help="results/local/{clip}.scoreboard.json，或人工写的 [{t_sec, team, delta}]")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
