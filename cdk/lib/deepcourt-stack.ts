@@ -13,6 +13,7 @@ import * as s3assets from 'aws-cdk-lib/aws-s3-assets';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import { Construct } from 'constructs';
+import { addP1 } from './p1';
 
 const VISION_MODEL = 'qwen.qwen3-vl-235b-a22b';
 const TEXT_MODEL = 'global.anthropic.claude-sonnet-4-6';
@@ -77,7 +78,7 @@ export class DeepCourtStack extends cdk.Stack {
     });
 
     const code = lambda.Code.fromAsset(lambdaDir, {
-      exclude: ['**/__pycache__/**', '**/*.pyc', 'test_common.py'],
+      exclude: ['**/__pycache__/**', '**/*.pyc', 'test_*.py'],
     });
 
     const analyzeFn = this.pyFunction('AnalyzeJob', 'analyze_job.handler.handler', code, {
@@ -270,6 +271,10 @@ export class DeepCourtStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'AgentRuntimeArn', {
       value: runtime.attrAgentRuntimeArn,
     });
+
+    if (this.node.tryGetContext('enableP1') !== 'false') {
+      addP1(this, { mediaBucket, jobs, events, analyzeFn, code });
+    }
   }
 
   private pyFunction(

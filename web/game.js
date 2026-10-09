@@ -101,6 +101,13 @@ function init() {
     if (!button) return;
     seekEvent(Number(button.dataset.index));
   });
+  const shareNote = document.querySelector("#share-note");
+  const kuaishou = document.querySelector("#share-kuaishou");
+  if (kuaishou && shareNote) {
+    kuaishou.addEventListener("click", () => {
+      shareNote.textContent = "敬请期待。快手资质还在审核，通过后再从这里发布片段。";
+    });
+  }
   document.querySelectorAll(".layer").forEach((button) => {
     button.addEventListener("click", () => {
       const key = button.dataset.layer;

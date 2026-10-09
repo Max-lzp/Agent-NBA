@@ -46,7 +46,19 @@ URL 模式不经过 S3：create_job 异步调用 analyze_job，只把链接和 g
 
 ## 和后续阶段的边界
 
-P0 不包含 Batch、Textract、MediaConvert、Polly、Cognito、X-Ray。播放器里的数字解说开关标着 COMING SOON，对应 Polly。画面上的示例回合（弗拉格 / 申京）只在没有 `jobId` 时出现，用来对齐设计稿；带 `jobId` 之后时间线换成表里的事件。
+P0 不包含 Polly、Cognito、X-Ray。播放器里的数字解说开关标着即将推出，对应 Polly。画面上的示例回合（弗拉格 / 申京）只在没有 `jobId` 时出现，用来对齐设计稿；带 `jobId` 之后时间线换成表里的事件。
+
+## P1（代码在同一栈，尚未部署）
+
+上下文 `enableP1=false` 可以整段跳过。GPU 配额或 Batch 服务角色卡住时，用这个开关先把 P0 部署出去。跟踪作业不由 `analyze_job` 调用。
+
+| 服务 | 代码位置 | 为什么是它 |
+| --- | --- | --- |
+| ECR | `TrackerRepo` `deepcourt-tracker` | 跟踪镜像的仓库。镜像定义在 `inference/`，推送要等账号恢复。 |
+| Batch + EC2 + EBS | `GpuCompute` g4dn.xlarge，启动模板 gp3 100GB，队列 `deepcourt-track` | 整段视频的 GPU 跟踪。空闲 vCPU 为 0。`submit_track` 单独提交作业。 |
+| Textract | `lambdas/ocr_scoreboard` | 读记分牌帧上的比分、节次、时钟。解析失败置信度记 0。 |
+| MediaConvert | 模板 `deepcourt-render-template` | 把 PNG 叠加层合成 1080p MP4，写到 `rendered/`。 |
+| CloudWatch | 仪表盘 `deepcourt-overview`，两条告警 | 看分析吞吐、延迟、Bedrock 限流。告警先不接通知。 |
 
 ## 本地检查
 
