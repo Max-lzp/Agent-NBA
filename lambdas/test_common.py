@@ -38,6 +38,19 @@ class CommonTest(unittest.TestCase):
         self.assertEqual(rows[1]["timecode"], "00:19")
         self.assertEqual(rows[1]["t"], 19.35)
 
+    def test_timeline_uses_official_shot(self):
+        stream = {"possessions": [{"possession_id": "P01", "offense_team": "HOU", "events": [
+            {"t": 19.3, "type": "shot", "actor": {"team": "HOU", "number": "30", "name": "Capela"},
+             "confidence": 0.95, "source": "cv",
+             "official": {"made": True, "value": 2, "assist": {"team": "HOU", "number": "28", "name": "Sengun"},
+                          "xfg": 0.62}},
+            {"t": 5.0, "type": "turnover", "actor": {"team": "DAL", "number": "32", "name": "Flagg"},
+             "confidence": 0.95, "source": "official"},
+        ]}]}
+        rows = common.timeline_from_stream(stream)
+        self.assertEqual(rows[0]["label"], "Flagg 失误")
+        self.assertEqual(rows[1]["label"], "Capela 2 分命中（Sengun 助攻） · xFG 62%")
+
     def test_timeline_from_stream_rejects_other_json(self):
         with self.assertRaises(ValueError):
             common.timeline_from_stream({"events": []})

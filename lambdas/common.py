@@ -90,11 +90,18 @@ def timeline_from_stream(stream: dict) -> list[dict]:
             label = {
                 "hold": f"{actor} 接球",
                 "pass": f"{actor} → {target} 传球",
-                "turnover": f"失误 · {actor} → {target}",
+                "turnover": f"失误 · {actor} → {target}" if target else f"{actor} 失误",
                 "shot": f"{actor} 出手",
                 "rebound": f"{actor} 篮板",
                 "screen": f"{actor} 掩护",
             }[kind]
+            official = ev.get("official") or {}
+            if kind == "shot" and official.get("made") is not None:
+                label = f"{actor} {official.get('value') or 2} 分{'命中' if official['made'] else '不中'}"
+                if official.get("assist"):
+                    label += f"（{_who(official['assist'])} 助攻）"
+                if official.get("xfg") is not None:
+                    label += f" · xFG {float(official['xfg']):.0%}"
             t = float(ev.get("t") or 0.0)
             confidence = max(0.0, min(1.0, float(ev.get("confidence") or 0.0)))
             rows.append({

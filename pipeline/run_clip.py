@@ -45,6 +45,7 @@ def register(args) -> str:
     white = args.white or args.home
     clips[clip_id] = {
         "game_id": args.game_id or clip_id,
+        "official_game_id": args.game_id or "",
         "video": os.path.relpath(video, ROOT),
         "away": args.away,
         "home": args.home,
@@ -112,6 +113,38 @@ def build(clip_id: str, job_id: str) -> Path:
     return path
 
 
+def enrich_official(clip_id: str, path: Path | str) -> bool:
+    """data/ 下有这场的官方逐回合数据就并进清单；没有就跳过。
+    返回 True 表示刚把 boxscore 出场名单写进 roster.json，调用方要重建清单再来一次。"""
+    from pipeline.enrich.join import RESULTS as BOARD_DIR, enrich, write_game_roster
+    from pipeline.enrich.official import load_game
+    import common
+
+    clip = json.loads(CLIPS_FILE.read_text(encoding="utf-8"))[clip_id]
+    game_id = clip.get("official_game_id") or clip["game_id"]
+    game = load_game(game_id)
+    if not game["plays"]:
+        print(f"[官方] data/ 下没有 {game_id} 的逐回合数据，跳过")
+        return False
+    roster = json.loads((VISION / "roster.json").read_text(encoding="utf-8"))
+    if game["players"] and clip["game_id"] not in roster["games"]:
+        write_game_roster(clip["game_id"], game["players"])
+        import pipeline.vision.roster_map as roster_map
+        roster_map.ROSTER = json.loads((VISION / "roster.json").read_text(encoding="utf-8"))
+        print(f"[官方] 出场名单写入 roster.json games[{clip['game_id']}]，重建清单")
+        return True
+    path = Path(path)
+    board = json.loads((BOARD_DIR / f"{clip_id}.scoreboard.json").read_text(encoding="utf-8"))
+    doc = enrich(json.loads(path.read_text(encoding="utf-8")), board, game, game_id)
+    path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    info = doc["official"]
+    print(f"[官方] {game_id} 片段内 {len(info['plays'])} 条记录，比分对上 {info['matched_by_score']}，"
+          f"补入 {info['added_events']}，删掉视觉失误 {info['dropped_cv_turnovers']}")
+    for row in common.timeline_from_stream(doc):
+        print(f"   {row['t']:6.2f}s  {row['label']}  ({row['confidence']:.2f}, {row['source']})")
+    return False
+
+
 def upload(path: Path, job_id: str) -> None:
     bucket = subprocess.run(
         ["aws", "cloudformation", "describe-stacks", "--stack-name", STACK, "--region", REGION,
@@ -141,6 +174,9 @@ def main() -> None:
     if not args.skip_vision:
         vision(clip_id)
     path = build(clip_id, args.job_id or clip_id)
+    if enrich_official(clip_id, path):
+        path = build(clip_id, args.job_id or clip_id)
+        enrich_official(clip_id, path)
     if args.upload:
         upload(path, args.job_id or clip_id)
     print(f"[完成] {time.time() - t0:.0f}s")

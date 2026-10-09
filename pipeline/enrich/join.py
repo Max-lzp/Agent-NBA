@@ -1,0 +1,278 @@
+"""事件流清单 + 记分牌读数 + 官方数据 → 增强版清单。
+
+对时间：记分牌每次读数给出（视频秒, 节次, 比赛钟）。比赛钟显示是截断到整秒的，
+一条官方记录的视频时刻 = 第一次读到「同节、钟 ≤ 记录时钟」的那一刻，误差约一次采样（0.33 秒）。
+
+对进球：进球后的比分是精确钥匙。记分牌确认的得分（客, 主）直接查官方逐回合里比分相同的命中，
+不依赖时钟精度；查不到再退回时钟窗口。
+
+    python3 -m pipeline.enrich.join --clip amen --game-id 0022500491
+"""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Optional
+
+from .official import DATA, clock_seconds, game_roster, load_game, period_number
+
+ROOT = Path(__file__).resolve().parents[2]
+RESULTS = ROOT / "pipeline" / "vision" / "results" / "local"
+OUT = ROOT / "pipeline" / "events" / "out"
+ROSTER_FILE = ROOT / "pipeline" / "vision" / "roster.json"
+
+MATCH_WINDOW_S = 3.0        # 清单里的出手和官方出手在视频时间上最多差多少
+OFFICIAL_CONF = 0.95
+KINDS_AS_EVENTS = {"shot": "shot", "rebound": "rebound", "turnover": "turnover"}
+
+
+class Clock:
+    """视频秒 ↔ （节次, 比赛钟秒）。"""
+
+    def __init__(self, scoreboard: dict):
+        self.reads = []
+        for r in scoreboard.get("reads", []):
+            c, p = clock_seconds(r.get("clock")), period_number(r.get("period"))
+            if c is not None:
+                self.reads.append((r["t"], p, c))
+        periods = [p for _, p, _ in self.reads if p]
+        self.period = max(set(periods), key=periods.count) if periods else None
+        self.away, self.home = scoreboard.get("away"), scoreboard.get("home")
+
+    def window(self) -> Optional[tuple[float, float]]:
+        clocks = [c for _, p, c in self.reads if p in (None, self.period)]
+        return (max(clocks) + 1.0, min(clocks)) if clocks else None
+
+    def video_t(self, period: int, clock_s: float) -> Optional[float]:
+        if period != self.period:
+            return None
+        for t, p, c in self.reads:
+            if p in (None, self.period) and c <= clock_s:
+                return t
+        return None
+
+    def at(self, t: float) -> Optional[float]:
+        best = None
+        for rt, _, c in self.reads:
+            if rt <= t + 1e-6:
+                best = c
+        return best
+
+
+def _ref(players: dict, pid: Optional[int], team: str = "", name: str = "") -> dict:
+    p = players.get(pid or -1)
+    if p:
+        return {"team": p["team"], "number": p["jersey"], "name": p["name"]}
+    return {"team": team, "number": "", **({"name": name} if name else {})}
+
+
+def _zone(x: Optional[float], y: Optional[float], value: Optional[int]) -> Optional[str]:
+    if x is None or y is None:
+        return None
+    if value == 3:
+        if y <= 9.0:
+            return "corner3_l" if x < 0 else "corner3_r"
+        if abs(x) < 8:
+            return "top3"
+        return "wing3_l" if x < 0 else "wing3_r"
+    d = (x * x + y * y) ** 0.5
+    if d <= 4.0:
+        return "restricted"
+    if abs(x) <= 8 and y <= 14.0:
+        return "paint"
+    return "midrange"
+
+
+def _shot_quality(shots: list, play: dict) -> dict:
+    for s in shots:
+        if (period_number(s.get("period")) == play["period"]
+                and abs((clock_seconds(s.get("gameClock")) or -99) - (play["clock_s"] or -1)) <= 1.0
+                and (s.get("playerId") in (None, play["person_id"]))):
+            return {k: s.get(k) for k in ("xFGPercentage", "defenderId", "shotType", "distance") if s.get(k) is not None}
+    return {}
+
+
+def plays_in_clip(game: dict, clock: Clock) -> list[dict]:
+    win = clock.window()
+    if not win or not game["plays"]:
+        return []
+    hi, lo = win
+    out = []
+    for play in game["plays"]:
+        if play["period"] != clock.period or play["clock_s"] is None or not (lo - 0.5 <= play["clock_s"] <= hi):
+            continue
+        t = clock.video_t(play["period"], play["clock_s"])
+        if t is None:
+            continue
+        out.append({**play, "t": t})
+    return out
+
+
+def _made_by_score(game: dict, clock: Clock, scoreboard: dict) -> dict[float, dict]:
+    """记分牌确认的得分 → 官方命中记录，用得分后的比分精确对。"""
+    hits = {}
+    reads = scoreboard.get("reads", [])
+    for tick in scoreboard.get("ticks", []):
+        after = next((r["scores"] for r in reads if r["t"] >= tick["t_sec"] and r.get("scores")), None)
+        if not after:
+            continue
+        away, home = after
+        for play in game["plays"]:
+            if (play["kind"] == "shot" and play["made"] and play["score_away"] == away
+                    and play["score_home"] == home and play["team"] == tick["team"]):
+                hits[tick.get("t_reset") or tick["t_sec"]] = play
+                break
+    return hits
+
+
+def official_detail(play: dict, players: dict, shots: list) -> dict:
+    detail = {
+        "action_number": play["action_number"],
+        "period": play["period"],
+        "clock_s": play["clock_s"],
+        "kind": play["kind"],
+        "description": play["description"],
+    }
+    if play["kind"] == "shot":
+        detail.update({"made": play["made"], "value": play["value"], "shot_type": play["sub_type"],
+                       "distance_ft": play["distance_ft"]})
+        if play["assist_id"] or play["assist_name"]:
+            detail["assist"] = _ref(players, play["assist_id"], play["team"], play["assist_name"] or "")
+        quality = _shot_quality(shots, play)
+        if quality.get("xFGPercentage") is not None:
+            detail["xfg"] = quality["xFGPercentage"]
+        if quality.get("defenderId"):
+            detail["defender"] = _ref(players, quality["defenderId"])
+    return detail
+
+
+def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
+    clock = Clock(scoreboard)
+    players, shots = game["players"], game["shots"]
+    clip_plays = plays_in_clip(game, clock)
+    by_score = _made_by_score(game, clock, scoreboard)
+    used: set[int] = set()
+
+    def possession_at(t: float) -> dict:
+        poss = stream["possessions"]
+        return next((p for p in poss if p["t_start"] - 1e-6 <= t <= p["t_end"] + 1e-6), poss[-1])
+
+    def apply(ev: dict, play: dict) -> None:
+        used.add(play["action_number"])
+        actor = _ref(players, play["person_id"], play["team"], play["name"])
+        if ev["actor"].get("name") != actor.get("name"):
+            ev["actor"] = actor
+        else:
+            ev["actor"].update(actor)
+        ev["confidence"] = max(ev["confidence"], OFFICIAL_CONF)
+        ev["official"] = official_detail(play, players, shots)
+        if play["kind"] == "shot" and play["x_ft"] is not None:
+            geom = ev.setdefault("geometry", {})
+            geom.update({"x_ft": play["x_ft"], "y_ft": play["y_ft"]})
+            zone = _zone(play["x_ft"], play["y_ft"], play["value"])
+            if zone:
+                geom["shot_zone"] = zone
+
+    # 1. 清单里已有的出手：先按比分精确对，再按时间窗口对
+    for poss in stream["possessions"]:
+        for ev in poss["events"]:
+            if ev["type"] != "shot":
+                continue
+            play = next((p for t, p in by_score.items() if abs(t - ev["t"]) <= MATCH_WINDOW_S), None)
+            if play is None:
+                cands = [p for p in clip_plays if p["kind"] == "shot" and p["action_number"] not in used
+                         and p["team"] == ev["actor"].get("team") and abs(p["t"] - ev["t"]) <= MATCH_WINDOW_S]
+                play = min(cands, key=lambda p: abs(p["t"] - ev["t"]), default=None)
+            if play:
+                apply(ev, play)
+
+    # 2. 官方有、清单没有的出手 / 篮板 / 失误补进来
+    added = 0
+    for play in clip_plays:
+        kind = KINDS_AS_EVENTS.get(play["kind"])
+        if not kind or play["action_number"] in used:
+            continue
+        poss = possession_at(play["t"])
+        ev = {"event_id": f"{poss['possession_id']}-O{play['action_number']}", "t": round(play["t"], 2),
+              "type": kind, "actor": {"team": play["team"], "number": ""}, "confidence": OFFICIAL_CONF,
+              "source": "official"}
+        apply(ev, play)
+        poss["events"].append(ev)
+        added += 1
+
+    # 3. 官方在片段里没记的失误，是视觉误判，删掉
+    official_to = [p["t"] for p in clip_plays if p["kind"] == "turnover"]
+    dropped = 0
+    if clip_plays:
+        for poss in stream["possessions"]:
+            keep = []
+            for ev in poss["events"]:
+                if ev["type"] == "turnover" and ev["source"] != "official" \
+                        and not any(abs(t - ev["t"]) <= MATCH_WINDOW_S for t in official_to):
+                    dropped += 1
+                    continue
+                keep.append(ev)
+            poss["events"] = sorted(keep, key=lambda e: e["t"])
+
+    # 4. 回合级：节次、比赛钟、比分
+    reads = [r for r in scoreboard.get("reads", []) if r.get("scores")]
+    for poss in stream["possessions"]:
+        s0 = next((r["scores"] for r in reads if r["t"] >= poss["t_start"]), None)
+        s1 = next((r["scores"] for r in reversed(reads) if r["t"] <= poss["t_end"]), None)
+        poss["official"] = {"period": clock.period, "clock_start_s": clock.at(poss["t_start"]),
+                            "clock_end_s": clock.at(poss["t_end"]),
+                            "score_start": {clock.away: s0[0], clock.home: s0[1]} if s0 else None,
+                            "score_end": {clock.away: s1[0], clock.home: s1[1]} if s1 else None}
+
+    win = clock.window()
+    stream["video"]["game_id"] = game_id
+    stream["official"] = {
+        "game_id": game_id,
+        "files": game["files"],
+        "period": clock.period,
+        "clock_window_s": list(win) if win else None,
+        "matched_by_score": len(by_score),
+        "added_events": added,
+        "dropped_cv_turnovers": dropped,
+        "plays": [{k: p[k] for k in ("t", "action_number", "clock_s", "team", "name", "kind", "made", "value",
+                                     "description")} for p in clip_plays],
+    }
+    return stream
+
+
+def write_game_roster(game_id: str, players: dict) -> None:
+    roster = json.loads(ROSTER_FILE.read_text(encoding="utf-8"))
+    roster["games"][game_id] = game_roster(players)
+    ROSTER_FILE.write_text(json.dumps(roster, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description="清单 + 官方数据 → 增强版清单")
+    ap.add_argument("--clip", required=True)
+    ap.add_argument("--game-id", required=True)
+    ap.add_argument("--data-dir", default=str(DATA))
+    ap.add_argument("--stream", help="默认 pipeline/events/out/{clip}.json")
+    ap.add_argument("--out", help="默认覆盖 --stream")
+    ap.add_argument("--write-roster", action="store_true", help="把 boxscore 的出场名单写进 roster.json（之后重建清单）")
+    args = ap.parse_args()
+
+    game = load_game(args.game_id, Path(args.data_dir))
+    if not game["plays"]:
+        raise SystemExit(f"{args.data_dir} 下没有 {args.game_id} 的逐回合数据（{args.game_id}_playbyplay*.json）")
+    if args.write_roster and game["players"]:
+        write_game_roster(args.game_id, game["players"])
+        print(f"[名单] roster.json games[{args.game_id}] 已写入 {len(game['players'])} 人")
+    stream_path = Path(args.stream or OUT / f"{args.clip}.json")
+    stream = json.loads(stream_path.read_text(encoding="utf-8"))
+    board = json.loads((RESULTS / f"{args.clip}.scoreboard.json").read_text(encoding="utf-8"))
+    enriched = enrich(stream, board, game, args.game_id)
+    Path(args.out or stream_path).write_text(json.dumps(enriched, ensure_ascii=False, indent=2) + "\n",
+                                             encoding="utf-8")
+    info = enriched["official"]
+    print(f"[官方] {args.game_id} 第 {info['period']} 节 窗口 {info['clock_window_s']}，片段内 {len(info['plays'])} 条记录，"
+          f"比分对上 {info['matched_by_score']}，补入 {info['added_events']}，删掉视觉失误 {info['dropped_cv_turnovers']}")
+
+
+if __name__ == "__main__":
+    main()
