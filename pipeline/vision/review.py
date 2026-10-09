@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""本地回放：原视频叠检测框和传球/抢断。
+"""本地回放：原视频叠检测框，右侧读结构化事件流。
 
 用法（在 team-repo 下）:
   python3 pipeline/vision/review.py
@@ -18,6 +18,7 @@ from urllib.parse import unquote, urlparse
 
 VISION = Path(__file__).resolve().parent
 ROOT = VISION.parents[1]
+EVENTS_OUT = VISION.parent / "events" / "out"
 PAGE = VISION / "review.html"
 CLIPS = json.loads((VISION / "clips.json").read_text(encoding="utf-8"))
 LABELS = {"flagg": "弗拉格 2月1日", "amen": "阿门 1月4日"}
@@ -179,6 +180,17 @@ class ReviewHandler(BaseHTTPRequestHandler):
         if path in ("/api/clips", "/data/catalog.json"):
             body = json.dumps(self._catalog(), ensure_ascii=False).encode("utf-8")
             self._send_bytes(body, "application/json; charset=utf-8", head_only)
+            return
+        if path.startswith("/data/stream/") and path.endswith(".json"):
+            clip_id = path.removeprefix("/data/stream/").removesuffix(".json")
+            if clip_id not in CLIPS:
+                self.send_error(404)
+                return
+            target = EVENTS_OUT / f"{clip_id}.json"
+            if not target.is_file():
+                self.send_error(404)
+                return
+            self._send_bytes(target.read_bytes(), "application/json; charset=utf-8", head_only)
             return
         if path.startswith("/api/result/") or (path.startswith("/data/") and path.endswith(".json") and path != "/data/catalog.json"):
             name = path.removeprefix("/api/result/").removeprefix("/data/").removesuffix(".json")

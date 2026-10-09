@@ -85,7 +85,17 @@
             "type": "object",
             "required": ["action", "confidence", "source"],
             "properties": {
-              "action": {"type": "string", "description": "high_pick_and_roll / spain_pnr / pick_and_pop / dribble_handoff / zoom / flare / pin_down / elevator / back_screen / backdoor / iso / post_up / transition / halfcourt_generic ..."},
+              "action": {
+                "type": "string",
+                "description": "闭集，定义见 playbook.json。一个进攻回合只填一个。",
+                "enum": [
+                  "transition", "drag", "high_pick_and_roll", "wing_pick_and_roll",
+                  "pick_and_pop", "spain_pnr", "dribble_handoff", "zoom",
+                  "pin_down", "stagger", "flare", "elevator", "floppy",
+                  "iverson_cut", "back_screen", "backdoor", "give_and_go",
+                  "iso", "post_up", "halfcourt_generic"
+                ]
+              },
               "label_zh": {"type": "string", "description": "Claude 措辞后的中文标签"},
               "confidence": {"type": "number", "minimum": 0, "maximum": 1},
               "source": {"type": "string", "enum": ["rule", "llm_arbitrated", "fallback_class"]}

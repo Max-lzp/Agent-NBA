@@ -82,5 +82,5 @@ index.html 上传卡 ──▶ POST /api/jobs ──▶ Lambda create_job ──
 ## 八、战术识别
 
 - 几何谓词出候选（谁向谁收敛、距离变化、掩护角度、防守人换向），Claude 只在候选里仲裁并措辞，不看原始画面。
-- 候选动作清单聚焦 15–20 个高频 action：高位/侧翼挡拆、Spain、pick & pop、DHO、zoom、flare、pin down、电梯门、背掩护、backdoor、iso、post-up、转换进攻。
-- 置信度不足一律退「阵地进攻 / 转换进攻」大类——大类不错，细分错了才丢人。
+- 进攻战术闭集已定稿：`pipeline/events/playbook.json`（20 个，含两条退路）。模型只准输出其中的 `id`，叠加层用对应的 `label_zh`。
+- 置信度不足一律退「阵地进攻 / 转换进攻」大类——大类不错，细分错了才丢人。落位前的顺手挡拆单独叫「落位前挡拆」，不并进高位挡拆。
