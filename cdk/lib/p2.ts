@@ -1,6 +1,5 @@
 import * as cdk from 'aws-cdk-lib/core';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
-import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
@@ -9,37 +8,8 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 
 const TEXT_MODEL = 'global.anthropic.claude-sonnet-4-6';
 
-export interface P2Auth {
-  authorizer: apigw.IAuthorizer;
-  userPoolId: string;
-  clientId: string;
-}
-
-/** 只在开启 P2 时创建用户池。读接口不挂这个授权器。 */
-export function addP2Auth(stack: cdk.Stack): P2Auth | undefined {
-  if (stack.node.tryGetContext('enableP2') === 'false') return undefined;
-
-  const pool = new cognito.UserPool(stack, 'Judges', {
-    userPoolName: 'deepcourt-judges',
-    selfSignUpEnabled: false,
-    signInAliases: { username: true },
-    passwordPolicy: { minLength: 12 },
-    removalPolicy: cdk.RemovalPolicy.RETAIN,
-  });
-  const client = pool.addClient('Web', {
-    authFlows: { userPassword: true, userSrp: true },
-    preventUserExistenceErrors: true,
-  });
-  const authorizer = new apigw.CognitoUserPoolsAuthorizer(stack, 'JobsAuthorizer', {
-    cognitoUserPools: [pool],
-  });
-  new cdk.CfnOutput(stack, 'UserPoolId', { value: pool.userPoolId });
-  return { authorizer, userPoolId: pool.userPoolId, clientId: client.userPoolClientId };
-}
-
 /**
- * 解说、密钥、快手回调。不改分析函数的调用关系。
- * POST /jobs 的授权在栈里单独挂上。
+ * 解说、密钥、快手回调。创建任务和回放都不设登录。
  */
 export function addP2(
   stack: cdk.Stack,

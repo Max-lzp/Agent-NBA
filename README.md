@@ -44,7 +44,7 @@ cd cdk && npm install && npm run build && npx cdk synth
 #    npx cdk bootstrap aws://405496568869/us-east-1 --profile team04
 npx cdk deploy Team04DeepCourt --profile team04
 #    GPU 配额挡住 Batch 时，先去掉 P1：npx cdk deploy Team04DeepCourt -c enableP1=false --profile team04
-#    不要登录和数字解说时：再加 -c enableP2=false
+#    不要数字解说、密钥和追踪时：再加 -c enableP2=false
 
 # 3. 验收闭环（把 <api> 换成栈输出 ApiUrl，不要带末尾多余空格）
 curl -sS -X POST "<api>jobs" -H 'content-type: application/json' \
