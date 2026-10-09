@@ -31,7 +31,7 @@ python3 -m pipeline.run_clip --video "../官方资料/<考试视频>.mp4" --clip
 | 建清单 | 几秒 | 回合、持球、传球、出手 |
 | 认比赛 + 官方补全 | 1 秒 | 记分牌比分对 `data/` 下各场；对上就补投篮人、助攻、xFG、场上阵容、官方视频链接 |
 
-产物：`pipeline/events/out/exam.json`（清单），终端最后会打印时间线。
+产物：`pipeline/events/out/exam.json`（清单）和 `exam.html`（报告：视频 + 可点时间线 + 场上阵容 + 出手卡）。报告用 `open pipeline/events/out/exam.html` 直接打开；用 Python 自带的 http.server 看时视频不能拖动（它不支持分段读取）。
 
 已知比赛时可以直接给：`--game-id 0022500701`。已知队伍也可以给 `--away DAL --home HOU --white HOU`，和记分牌不一致时会报警并以记分牌为准。
 
@@ -69,7 +69,7 @@ python3 -m pipeline.enrich.find_game --clip exam                  # 单看各场
 
 ## 5. 云端
 
-当前账号（Team04 SSO）没有 CloudFormation 读权限，原来的媒体桶也已不存在，云上回放页暂时用不了。本地清单就是完整产物。有新桶时：
+当前账号（Team04 SSO）没有 CloudFormation 读权限，原来的媒体桶也已不存在，云上回放页暂时用不了。本地清单 + HTML 报告就是完整产物，演示直接开报告。有新桶时：
 
 ```bash
 python3 -m pipeline.run_clip --clip exam --skip-vision --upload --bucket <桶名>

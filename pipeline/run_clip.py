@@ -5,7 +5,7 @@
     python3 -m pipeline.run_clip --video "../官方资料/exam.mp4" --away DAL --home HOU --white HOU
     python3 -m pipeline.run_clip --clip exam --job-id <jobId> --upload      # 已登记过，只重跑并上传
 
-产物：pipeline/vision/results/local/{clip}*.json，pipeline/events/out/{clip}.json。
+产物：pipeline/vision/results/local/{clip}*.json，pipeline/events/out/{clip}.json 和同名 .html 报告。
 视觉三步用 pipeline/vision/.venv；事件层只用标准库。
 """
 from __future__ import annotations
@@ -274,6 +274,8 @@ def main() -> None:
     if enrich_official(clip_id, path):
         path = build(clip_id, args.job_id or clip_id)
         enrich_official(clip_id, path)
+    from pipeline.report import write as write_report
+    print(f"[报告] {write_report(Path(path))}（双击打开；点事件跳到视频那一刻）")
     if args.upload:
         upload(path, args.job_id or clip_id, args.bucket)
     print(f"[完成] {time.time() - t0:.0f}s")
