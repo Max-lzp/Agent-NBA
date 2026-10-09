@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from .official import DATA, calibrate_side, clock_seconds, game_roster, load_game, period_number
+from .official import DATA, calibrate_side, clock_seconds, game_roster, load_game, on_court, period_number
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "pipeline" / "vision" / "results" / "local"
@@ -244,6 +244,20 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
     # 2.5 官方确认的人回填到同一条轨迹上没名字的引用；轨迹已被号码认成别人时不改，记冲突
     filled, conflicts = _fill_tracks(stream, named, assists)
 
+    # 2.6 片段开始时双方场上 10 人；号码认出的人不在场上，多半是号码读错
+    win = clock.window()
+    lineup = on_court(game, clock.period, win[0]) if win else {}
+    numbers_on = {team: {players[i]["jersey"] for i in ids} for team, ids in lineup.items()}
+    for poss in stream["possessions"]:
+        for ev in poss["events"]:
+            for key in ("actor", "target"):
+                ref = ev.get(key) or {}
+                court = numbers_on.get(ref.get("team"), set())
+                if ref.get("number") and ref.get("named_by") != "official" and len(court) == 5 \
+                        and ref["number"] not in court:
+                    conflicts.append({"event_id": ev["event_id"], "track_id": ref.get("track_id"),
+                                      "cv": f"#{ref['number']} {ref.get('name', '')}".strip(), "official": "not_on_court"})
+
     # 3. 官方在片段里没记的失误，是视觉误判，删掉
     official_to = [p["t"] for p in clip_plays if p["kind"] == "turnover"]
     dropped = 0
@@ -268,7 +282,6 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
                             "score_start": {clock.away: s0[0], clock.home: s0[1]} if s0 else None,
                             "score_end": {clock.away: s1[0], clock.home: s1[1]} if s1 else None}
 
-    win = clock.window()
     stream["video"]["game_id"] = game_id
     stream["official"] = {
         "game_id": game_id,
@@ -280,6 +293,8 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
         "side_basis": side_basis,
         "added_events": added,
         "dropped_cv_turnovers": dropped,
+        "on_court": {team: [{k: players[i][k] for k in ("jersey", "name", "full_name") if k in players[i]} for i in ids]
+                     for team, ids in lineup.items()},
         "named_from_official": filled,
         "track_conflicts": conflicts,
         "plays": [{k: p[k] for k in ("t", "action_number", "clock_s", "team", "name", "kind", "made", "value",
@@ -312,6 +327,20 @@ def _fill_tracks(stream: dict, named: dict[int, dict], assists: list[tuple]) -> 
                 ref["named_by"] = "official"
                 filled += 1
     return filled, conflicts
+
+
+def clip_on_court(game: dict, scoreboard: dict) -> dict[str, list[str]]:
+    """片段开始和结束时在场的人取并集（中途换人也算），返回 {队: [号码]}；认不齐 5 人的队不给。"""
+    clock = Clock(scoreboard)
+    win = clock.window()
+    if not win or not game["players"]:
+        return {}
+    court: dict[str, set] = {}
+    for at in win:
+        for team, ids in on_court(game, clock.period, at).items():
+            if len(ids) == 5:
+                court.setdefault(team, set()).update(game["players"][i]["jersey"] for i in ids)
+    return {team: sorted(nums) for team, nums in sorted(court.items())}
 
 
 def write_game_roster(game_id: str, players: dict) -> None:

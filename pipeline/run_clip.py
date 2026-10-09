@@ -180,7 +180,7 @@ def build(clip_id: str, job_id: str) -> Path:
 def enrich_official(clip_id: str, path: Path | str) -> bool:
     """data/ 下有这场的官方逐回合数据就并进清单；没有就跳过。
     返回 True 表示刚把 boxscore 出场名单写进 roster.json，调用方要重建清单再来一次。"""
-    from pipeline.enrich.join import RESULTS as BOARD_DIR, enrich, write_game_roster
+    from pipeline.enrich.join import RESULTS as BOARD_DIR, clip_on_court, enrich, write_game_roster
     from pipeline.enrich.official import load_game
     import common
 
@@ -201,12 +201,23 @@ def enrich_official(clip_id: str, path: Path | str) -> bool:
     if not game["plays"]:
         print(f"[官方] data/ 下没有 {game_id} 的逐回合数据，跳过")
         return False
-    roster = json.loads((VISION / "roster.json").read_text(encoding="utf-8"))
+    roster_file = VISION / "roster.json"
+    roster = json.loads(roster_file.read_text(encoding="utf-8"))
+    changed = []
     if game["players"] and clip["game_id"] not in roster["games"]:
         write_game_roster(clip["game_id"], game["players"])
+        roster = json.loads(roster_file.read_text(encoding="utf-8"))
+        changed.append("出场名单")
+    court = clip_on_court(game, board)
+    entry = roster["games"].get(clip["game_id"])
+    if entry is not None and court and entry.get("on_court") != court:
+        entry["on_court"] = court
+        roster_file.write_text(json.dumps(roster, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        changed.append(f"场上阵容 {court}")
+    if changed:
         import pipeline.vision.roster_map as roster_map
-        roster_map.ROSTER = json.loads((VISION / "roster.json").read_text(encoding="utf-8"))
-        print(f"[官方] 出场名单写入 roster.json games[{clip['game_id']}]，重建清单")
+        roster_map.ROSTER = json.loads(roster_file.read_text(encoding="utf-8"))
+        print(f"[官方] roster.json games[{clip['game_id']}] 写入{'、'.join(changed)}，重建清单")
         return True
     path = Path(path)
     doc = enrich(json.loads(path.read_text(encoding="utf-8")), board, game, game_id)

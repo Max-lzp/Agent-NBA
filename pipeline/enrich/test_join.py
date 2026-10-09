@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 from .join import OUT, RESULTS, Clock, _fill_tracks, _side, _zone, enrich
-from .official import calibrate_side, clock_seconds, load_game, normalize_play
+from .official import calibrate_side, clock_seconds, load_game, normalize_play, on_court
 
 PBP_V3 = {"game": {"gameId": "0022500491", "actions": [
     {"actionNumber": 400, "clock": "PT07M40.00S", "period": 3, "teamTricode": "HOU", "personId": 3,
@@ -137,6 +137,21 @@ class FillTracksTest(unittest.TestCase):
         self.assertEqual(evs[4]["actor"]["name"], "Klay")          # 号码和官方打架：不改，记冲突
         self.assertEqual(conflicts, [{"event_id": "E5", "track_id": 21, "cv": "Klay", "official": "Flagg"}])
         self.assertEqual(filled, 3)
+
+
+class OnCourtTest(unittest.TestCase):
+    def test_starters_inferred_then_subs_applied(self):
+        players = {i: {"team": "HOU", "jersey": str(i), "name": f"P{i}"} for i in range(1, 8)}
+        play = lambda n, clock, pid, kind="shot", sub="": {"action_number": n, "period": 2, "clock_s": clock,
+                                                          "person_id": pid, "assist_id": None, "kind": kind, "sub_type": sub}
+        game = {"players": players, "plays": [
+            play(1, 700, 1), play(2, 690, 2), play(3, 680, 3), play(4, 670, 4),
+            play(5, 600, 5, "substitution", "out"), play(6, 600, 6, "substitution", "in"),
+            play(7, 500, 6), play(8, 400, 1, "substitution", "out"), play(9, 400, 7, "substitution", "in"),
+        ]}
+        self.assertEqual(on_court(game, 2, 650), {"HOU": [1, 2, 3, 4, 5]})
+        self.assertEqual(on_court(game, 2, 450), {"HOU": [1, 2, 3, 4, 6]})
+        self.assertEqual(on_court(game, 2, 300), {"HOU": [2, 3, 4, 6, 7]})
 
 
 if __name__ == "__main__":

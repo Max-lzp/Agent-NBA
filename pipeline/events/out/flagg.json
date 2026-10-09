@@ -984,7 +984,7 @@
   "meta": {
     "mode": "full",
     "generator": "pipeline/events",
-    "created_at": "2026-10-09T17:43:18.357036+00:00"
+    "created_at": "2026-10-09T17:46:48.720903+00:00"
   },
   "official": {
     "game_id": "0022500701",
@@ -1003,6 +1003,62 @@
     "side_basis": "official_calibrated",
     "added_events": 0,
     "dropped_cv_turnovers": 0,
+    "on_court": {
+      "DAL": [
+        {
+          "jersey": "31",
+          "name": "Thompson",
+          "full_name": "Klay Thompson"
+        },
+        {
+          "jersey": "21",
+          "name": "Gafford",
+          "full_name": "Daniel Gafford"
+        },
+        {
+          "jersey": "13",
+          "name": "Marshall",
+          "full_name": "Naji Marshall"
+        },
+        {
+          "jersey": "00",
+          "name": "Christie",
+          "full_name": "Max Christie"
+        },
+        {
+          "jersey": "32",
+          "name": "Flagg",
+          "full_name": "Cooper Flagg"
+        }
+      ],
+      "HOU": [
+        {
+          "jersey": "7",
+          "name": "Durant",
+          "full_name": "Kevin Durant"
+        },
+        {
+          "jersey": "28",
+          "name": "Sengun",
+          "full_name": "Alperen Sengun"
+        },
+        {
+          "jersey": "10",
+          "name": "Smith Jr.",
+          "full_name": "Jabari Smith Jr."
+        },
+        {
+          "jersey": "17",
+          "name": "Eason",
+          "full_name": "Tari Eason"
+        },
+        {
+          "jersey": "1",
+          "name": "Thompson",
+          "full_name": "Amen Thompson"
+        }
+      ]
+    },
     "named_from_official": 1,
     "track_conflicts": [],
     "plays": [

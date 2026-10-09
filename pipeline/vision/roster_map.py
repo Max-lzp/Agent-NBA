@@ -44,7 +44,8 @@ def identify(jersey, team: str | None = None, color: str | None = None,
              season: str = DEFAULT_SEASON) -> dict:
     """号码 → 球员。队伍先看 team，再看球衣颜色。
 
-    这场有出场名单时只在出场的人里挑。两队同号且队伍不明时按上场时间取人，confidence 降到 0.6。
+    这场有出场名单时只在出场的人里挑；有 on_court（片段里在场的人，来自官方换人记录）时只在场上的人里挑。
+    两队同号且队伍不明时按上场时间取人，confidence 降到 0.6。
     """
     number = normalize_jersey(jersey)
     game = ROSTER["games"].get(game_id) if game_id else None
@@ -55,11 +56,17 @@ def identify(jersey, team: str | None = None, color: str | None = None,
 
     rows = _season_rows(season, number, game.get("date") if game else None)
     if game:
-        active = [r for r in rows if game["active"].get(r["team"], {}).get(number) == r["name"]]
+        # 按号码比：官方 boxscore 的短名（Thompson）和赛季名单的叫法（Amen / Klay）不一定一样
+        active = [r for r in rows if number in game["active"].get(r["team"], {})]
         if active:
             rows = active
-        elif rows and all(game["dnp"].get(r["team"], {}).get(number) == r["name"] for r in rows):
+        elif rows and all(number in game["dnp"].get(r["team"], {}) for r in rows):
             return {**base, "source": "dnp", "dnp": True}
+        court = game.get("on_court")
+        if court:
+            rows = [r for r in rows if number in court.get(r["team"], [])]
+            if not rows:
+                return {**base, "source": "not_on_court"}
     if team:
         same_team = [r for r in rows if r["team"] == team]
         if not same_team and len(rows) == 1:

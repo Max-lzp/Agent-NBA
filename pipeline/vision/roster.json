@@ -6,7 +6,10 @@
       "matchup": "DAL @ HOU",
       "home": "HOU",
       "away": "DAL",
-      "final": {"HOU": 111, "DAL": 107},
+      "final": {
+        "HOU": 111,
+        "DAL": 107
+      },
       "video_hint": "官方资料/train_video/训练_弗拉格2月1日.mp4",
       "active": {
         "DAL": {
@@ -35,8 +38,32 @@
         }
       },
       "dnp": {
-        "DAL": {"5": "Russell", "1": "Hardy"},
-        "HOU": {"32": "Green", "8": "Tate", "27": "Crawford", "0": "Holiday"}
+        "DAL": {
+          "5": "Russell",
+          "1": "Hardy"
+        },
+        "HOU": {
+          "32": "Green",
+          "8": "Tate",
+          "27": "Crawford",
+          "0": "Holiday"
+        }
+      },
+      "on_court": {
+        "DAL": [
+          "00",
+          "13",
+          "21",
+          "31",
+          "32"
+        ],
+        "HOU": [
+          "1",
+          "10",
+          "17",
+          "28",
+          "7"
+        ]
       }
     },
     "amen_20260104": {
@@ -44,7 +71,10 @@
       "matchup": "HOU @ DAL",
       "home": "DAL",
       "away": "HOU",
-      "final": {"DAL": 110, "HOU": 104},
+      "final": {
+        "DAL": 110,
+        "HOU": 104
+      },
       "video_hint": "官方资料/train_video/训练_阿门1月4日 .mp4",
       "active": {
         "HOU": {
@@ -74,8 +104,31 @@
         }
       },
       "dnp": {
-        "HOU": {"32": "Green", "4": "Davison"},
-        "DAL": {"7": "Powell", "5": "Russell", "1": "Hardy"}
+        "HOU": {
+          "32": "Green",
+          "4": "Davison"
+        },
+        "DAL": {
+          "7": "Powell",
+          "5": "Russell",
+          "1": "Hardy"
+        }
+      },
+      "on_court": {
+        "DAL": [
+          "00",
+          "13",
+          "21",
+          "3",
+          "32"
+        ],
+        "HOU": [
+          "1",
+          "10",
+          "17",
+          "30",
+          "7"
+        ]
       }
     }
   },

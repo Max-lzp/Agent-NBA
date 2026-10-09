@@ -189,3 +189,27 @@ def calibrate_side(plays: list[dict]) -> tuple[str, str]:
     if votes["left"] + votes["right"] >= 3 and votes["left"] != votes["right"]:
         return max(votes, key=votes.get), "official_calibrated"
     return X_NEGATIVE_SIDE, "assumed"
+
+
+def on_court(game: dict, period: int, clock_s: float) -> dict[str, list[int]]:
+    """（节次, 比赛钟）这一刻双方场上的人（personId）。逐回合不记每节首发：本节第一次出现不是被换上的，
+    就算开节在场；再按比赛钟依次换人。认不齐 5 人的队照样返回已知的。"""
+    players = game["players"]
+    plays = sorted((p for p in game["plays"] if p["period"] == period), key=lambda p: p["action_number"] or 0)
+    starters: dict[str, set] = {}
+    seen: set[int] = set()
+    for p in plays:
+        for pid in (p["person_id"], p.get("assist_id")):
+            if pid not in players or pid in seen:
+                continue
+            seen.add(pid)
+            if not (p["kind"] == "substitution" and p["sub_type"] == "in" and pid == p["person_id"]):
+                starters.setdefault(players[pid]["team"], set()).add(pid)
+    court = {team: set(ids) for team, ids in starters.items()}
+    for p in plays:
+        if p["kind"] != "substitution" or p["clock_s"] is None or p["clock_s"] <= clock_s or p["person_id"] not in players:
+            continue
+        team = players[p["person_id"]]["team"]
+        (court.setdefault(team, set()).add if p["sub_type"] == "in" else court.setdefault(team, set()).discard)(p["person_id"])
+    return {team: sorted(ids) for team, ids in court.items()}
+
