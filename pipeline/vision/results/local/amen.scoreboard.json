@@ -3,6 +3,9 @@
  "sampled_fps": 2.997,
  "away": "HOU",
  "home": "DAL",
+ "detected_away": null,
+ "detected_home": null,
+ "detected_reads": 0,
  "reads": [
   {
    "t": 0.0,
@@ -12,7 +15,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 0.334,
@@ -22,7 +31,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 0.667,
@@ -32,7 +47,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 1.001,
@@ -42,7 +63,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 1.335,
@@ -52,7 +79,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 1.668,
@@ -62,7 +95,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 2.002,
@@ -72,7 +111,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 2.336,
@@ -82,7 +127,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1668,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 2.669,
@@ -92,7 +143,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 3.003,
@@ -102,7 +159,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 3.337,
@@ -112,7 +175,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 3.67,
@@ -122,7 +191,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1667,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 4.004,
@@ -132,7 +207,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1667,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 4.338,
@@ -142,7 +223,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1667,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 4.671,
@@ -152,7 +239,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 5.005,
@@ -162,7 +255,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 5.339,
@@ -172,7 +271,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 5.672,
@@ -182,7 +287,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 6.006,
@@ -192,7 +303,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 6.34,
@@ -202,7 +319,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 6.673,
@@ -212,7 +335,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 7.007,
@@ -222,7 +351,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 7.341,
@@ -232,7 +367,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 7.674,
@@ -242,7 +383,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1668,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 8.008,
@@ -252,7 +399,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 8.342,
@@ -262,7 +415,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1668,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 8.675,
@@ -272,7 +431,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 9.009,
@@ -282,7 +447,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 9.343,
@@ -292,7 +463,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 9.676,
@@ -302,7 +479,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 10.01,
@@ -312,7 +495,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 10.344,
@@ -322,7 +511,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 10.677,
@@ -332,7 +527,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 11.011,
@@ -342,7 +543,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 11.345,
@@ -352,7 +559,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 11.678,
@@ -362,7 +575,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 12.012,
@@ -372,7 +591,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 12.346,
@@ -382,7 +607,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 12.679,
@@ -392,7 +623,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 13.013,
@@ -402,7 +639,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 13.347,
@@ -412,7 +655,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 13.68,
@@ -422,7 +671,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1667,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 14.014,
@@ -432,7 +687,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1667,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 14.348,
@@ -442,7 +703,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1667,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 14.681,
@@ -452,7 +719,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 15.015,
@@ -462,7 +735,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 15.349,
@@ -472,7 +751,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 15.682,
@@ -482,7 +767,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 16.016,
@@ -492,7 +783,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 16.35,
@@ -502,7 +799,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 16.683,
@@ -512,7 +815,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 17.017,
@@ -522,7 +831,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 17.351,
@@ -532,7 +847,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 17.684,
@@ -542,7 +863,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 18.018,
@@ -552,7 +879,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1668,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 18.352,
@@ -562,7 +895,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 18.685,
@@ -572,7 +911,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 19.019,
@@ -582,7 +927,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 19.353,
@@ -592,7 +943,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 19.686,
@@ -602,7 +959,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 20.02,
@@ -612,7 +975,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 20.354,
@@ -622,7 +991,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 20.687,
@@ -632,7 +1007,13 @@
    "scores": [
     60,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 21.021,
@@ -642,7 +1023,13 @@
    "scores": [
     62,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    94
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 21.355,
@@ -652,7 +1039,13 @@
    "scores": [
     62,
     63
-   ]
+   ],
+   "clock_xy": [
+    1670,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 21.688,
@@ -662,7 +1055,13 @@
    "scores": [
     62,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 22.022,
@@ -672,7 +1071,13 @@
    "scores": [
     62,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 22.356,
@@ -682,7 +1087,13 @@
    "scores": [
     62,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 22.689,
@@ -692,7 +1103,13 @@
    "scores": [
     62,
     63
-   ]
+   ],
+   "clock_xy": [
+    1669,
+    95
+   ],
+   "teams": null,
+   "region": "bottom"
   }
  ],
  "ticks": [

@@ -3,6 +3,9 @@
  "sampled_fps": 2.997,
  "away": "DAL",
  "home": "HOU",
+ "detected_away": "DAL",
+ "detected_home": "HOU",
+ "detected_reads": 63,
  "reads": [
   {
    "t": 0.0,
@@ -12,7 +15,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1294,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 0.334,
@@ -22,7 +34,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1291,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 0.667,
@@ -32,7 +53,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1291,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 1.001,
@@ -42,7 +72,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1290,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 1.335,
@@ -52,7 +91,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 1.668,
@@ -62,7 +110,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 2.002,
@@ -72,7 +129,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 2.336,
@@ -82,7 +148,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 2.669,
@@ -92,7 +167,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 3.003,
@@ -102,7 +186,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 3.337,
@@ -112,7 +205,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 3.67,
@@ -122,7 +224,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 4.004,
@@ -132,7 +243,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 4.338,
@@ -142,7 +262,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 4.671,
@@ -152,7 +281,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 5.005,
@@ -162,7 +300,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 5.339,
@@ -172,7 +319,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 5.672,
@@ -182,7 +338,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 6.006,
@@ -192,7 +357,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 6.34,
@@ -202,7 +376,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 6.673,
@@ -212,7 +395,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 7.007,
@@ -222,7 +414,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 7.341,
@@ -232,7 +433,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 7.674,
@@ -242,7 +452,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 8.008,
@@ -252,7 +471,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 8.342,
@@ -262,21 +490,54 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 8.675,
    "period": "4TH",
    "clock": "1:43",
    "shot_clock": 13.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 9.009,
    "period": "4TH",
    "clock": "1:43",
    "shot_clock": 12.0,
-   "scores": null
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 9.343,
@@ -286,7 +547,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1294,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 9.676,
@@ -296,7 +566,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1294,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 10.01,
@@ -306,7 +585,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 10.344,
@@ -316,14 +604,32 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1290,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 10.677,
    "period": "4TH",
    "clock": "1:41",
    "shot_clock": 11.0,
-   "scores": null
+   "scores": null,
+   "clock_xy": [
+    1290,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 11.011,
@@ -333,14 +639,32 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1290,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 11.345,
    "period": "4TH",
    "clock": "1:40",
    "shot_clock": 10.0,
-   "scores": null
+   "scores": null,
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 11.678,
@@ -350,7 +674,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 12.012,
@@ -360,7 +693,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 12.346,
@@ -370,7 +712,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 12.679,
@@ -380,7 +731,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 13.013,
@@ -390,7 +750,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 13.347,
@@ -400,7 +769,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 13.68,
@@ -410,7 +788,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 14.014,
@@ -420,7 +807,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 14.348,
@@ -430,7 +826,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 14.681,
@@ -440,7 +845,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 15.015,
@@ -450,7 +864,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 15.349,
@@ -460,7 +883,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 15.682,
@@ -470,7 +902,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 16.016,
@@ -480,7 +921,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 16.35,
@@ -490,7 +940,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 16.683,
@@ -498,9 +957,18 @@
    "clock": "1:35",
    "shot_clock": 5.0,
    "scores": [
-    35,
+    103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 17.017,
@@ -508,9 +976,18 @@
    "clock": "1:35",
    "shot_clock": 4.7,
    "scores": [
-    35,
+    103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 17.351,
@@ -520,7 +997,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 17.684,
@@ -530,7 +1016,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 18.018,
@@ -540,7 +1035,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 18.352,
@@ -550,7 +1054,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 18.685,
@@ -560,7 +1073,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 19.019,
@@ -570,7 +1092,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 19.353,
@@ -580,7 +1111,16 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 19.686,
@@ -590,21 +1130,42 @@
    "scores": [
     103,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 20.02,
    "period": "4TH",
    "clock": "1:34",
    "shot_clock": 24.0,
-   "scores": null
+   "scores": null,
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 20.354,
    "period": "4TH",
    "clock": "1:34",
    "shot_clock": 24.0,
-   "scores": null
+   "scores": null,
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": null,
+   "region": "bottom"
   },
   {
    "t": 20.687,
@@ -614,7 +1175,16 @@
    "scores": [
     105,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 21.021,
@@ -624,7 +1194,16 @@
    "scores": [
     105,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   },
   {
    "t": 21.355,
@@ -634,7 +1213,16 @@
    "scores": [
     105,
     107
-   ]
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
   }
  ],
  "ticks": [
