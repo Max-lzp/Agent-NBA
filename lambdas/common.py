@@ -8,17 +8,17 @@ import uuid
 from datetime import datetime, timezone
 
 EVENT_TYPES = {"shot", "rebound", "turnover", "pass", "screen", "hold"}
-
-SYSTEM_PROMPT = (
-    "你是 Deep Court 的比赛事件分析器。只输出一个 JSON 对象，不要 Markdown。"
-    "格式："
-    '{"events":[{"eventType":"shot|rebound|turnover|pass|screen|hold",'
-    '"timecode":"MM:SS","players":[],"confidence":0.0,"label":"短标签","detail":""}]}'
-    "规则：有画面就只根据画面；没有画面时只能依据 gameMeta 或文件名做草稿，"
-    "confidence 不得超过 0.4，detail 必须以「未抽帧」开头。"
-    "不要编造输入里没出现的 xFG%、GRAV 或球员全名。"
-    "事件 3 到 8 条，按时间排序。"
-)
+STREAM_TYPES = {
+    "receive": "hold",
+    "pass": "pass",
+    "turnover": "turnover",
+    "shot": "shot",
+    "rebound": "rebound",
+    "screen_set": "screen",
+    "screen_use": "screen",
+    "dribble_handoff": "screen",
+}
+TEAM_ZH = {"HOU": "火箭", "DAL": "独行侠"}
 
 
 def iso_now() -> str:
@@ -50,17 +50,6 @@ def parse_body(event: dict) -> dict:
     return data
 
 
-def extract_json_object(text: str) -> dict:
-    start = text.find("{")
-    end = text.rfind("}")
-    if start < 0 or end <= start:
-        raise ValueError("model did not return JSON")
-    data = json.loads(text[start : end + 1])
-    if not isinstance(data, dict):
-        raise ValueError("model JSON must be an object")
-    return data
-
-
 def safe_filename(name: str) -> str:
     base = (name or "clip.mp4").replace("\\", "/").split("/")[-1].strip()
     base = re.sub(r"[^A-Za-z0-9._-]+", "-", base).strip(".-")
@@ -77,33 +66,46 @@ def object_key(job_id: str, filename: str) -> str:
     return f"raw/{job_id}/{safe_filename(filename)}"
 
 
-def normalize_events(data: dict) -> list[dict]:
-    raw_events = data.get("events") if isinstance(data, dict) else None
-    if not isinstance(raw_events, list):
-        raise ValueError("events must be a list")
-    clean: list[dict] = []
-    for ev in raw_events[:8]:
-        if not isinstance(ev, dict):
-            continue
-        kind = str(ev.get("eventType") or "hold")
-        if kind not in EVENT_TYPES:
-            kind = "hold"
-        players = ev.get("players") if isinstance(ev.get("players"), list) else []
-        try:
-            confidence = float(ev.get("confidence") or 0)
-        except (TypeError, ValueError):
-            confidence = 0.0
-        confidence = max(0.0, min(1.0, confidence))
-        clean.append(
-            {
+def _who(ref: dict | None) -> str:
+    if not ref:
+        return ""
+    if ref.get("name"):
+        return str(ref["name"])
+    team = TEAM_ZH.get(ref.get("team") or "", ref.get("team") or "")
+    return f"{team} {ref['number']} 号" if ref.get("number") else f"{team}球员"
+
+
+def timeline_from_stream(stream: dict) -> list[dict]:
+    """事件流结构化文件（pipeline/events，schema 0.1）→ 回放页的事件列表，按时间排序。"""
+    if not isinstance(stream, dict) or not isinstance(stream.get("possessions"), list):
+        raise ValueError("不是事件流文件：缺少 possessions")
+    rows: list[dict] = []
+    for poss in stream["possessions"]:
+        offense = TEAM_ZH.get(poss.get("offense_team") or "", poss.get("offense_team") or "")
+        for ev in poss.get("events") or []:
+            kind = STREAM_TYPES.get(ev.get("type"))
+            if not kind:
+                continue
+            actor, target = _who(ev.get("actor")), _who(ev.get("target"))
+            label = {
+                "hold": f"{actor} 接球",
+                "pass": f"{actor} → {target} 传球",
+                "turnover": f"失误 · {actor} → {target}",
+                "shot": f"{actor} 出手",
+                "rebound": f"{actor} 篮板",
+                "screen": f"{actor} 掩护",
+            }[kind]
+            t = float(ev.get("t") or 0.0)
+            confidence = max(0.0, min(1.0, float(ev.get("confidence") or 0.0)))
+            rows.append({
                 "eventType": kind,
-                "timecode": str(ev.get("timecode") or "")[:16],
-                "players": [str(p)[:40] for p in players[:6]],
+                "t": round(t, 2),
+                "timecode": f"{int(t) // 60:02d}:{int(t) % 60:02d}",
+                "players": [name for name in (actor, target) if name],
                 "confidence": round(confidence, 3),
-                "label": str(ev.get("label") or kind)[:80],
-                "detail": str(ev.get("detail") or "")[:240],
-            }
-        )
-    if not clean:
-        raise ValueError("no usable events")
-    return clean
+                "label": label[:80],
+                "detail": f"{poss.get('possession_id', '')} · {offense}进攻 · 置信度 {confidence:.2f}",
+                "source": ev.get("source") or "cv",
+            })
+    rows.sort(key=lambda row: row["t"])
+    return rows

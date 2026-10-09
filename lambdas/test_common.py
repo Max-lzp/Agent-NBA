@@ -8,10 +8,6 @@ import common
 
 
 class CommonTest(unittest.TestCase):
-    def test_extract_json_object_ignores_preamble(self):
-        data = common.extract_json_object('好的\n{"events":[]}\n谢谢')
-        self.assertEqual(data, {"events": []})
-
     def test_safe_filename_strips_path_and_spaces(self):
         self.assertEqual(common.safe_filename("../clips/my clip.mp4"), "my-clip.mp4")
 
@@ -19,25 +15,32 @@ class CommonTest(unittest.TestCase):
         key = common.object_key("abc", "clip.mp4")
         self.assertEqual(key, "raw/abc/clip.mp4")
 
-    def test_normalize_events_clamps_unknown_type(self):
-        events = common.normalize_events(
-            {
-                "events": [
-                    {
-                        "eventType": "dunk",
-                        "timecode": "01:14",
-                        "players": ["申京"],
-                        "confidence": 1.4,
-                        "label": "出手",
-                        "detail": "",
-                    }
-                ]
-            }
-        )
-        self.assertEqual(events[0]["eventType"], "hold")
-        self.assertEqual(events[0]["confidence"], 1.0)
-        self.assertEqual(events[0]["players"], ["申京"])
+    def test_timeline_from_stream_labels_and_sorts(self):
+        stream = {
+            "possessions": [
+                {
+                    "possession_id": "P01",
+                    "offense_team": "HOU",
+                    "events": [
+                        {"t": 19.35, "type": "shot", "actor": {"team": "HOU", "number": "30", "name": "Capela"},
+                         "confidence": 0.7, "source": "cv"},
+                        {"t": 4.4, "type": "pass", "actor": {"team": "HOU", "number": "17", "name": "Eason"},
+                         "target": {"team": "HOU", "number": "", "track_id": 9}, "confidence": 0.8, "source": "cv"},
+                        {"t": 5.0, "type": "scoreboard_sync", "actor": {"team": "HOU", "number": ""},
+                         "confidence": 1.0, "source": "cv"},
+                    ],
+                }
+            ]
+        }
+        rows = common.timeline_from_stream(stream)
+        self.assertEqual([row["eventType"] for row in rows], ["pass", "shot"])
+        self.assertEqual(rows[0]["label"], "Eason → 火箭球员 传球")
+        self.assertEqual(rows[1]["timecode"], "00:19")
+        self.assertEqual(rows[1]["t"], 19.35)
 
+    def test_timeline_from_stream_rejects_other_json(self):
+        with self.assertRaises(ValueError):
+            common.timeline_from_stream({"events": []})
 
 if __name__ == "__main__":
     unittest.main()

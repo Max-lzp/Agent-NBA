@@ -313,15 +313,16 @@ function presentEvent(event) {
     player: (event.players && event.players[0]) || "",
     detail: event.detail || "",
     xfg: event.label || "",
-    clipTime: toSeconds(event.timecode),
+    clipTime: Number.isFinite(event.t) ? event.t : toSeconds(event.timecode),
     pos: 0,
   };
 }
 
 function statusText(status) {
   return {
-    PENDING: "等待分析",
-    ANALYZING: "AgentCore / Bedrock 分析中",
+    PENDING: "等待上传",
+    TRACKING: "等待本地追踪结果",
+    ANALYZING: "AgentCore 校验结构化清单",
     DONE: "分析完成",
     FAILED: "分析失败",
   }[status] || status || "未知状态";
