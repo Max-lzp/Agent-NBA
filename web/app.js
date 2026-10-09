@@ -33,6 +33,10 @@ drop.addEventListener("drop", (event) => {
 });
 
 go.addEventListener("click", () => start());
+document.querySelector("#login").addEventListener("submit", (event) => {
+  event.preventDefault();
+  signIn();
+});
 
 function selectTab(which) {
   const fileOn = which === "file";
@@ -97,12 +101,62 @@ function apiBase() {
   return (window.DEEPCOURT_CONFIG?.apiBase || "/api").replace(/\/$/, "");
 }
 
+async function loadRuntime() {
+  if (window.DEEPCOURT_CONFIG?.userPoolClientId) return window.DEEPCOURT_CONFIG;
+  try {
+    const response = await fetch("/runtime.json");
+    if (!response.ok) return window.DEEPCOURT_CONFIG || {};
+    const extra = await response.json();
+    window.DEEPCOURT_CONFIG = { ...(window.DEEPCOURT_CONFIG || {}), ...extra };
+  } catch {
+    return window.DEEPCOURT_CONFIG || {};
+  }
+  return window.DEEPCOURT_CONFIG;
+}
+
+async function signIn() {
+  const note = document.querySelector("#login-note");
+  const config = await loadRuntime();
+  if (!config?.userPoolClientId) {
+    note.textContent = "本地预览不校验账号。部署之后，创建任务才需要登录。";
+    return;
+  }
+  note.textContent = "正在登录…";
+  try {
+    const response = await fetch("https://cognito-idp.us-east-1.amazonaws.com/", {
+      method: "POST",
+      headers: {
+        "content-type": "application/x-amz-json-1.1",
+        "x-amz-target": "AWSCognitoIdentityProviderService.InitiateAuth",
+      },
+      body: JSON.stringify({
+        AuthFlow: "USER_PASSWORD_AUTH",
+        ClientId: config.userPoolClientId,
+        AuthParameters: {
+          USERNAME: document.querySelector("#login-user").value.trim(),
+          PASSWORD: document.querySelector("#login-pass").value,
+        },
+      }),
+    });
+    const data = await response.json();
+    const token = data?.AuthenticationResult?.IdToken;
+    if (!response.ok || !token) throw new Error(data.message || "登录没有成功");
+    sessionStorage.setItem("deepcourtToken", token);
+    note.textContent = "已登录。现在可以创建任务。";
+  } catch (error) {
+    note.textContent = error.message || "登录没有成功";
+  }
+}
+
 async function postJson(path, body) {
   let response;
+  const headers = { "content-type": "application/json" };
+  const token = sessionStorage.getItem("deepcourtToken");
+  if (token) headers.authorization = token;
   try {
     response = await fetch(`${apiBase()}${path}`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers,
       body: JSON.stringify(body),
     });
   } catch {

@@ -74,8 +74,14 @@
       </div>
       <div>
         <div class="clock" id="clock">Q4 01:34</div>
+        <label class="narrate">
+          <input id="narrate" type="checkbox">
+          <span>数字解说</span>
+          <em>即将推出</em>
+        </label>
         <div class="aside"><span class="teal">◆</span> 解说由 AI 生成 · 已声明<br><span class="brand">TEAM 04 · DEEP COURT</span></div>
       </div>
+      <audio id="narration" preload="none" src="assets/demo-commentary.wav"></audio>
     </div>
 
     <div class="events" id="events"></div>
@@ -109,6 +115,7 @@
         </button>
       </div>
       <p class="hint" id="share-note">片段还不能发出去。快手可以点，其余渠道先占位。</p>
+      <iframe id="kuaishou-frame" class="kuaishou-frame" title="快手扫码" hidden></iframe>
     </section>
 
     <section class="spec">

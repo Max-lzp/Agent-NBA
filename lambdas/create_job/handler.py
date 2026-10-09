@@ -35,6 +35,8 @@ def handler(event, _context):
         return common.json_response(400, {"error": "sourceUrl 必须是 http(s) 链接"})
 
     job_id = common.new_job_id()
+    from trace_job import annotate
+    annotate(job_id)
     now = common.iso_now()
     key = common.object_key(job_id, filename) if filename else ""
     item = {

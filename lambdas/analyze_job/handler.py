@@ -33,6 +33,8 @@ _events = _dynamodb.Table(EVENTS_TABLE)
 
 def handler(event, _context):
     job_id, key = _resolve_target(event)
+    from trace_job import annotate
+    annotate(job_id)
     if not job_id:
         print(json.dumps({"msg": "ignore event", "keys": list(event)[:8]}))
         return {"ok": False, "reason": "no job"}

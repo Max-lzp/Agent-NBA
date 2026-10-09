@@ -14,6 +14,14 @@
     <h1>DEEP <span class="accent">COURT</span></h1>
     <p class="lede">上传一段比赛录像——AI 完成球员识别、数据对齐与亮点渲染，输出可交互的深度回放页</p>
 
+    <form class="login" id="login">
+      <span>评委登录 <em>只保护创建任务，回放页公开</em></span>
+      <input id="login-user" autocomplete="username" placeholder="用户名" aria-label="用户名">
+      <input id="login-pass" type="password" autocomplete="current-password" placeholder="密码" aria-label="密码">
+      <button type="submit">登录</button>
+      <p class="hint" id="login-note">本地预览不校验账号。部署之后，创建任务才需要登录。</p>
+    </form>
+
     <section class="panel" aria-labelledby="upload-title">
       <h2 id="upload-title" class="hidden">上传比赛</h2>
       <div class="tabs" role="tablist">

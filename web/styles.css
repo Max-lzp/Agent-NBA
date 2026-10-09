@@ -516,6 +516,38 @@ h2 {
 .share-btn.on { border-color: var(--orange); }
 .share-btn:disabled { opacity: 0.45; cursor: default; }
 .share .hint { margin: 12px 0 0; }
+.kuaishou-frame { display: block; width: 320px; height: 360px; margin-top: 12px; border: 1px solid var(--line); background: #fff; }
+.kuaishou-frame[hidden] { display: none; }
+
+.login {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.login em { font-style: normal; margin-left: 6px; }
+.login input, .login button {
+  background: var(--panel);
+  color: var(--cream);
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  font: 13px MiSans, sans-serif;
+}
+.login button { cursor: pointer; border-color: var(--orange); color: var(--orange); }
+.login .hint { flex-basis: 100%; margin: 0; }
+
+.narrate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--cream);
+  font-size: 12px;
+}
+.narrate em { font-style: normal; color: var(--orange); letter-spacing: 0.08em; font-size: 10px; }
 
 .spec { margin-top: 28px; }
 .spec h2 { font-family: MiSans, sans-serif; font-size: 15px; letter-spacing: 0.18em; color: var(--muted); font-weight: 400; margin: 16px 0; }

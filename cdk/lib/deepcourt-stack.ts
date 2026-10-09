@@ -14,6 +14,7 @@ import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import { Construct } from 'constructs';
 import { addP1 } from './p1';
+import { addP2, addP2Auth } from './p2';
 
 const VISION_MODEL = 'qwen.qwen3-vl-235b-a22b';
 const TEXT_MODEL = 'global.anthropic.claude-sonnet-4-6';
@@ -167,15 +168,22 @@ export class DeepCourtStack extends cdk.Stack {
       proxy: false,
       description: 'Deep Court jobs API',
       endpointTypes: [apigw.EndpointType.REGIONAL],
-      deployOptions: { stageName: 'prod' },
+      deployOptions: {
+        stageName: 'prod',
+        tracingEnabled: this.node.tryGetContext('enableP2') !== 'false',
+      },
       defaultCorsPreflightOptions: {
         allowOrigins: apigw.Cors.ALL_ORIGINS,
         allowMethods: ['GET', 'POST', 'OPTIONS'],
-        allowHeaders: ['Content-Type', 'content-type'],
+        allowHeaders: ['Content-Type', 'content-type', 'Authorization'],
       },
     });
     const jobsResource = api.root.addResource('jobs');
-    jobsResource.addMethod('POST', new apigw.LambdaIntegration(createFn));
+    const p2Auth = addP2Auth(this);
+    jobsResource.addMethod('POST', new apigw.LambdaIntegration(createFn), p2Auth ? {
+      authorizer: p2Auth.authorizer,
+      authorizationType: apigw.AuthorizationType.COGNITO,
+    } : undefined);
     const oneJob = jobsResource.addResource('{id}');
     oneJob.addMethod('GET', new apigw.LambdaIntegration(getFn));
     oneJob.addResource('events').addMethod('GET', new apigw.LambdaIntegration(listFn));
@@ -252,6 +260,12 @@ export class DeepCourtStack extends cdk.Stack {
       sources: [
         s3deploy.Source.asset(webDir, { exclude: ['design-ref', 'design-ref/**'] }),
         s3deploy.Source.data('config.js', configJs),
+        s3deploy.Source.jsonData('runtime.json', {
+          apiBase: '/api',
+          region: 'us-east-1',
+          userPoolId: p2Auth ? p2Auth.userPoolId : '',
+          userPoolClientId: p2Auth ? p2Auth.clientId : '',
+        }),
       ],
       destinationBucket: webBucket,
       distribution,
@@ -275,6 +289,14 @@ export class DeepCourtStack extends cdk.Stack {
     if (this.node.tryGetContext('enableP1') !== 'false') {
       addP1(this, { mediaBucket, jobs, events, analyzeFn, code });
     }
+    if (p2Auth) {
+      addP2(this, {
+        api,
+        mediaBucket,
+        code,
+        callbackUrl: `https://${distribution.distributionDomainName}/api/oauth/kuaishou/callback`,
+      });
+    }
   }
 
   private pyFunction(
@@ -294,6 +316,9 @@ export class DeepCourtStack extends cdk.Stack {
       memorySize: memory,
       ephemeralStorageSize: cdk.Size.mebibytes(ephemeralMb),
       environment,
+      tracing: this.node.tryGetContext('enableP2') === 'false'
+        ? lambda.Tracing.DISABLED
+        : lambda.Tracing.ACTIVE,
       logGroup: new logs.LogGroup(this, `${id}Logs`, {
         retention: logs.RetentionDays.ONE_WEEK,
         removalPolicy: cdk.RemovalPolicy.DESTROY,

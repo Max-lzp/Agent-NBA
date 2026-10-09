@@ -60,6 +60,19 @@ P0 不包含 Polly、Cognito、X-Ray。播放器里的数字解说开关标着�
 | MediaConvert | 模板 `deepcourt-render-template` | 把 PNG 叠加层合成 1080p MP4，写到 `rendered/`。 |
 | CloudWatch | 仪表盘 `deepcourt-overview`，两条告警 | 看分析吞吐、延迟、Bedrock 限流。告警先不接通知。 |
 
+## P2（代码在同一栈，尚未部署）
+
+上下文 `enableP2=false` 时不建用户池、不解说、不打开 X-Ray。`POST /jobs` 恢复成公开写入。
+
+| 服务 | 代码位置 | 为什么是它 |
+| --- | --- | --- |
+| Polly + Bedrock | `lambdas/commentary` | 两句中文解说，合成 MP3 放到 `commentary/`。混进成片用本机 `commentary/mix.sh`，因为 Lambda 里没有 ffmpeg。 |
+| Cognito | 用户池 `deepcourt-judges` | 只给 `POST /jobs` 挂授权。读任务和事件仍然公开。 |
+| X-Ray | API 阶段和 Lambda `tracing: ACTIVE` | 处理段调用 `trace_job.annotate`，装了 SDK 时片段上会有 jobId。 |
+| Secrets Manager | `deepcourt/feishu-webhook`、`deepcourt/github-token`、`deepcourt/kuaishou` | 真实密钥部署后写入。仓库和前端都不放。 |
+| Cost Explorer | `scripts/cost-report.sh` | 按 `project` 标签看花费。栈上的 `team`、`stage`、`project` 会传到可标记的资源。 |
+| 快手 OAuth | `lambdas/kuaishou` | 扫码地址由后端拼。没有 app_id 时接口返回敬请期待，不把密钥给浏览器。 |
+
 ## 本地检查
 
 ```bash
