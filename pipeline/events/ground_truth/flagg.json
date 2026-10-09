@@ -1,0 +1,15 @@
+{
+  "clip": "flagg",
+  "video": "../官方资料/train_video/训练_弗拉格2月1日.mp4",
+  "duration_s": 21.488,
+  "notes": "第四节 DAL 103 / HOU 107。进攻钟逐秒：0s=21 → 16s=5 连续未重置，中间无球权转换。比赛钟 17s=1:35、18s 停在 1:34 且进攻钟 24，21s DAL 105：DAL 在 17–18s 间两分命中。之后 HOU 发球。",
+  "possessions": [
+    {"team": "DAL", "t_start": 0.0, "t_end": 17.6, "result": "made_2", "verified": true},
+    {"team": "HOU", "t_start": 17.6, "t_end": 21.5, "result": "in_progress", "verified": true}
+  ],
+  "events": [
+    {"t": 17.2, "type": "shot", "team": "DAL", "actor": null, "made": true, "tol_s": 1.0, "verified": false,
+     "note": "停钟推出命中在 17–18s，出手略早；出手人待确认（片名是 Flagg）"}
+  ],
+  "todo": "看视频补 DAL 回合内的 pass（t / actor / target），确认出手时刻与出手人后把 verified 改 true"
+}

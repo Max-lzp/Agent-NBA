@@ -1,0 +1,12 @@
+{
+  "clip": "amen",
+  "video": "../官方资料/train_video/训练_阿门1月4日 .mp4",
+  "duration_s": 22.773,
+  "notes": "第三节 HOU 60 / DAL 63。进攻钟逐秒：0s=19 → 19s=0.6 连续未重置，0–19.6s 是 DAL 一个回合（8s、10.5s 画面里运球的是深色 DAL）。20s 进攻钟回 24，21s HOU 62，21.5s 起 Amen 特写。DAL 回合怎么结束（被断 / 打铁）与 HOU 得分过程待人工确认。",
+  "possessions": [
+    {"team": "DAL", "t_start": 0.0, "t_end": 19.6, "result": "unknown", "verified": true},
+    {"team": "HOU", "t_start": 19.6, "t_end": 21.4, "result": "made_2", "verified": false}
+  ],
+  "events": [],
+  "todo": "看视频：1) DAL 回合内的 pass（t / actor / target）；2) 19–20s 发生了什么（抢断 / 盖帽 / 出手）；3) HOU 2 分是谁、在哪一刻。改完把相应 verified 改 true"
+}
