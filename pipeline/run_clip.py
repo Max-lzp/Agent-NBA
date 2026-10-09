@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """一条命令跑一段新视频：登记片段 → 追踪（顺带球掩码）与记分牌并行 → 事件流清单 → 可选上传。
 
+    python3 -m pipeline.run_clip --video "../官方资料/exam.mp4"                    # 客主队、白衣队自动认
     python3 -m pipeline.run_clip --video "../官方资料/exam.mp4" --away DAL --home HOU --white HOU
     python3 -m pipeline.run_clip --clip exam --job-id <jobId> --upload      # 已登记过，只重跑并上传
 
@@ -25,6 +26,8 @@ OUT = ROOT / "pipeline" / "events" / "out"
 CLIPS_FILE = VISION / "clips.json"
 VENV_PY = VISION / ".venv" / "bin" / "python"
 TEAMS = ("HOU", "DAL")
+WHITE_MIN_VOTES = 3        # 白衣队号码投票：胜票至少这么多
+WHITE_MIN_SHARE = 0.75     # 且占比至少这么多，才推翻登记
 STACK = "Team04DeepCourt"
 PROFILE = os.environ.get("AWS_PROFILE", "team04")
 REGION = "us-east-1"
@@ -40,20 +43,71 @@ def register(args) -> str:
     if not video.is_file():
         sys.exit(f"找不到视频：{video}")
     clip_id = args.clip or re.sub(r"[^A-Za-z0-9]+", "_", video.stem).strip("_").lower() or "clip"
-    if {args.away, args.home} != set(TEAMS):
-        sys.exit("--away / --home 必须是 HOU 和 DAL 各一个（记分牌上客队在左或在上）")
-    white = args.white or args.home
+    away, home = args.away, args.home
+    if away and not home:
+        home = _other(away)
+    if home and not away:
+        away = _other(home)
+    if away and away == home:
+        sys.exit("--away / --home 必须是 HOU 和 DAL 各一个")
+    white = args.white or home or "HOU"
     clips[clip_id] = {
         "game_id": args.game_id or clip_id,
         "official_game_id": args.game_id or "",
         "video": os.path.relpath(video, ROOT),
-        "away": args.away,
-        "home": args.home,
-        "jersey_color_to_team": {"white": white, "dark": args.away if white == args.home else args.home},
+        "away": away,
+        "home": home,
+        "jersey_color_to_team": {"white": white, "dark": _other(white)},
     }
     CLIPS_FILE.write_text(json.dumps(clips, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"[登记] {clip_id}: {args.away} @ {args.home}，白衣 {white}，{video.name}")
+    print(f"[登记] {clip_id}: {away or '?'} @ {home or '?'}（记分牌认得出就以记分牌为准），先按白衣 {white}，{video.name}")
     return clip_id
+
+
+def _other(team: str) -> str:
+    return TEAMS[1] if team == TEAMS[0] else TEAMS[0]
+
+
+def _set_clip(clip_id: str, **fields) -> dict:
+    clips = json.loads(CLIPS_FILE.read_text(encoding="utf-8"))
+    clips[clip_id].update(fields)
+    CLIPS_FILE.write_text(json.dumps(clips, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return clips[clip_id]
+
+
+def check_teams(clip_id: str) -> None:
+    """记分牌认出的客主队写回登记；与命令行不一致就报警。"""
+    clip = json.loads(CLIPS_FILE.read_text(encoding="utf-8"))[clip_id]
+    board = json.loads((RESULTS / f"{clip_id}.scoreboard.json").read_text(encoding="utf-8"))
+    away, home = board["away"], board["home"]
+    if board.get("detected_reads", 0) and (clip.get("away"), clip.get("home")) not in {(None, None), (away, home)}:
+        print(f"[警告] 命令行写的是 {clip['away']} @ {clip['home']}，记分牌读到 {away} @ {home}"
+              f"（{board['detected_reads']} 次），已按记分牌改")
+    _set_clip(clip_id, away=away, home=home)
+
+
+def infer_white(clip_id: str) -> tuple[str | None, int, int]:
+    """白衣球员读到的号码只在哪队赛季名单里有，就给那队投一票；深色球员反过来。返回（白衣队, 胜票, 总票）。"""
+    sys.path.insert(0, str(ROOT))
+    from pipeline.vision.roster_map import normalize_jersey, season_roster
+
+    numbers = {team: {normalize_jersey(p["jersey"]) for p in block["players"]}
+               for team, block in season_roster()["teams"].items()}
+    doc = json.loads((RESULTS / f"{clip_id}.json").read_text(encoding="utf-8"))
+    votes = {team: 0 for team in TEAMS}
+    for p in doc["players"]:
+        number, color = normalize_jersey(p.get("jersey")), p.get("jersey_color")
+        if p.get("role") != "player" or not number or color not in {"white", "dark"}:
+            continue
+        owners = [team for team in TEAMS if number in numbers.get(team, set())]
+        if len(owners) != 1:
+            continue
+        votes[owners[0] if color == "white" else _other(owners[0])] += 1
+    total = sum(votes.values())
+    if not total:
+        return None, 0, 0
+    team = max(votes, key=votes.get)
+    return team, votes[team], total
 
 
 def _start(cmd: list[str]) -> tuple[subprocess.Popen, float]:
@@ -71,15 +125,25 @@ def _finish(name: str, proc: subprocess.Popen, start: float) -> bool:
 
 
 def vision(clip_id: str) -> None:
-    """追踪（GPU 为主，顺带写球掩码）和记分牌（CPU OCR）并行。"""
+    """追踪（GPU 为主，顺带写球掩码）和记分牌（CPU OCR）并行；白衣队认错就改登记重跑追踪。"""
     t0 = time.time()
     track = _start(["analyze.py", "--clip", clip_id])
     board = _start(["scoreboard.py", "--clip", clip_id])
     ok = _finish("记分牌", *board)
     ok = _finish("追踪+号码+球掩码", *track) and ok
-    print(f"[视觉] 合计 {time.time() - t0:.0f}s")
     if not ok:
         sys.exit("视觉步骤失败，见上面的输出")
+    check_teams(clip_id)
+    clip = json.loads(CLIPS_FILE.read_text(encoding="utf-8"))[clip_id]
+    configured = clip["jersey_color_to_team"]["white"]
+    team, won, total = infer_white(clip_id)
+    print(f"[白衣] 号码投票 {team} {won}/{total}，登记的是 {configured}")
+    if team and team != configured and won >= WHITE_MIN_VOTES and won / total >= WHITE_MIN_SHARE:
+        print(f"[警告] 白衣更像 {team}，改登记并重跑追踪")
+        _set_clip(clip_id, jersey_color_to_team={"white": team, "dark": _other(team)})
+        if not _finish("追踪（重跑）", *_start(["analyze.py", "--clip", clip_id])):
+            sys.exit("追踪重跑失败")
+    print(f"[视觉] 合计 {time.time() - t0:.0f}s")
 
 
 def build(clip_id: str, job_id: str) -> Path:
@@ -160,9 +224,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="一条命令跑新视频")
     ap.add_argument("--video", help="视频路径；不给就用 clips.json 里已登记的 --clip")
     ap.add_argument("--clip", help="片段 id，默认取文件名")
-    ap.add_argument("--away", choices=TEAMS, help="客队（记分牌左 / 上）")
+    ap.add_argument("--away", choices=TEAMS, help="客队（记分牌左 / 上）；记分牌读得到队名时以记分牌为准")
     ap.add_argument("--home", choices=TEAMS, help="主队")
-    ap.add_argument("--white", choices=TEAMS, help="穿白（浅色）球衣的队，默认主队；先看一帧确认")
+    ap.add_argument("--white", choices=TEAMS, help="穿白（浅色）球衣的队，默认主队；号码投票明显不符时自动改")
     ap.add_argument("--game-id", help="官方 gameId，例如 0022500701")
     ap.add_argument("--job-id", help="云上任务 id；默认等于片段 id")
     ap.add_argument("--skip-vision", action="store_true", help="视觉产物已在，只重建清单（调事件规则时用）")

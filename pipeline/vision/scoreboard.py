@@ -45,6 +45,7 @@ COLUMN_PX = 12             # 两个比分同一列的水平容差（1080p 像素
 ANCHOR_PX = 80             # SS.s 候选离上一次比赛钟位置的最大距离（1080p 像素）
 CLOCK_SLACK_S = 2.0        # 比赛钟相对流逝时间允许多跳的秒数
 TEAMS = ("HOU", "DAL")
+MIN_TEAM_READS = 5         # 至少这么多次读到队名缩写，才用它覆盖配置里的客主队
 
 CLOCK = re.compile(r"^(\d{1,2}):(\d{2})$")
 TENTHS = re.compile(r"^(\d{1,2})\.(\d)$")
@@ -210,13 +211,18 @@ def read_clip(clip_id: str) -> dict:
     cap.release()
     orders = [tuple(r["teams"]) for r in reads if r.get("teams")]
     detected = max(set(orders), key=orders.count) if orders else (None, None)
-    return {"clip": clip_id, "sampled_fps": round(fps / step, 3), "away": clip["away"], "home": clip["home"],
+    return {"clip": clip_id, "sampled_fps": round(fps / step, 3), "away": clip.get("away"), "home": clip.get("home"),
             "detected_away": detected[0], "detected_home": detected[1], "detected_reads": len(orders),
             "reads": reads}
 
 
 def derive(doc: dict) -> dict:
     away, home = doc["away"], doc["home"]
+    if doc.get("detected_reads", 0) >= MIN_TEAM_READS and doc.get("detected_away"):
+        away, home = doc["detected_away"], doc["detected_home"]
+        doc["away"], doc["home"] = away, home
+    if not away or not home:
+        raise SystemExit(f"{doc['clip']}：记分牌上认不出客主队，请用 --away / --home 指定")
     resets = []
     prev_shot = None
     for r in doc["reads"]:
