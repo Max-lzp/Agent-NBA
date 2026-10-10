@@ -1,0 +1,930 @@
+{
+  "model": "shot_result_residual_v1",
+  "shots": [
+    {
+      "game_id": "0022500701",
+      "event_id": 30,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 1,
+      "clock": "10:05",
+      "shot_quality": 0.475,
+      "expected_points": 0.95,
+      "actual_points": 0,
+      "scoring_residual_points": -0.95,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/30/09c15691-7b60-70fb-1a5e-e35c5a6bacab_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率47.5%，预期0.95分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 63,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 1,
+      "clock": "7:35",
+      "shot_quality": 0.716,
+      "expected_points": 1.432,
+      "actual_points": 2,
+      "scoring_residual_points": 0.5680000000000001,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/63/6b5bdefd-2fd8-42ae-0d15-c636486947d7_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率71.6%，预期1.43分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 92,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 1,
+      "clock": "5:22",
+      "shot_quality": 0.442,
+      "expected_points": 0.884,
+      "actual_points": 2,
+      "scoring_residual_points": 1.116,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/92/8fe31062-4e4e-9a8a-d2e3-18291e3ffbc9_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率44.2%，预期0.88分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 108,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 1,
+      "clock": "4:27",
+      "shot_quality": 0.506,
+      "expected_points": 1.012,
+      "actual_points": 2,
+      "scoring_residual_points": 0.988,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/108/e588d6a4-f88a-8fc8-1dca-d706af704665_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率50.6%，预期1.01分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 228,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 2,
+      "clock": "8:24",
+      "shot_quality": 0.382,
+      "expected_points": 1.146,
+      "actual_points": 0,
+      "scoring_residual_points": -1.146,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/228/7640a886-7f98-a40f-4b37-a08e609af090_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率38.2%，预期1.15分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 233,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 2,
+      "clock": "8:00",
+      "shot_quality": 0.736,
+      "expected_points": 1.472,
+      "actual_points": 2,
+      "scoring_residual_points": 0.528,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/233/127df379-7d2e-4afb-a966-d8391fbaadec_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率73.6%，预期1.47分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 246,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 2,
+      "clock": "7:29",
+      "shot_quality": 0.358,
+      "expected_points": 0.716,
+      "actual_points": 2,
+      "scoring_residual_points": 1.284,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/246/45ab9399-57b7-d613-36bb-ca148cb8c9e2_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率35.8%，预期0.72分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 249,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 2,
+      "clock": "7:03",
+      "shot_quality": 0.477,
+      "expected_points": 0.954,
+      "actual_points": 0,
+      "scoring_residual_points": -0.954,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/249/6708030f-fdb2-efc7-2fc7-66048cc2736a_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率47.7%，预期0.95分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 282,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 2,
+      "clock": "4:51",
+      "shot_quality": 0.59,
+      "expected_points": 1.18,
+      "actual_points": 0,
+      "scoring_residual_points": -1.18,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/282/623b8ba5-a6ab-5371-3c40-594e71a7e867_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率59.0%，预期1.18分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 346,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 2,
+      "clock": "20.4",
+      "shot_quality": 0.504,
+      "expected_points": 1.008,
+      "actual_points": 0,
+      "scoring_residual_points": -1.008,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/346/af58bcb1-8712-94b5-2046-436d8fc651c7_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率50.4%，预期1.01分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 366,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 3,
+      "clock": "11:14",
+      "shot_quality": 0.813,
+      "expected_points": 1.626,
+      "actual_points": 2,
+      "scoring_residual_points": 0.3740000000000001,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/366/fb5521b8-d66a-5067-5b17-50fc69bfe392_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率81.3%，预期1.63分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 433,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 3,
+      "clock": "5:43",
+      "shot_quality": 0.436,
+      "expected_points": 0.872,
+      "actual_points": 2,
+      "scoring_residual_points": 1.1280000000000001,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/433/c8111dab-ccf6-2e68-6471-a20d5d175693_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率43.6%，预期0.87分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 477,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 3,
+      "clock": "2:58",
+      "shot_quality": 0.373,
+      "expected_points": 1.119,
+      "actual_points": 3,
+      "scoring_residual_points": 1.881,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/477/32ccf124-d780-9984-29af-08d13bee2fb9_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率37.3%，预期1.12分，实际3分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 481,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 3,
+      "clock": "2:27",
+      "shot_quality": 0.534,
+      "expected_points": 1.068,
+      "actual_points": 2,
+      "scoring_residual_points": 0.9319999999999999,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/481/e7e844aa-1ef9-1039-d5d6-8bfcc4ff20b8_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率53.4%，预期1.07分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 604,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 4,
+      "clock": "6:51",
+      "shot_quality": 0.346,
+      "expected_points": 1.0379999999999998,
+      "actual_points": 0,
+      "scoring_residual_points": -1.0379999999999998,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/604/ed5a3e4c-e5c7-7b0d-3e15-a061613eefa8_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率34.6%，预期1.04分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 619,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 4,
+      "clock": "5:33",
+      "shot_quality": 0.357,
+      "expected_points": 0.714,
+      "actual_points": 0,
+      "scoring_residual_points": -0.714,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/619/f948538e-81db-8e2c-d25a-2c7fb60fef6c_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率35.7%，预期0.71分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 626,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 4,
+      "clock": "5:06",
+      "shot_quality": 0.519,
+      "expected_points": 1.038,
+      "actual_points": 2,
+      "scoring_residual_points": 0.962,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/626/0aaa62c6-d41a-bc01-ca13-e31e8557916e_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率51.9%，预期1.04分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 630,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 4,
+      "clock": "4:22",
+      "shot_quality": 0.506,
+      "expected_points": 1.012,
+      "actual_points": 2,
+      "scoring_residual_points": 0.988,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/630/4d265441-40c4-f508-971e-0ded24a320a5_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率50.6%，预期1.01分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 636,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 4,
+      "clock": "3:39",
+      "shot_quality": 0.407,
+      "expected_points": 0.814,
+      "actual_points": 2,
+      "scoring_residual_points": 1.186,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/636/c2e446a9-cee4-474a-56ae-2e1443aa6627_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率40.7%，预期0.81分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 666,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 4,
+      "clock": "1:35",
+      "shot_quality": 0.504,
+      "expected_points": 1.008,
+      "actual_points": 2,
+      "scoring_residual_points": 0.992,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/666/734c2a04-b3a2-e414-6430-a04326a4559a_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率50.4%，预期1.01分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 672,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 4,
+      "clock": "57.1",
+      "shot_quality": 0.407,
+      "expected_points": 0.814,
+      "actual_points": 0,
+      "scoring_residual_points": -0.814,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/672/767ba401-586b-e8ff-2064-9ffa01c140e1_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率40.7%，预期0.81分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 681,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 4,
+      "clock": "25.3",
+      "shot_quality": 0.215,
+      "expected_points": 0.43,
+      "actual_points": 0,
+      "scoring_residual_points": -0.43,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/681/2448a66d-ee12-7ea9-4a81-b115d171b6f8_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率21.5%，预期0.43分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 687,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 4,
+      "clock": "10.4",
+      "shot_quality": 0.336,
+      "expected_points": 1.008,
+      "actual_points": 0,
+      "scoring_residual_points": -1.008,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/687/362a2736-b9b3-282e-53e1-42435c392940_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率33.6%，预期1.01分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 11,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 1,
+      "clock": "11:31",
+      "shot_quality": 0.442,
+      "expected_points": 1.326,
+      "actual_points": 0,
+      "scoring_residual_points": -1.326,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/11/b0942505-83e5-72e3-223c-4985e0897371_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率44.2%，预期1.33分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 18,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 1,
+      "clock": "10:53",
+      "shot_quality": 0.4,
+      "expected_points": 0.8,
+      "actual_points": 2,
+      "scoring_residual_points": 1.2,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/18/de494c5f-9758-43d2-8836-f40621f59753_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率40.0%，预期0.80分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 27,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 1,
+      "clock": "10:35",
+      "shot_quality": 0.122,
+      "expected_points": 0.244,
+      "actual_points": 0,
+      "scoring_residual_points": -0.244,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/27/1185c25a-d5aa-8d93-78ab-289623e7b67c_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率12.2%，预期0.24分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 39,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 1,
+      "clock": "9:22",
+      "shot_quality": 0.496,
+      "expected_points": 0.992,
+      "actual_points": 2,
+      "scoring_residual_points": 1.008,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/39/0204136b-b430-6c54-c61f-ce6637947a1c_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率49.6%，预期0.99分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 125,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 1,
+      "clock": "3:23",
+      "shot_quality": 0.379,
+      "expected_points": 0.758,
+      "actual_points": 0,
+      "scoring_residual_points": -0.758,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/125/16d23e9f-a767-7566-fbda-b736637309bc_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率37.9%，预期0.76分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 137,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 1,
+      "clock": "2:39",
+      "shot_quality": 0.284,
+      "expected_points": 0.568,
+      "actual_points": 2,
+      "scoring_residual_points": 1.432,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/137/4b5ca373-1821-b6bb-6605-fbb1458c217f_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率28.4%，预期0.57分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 280,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 2,
+      "clock": "4:26",
+      "shot_quality": 0.426,
+      "expected_points": 0.852,
+      "actual_points": 2,
+      "scoring_residual_points": 1.1480000000000001,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/280/53a05015-c548-5038-1c03-a8f806f2ba0a_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率42.6%，预期0.85分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 333,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 2,
+      "clock": "1:01",
+      "shot_quality": 0.475,
+      "expected_points": 0.95,
+      "actual_points": 0,
+      "scoring_residual_points": -0.95,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/333/60eea52a-a5e9-c120-ab05-22b100cbc8f3_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率47.5%，预期0.95分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 349,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 2,
+      "clock": "2.6",
+      "shot_quality": 0.431,
+      "expected_points": 0.862,
+      "actual_points": 0,
+      "scoring_residual_points": -0.862,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/349/988f6ae6-25b9-aec9-9090-d6fcd44c361b_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率43.1%，预期0.86分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 365,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 3,
+      "clock": "11:42",
+      "shot_quality": 0.977,
+      "expected_points": 1.954,
+      "actual_points": 2,
+      "scoring_residual_points": 0.04600000000000004,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/365/be95fab7-1ef9-e7d2-c494-c6014fbff8d1_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率97.7%，预期1.95分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 396,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 3,
+      "clock": "7:27",
+      "shot_quality": 0.445,
+      "expected_points": 0.89,
+      "actual_points": 2,
+      "scoring_residual_points": 1.1099999999999999,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/396/3129e311-644d-a310-72d5-bccc35e80d0c_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率44.5%，预期0.89分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 408,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 3,
+      "clock": "6:47",
+      "shot_quality": 0.403,
+      "expected_points": 1.209,
+      "actual_points": 0,
+      "scoring_residual_points": -1.209,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/408/29ac661b-bf14-b96c-4f89-23654a0b7a69_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率40.3%，预期1.21分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 433,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 3,
+      "clock": "4:52",
+      "shot_quality": 0.453,
+      "expected_points": 0.906,
+      "actual_points": 0,
+      "scoring_residual_points": -0.906,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/433/9cb63fda-43b9-287b-16e6-e7d726b86158_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率45.3%，预期0.91分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 519,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 4,
+      "clock": "11:38",
+      "shot_quality": 0.44,
+      "expected_points": 0.88,
+      "actual_points": 2,
+      "scoring_residual_points": 1.12,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/519/b3528209-d18a-3f46-1ea4-380223deec43_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率44.0%，预期0.88分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 541,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 4,
+      "clock": "10:12",
+      "shot_quality": 0.128,
+      "expected_points": 0.256,
+      "actual_points": 0,
+      "scoring_residual_points": -0.256,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/541/8631459d-a70c-4f4b-2551-e48eb5b0eb31_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率12.8%，预期0.26分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 555,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 4,
+      "clock": "8:35",
+      "shot_quality": 0.637,
+      "expected_points": 1.274,
+      "actual_points": 2,
+      "scoring_residual_points": 0.726,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/555/1b6ed32f-6e80-51f0-5173-18dd8b9fb80f_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率63.7%，预期1.27分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 565,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 4,
+      "clock": "8:05",
+      "shot_quality": 0.329,
+      "expected_points": 0.658,
+      "actual_points": 0,
+      "scoring_residual_points": -0.658,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/565/b3de82fe-e7b5-66c1-9341-2e7d8b32ba3f_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率32.9%，预期0.66分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 571,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 4,
+      "clock": "7:19",
+      "shot_quality": 0.445,
+      "expected_points": 1.335,
+      "actual_points": 0,
+      "scoring_residual_points": -1.335,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/571/523a58cc-85ac-ab8e-33ca-35c9160f0b17_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率44.5%，预期1.33分，实际0分。"
+      }
+    }
+  ],
+  "featured_candidates": [
+    {
+      "game_id": "0022500701",
+      "event_id": 477,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 3,
+      "clock": "2:58",
+      "shot_quality": 0.373,
+      "expected_points": 1.119,
+      "actual_points": 3,
+      "scoring_residual_points": 1.881,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/477/32ccf124-d780-9984-29af-08d13bee2fb9_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率37.3%，预期1.12分，实际3分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 137,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 1,
+      "clock": "2:39",
+      "shot_quality": 0.284,
+      "expected_points": 0.568,
+      "actual_points": 2,
+      "scoring_residual_points": 1.432,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/137/4b5ca373-1821-b6bb-6605-fbb1458c217f_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率28.4%，预期0.57分，实际2分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 571,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 4,
+      "clock": "7:19",
+      "shot_quality": 0.445,
+      "expected_points": 1.335,
+      "actual_points": 0,
+      "scoring_residual_points": -1.335,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/571/523a58cc-85ac-ab8e-33ca-35c9160f0b17_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率44.5%，预期1.33分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500491",
+      "event_id": 11,
+      "player_id": 1641708,
+      "player": "Amen Thompson",
+      "period": 1,
+      "clock": "11:31",
+      "shot_quality": 0.442,
+      "expected_points": 1.326,
+      "actual_points": 0,
+      "scoring_residual_points": -1.326,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/11/b0942505-83e5-72e3-223c-4985e0897371_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500491&PlayerID=1641708",
+      "source_raw_sha256": "7ab5ac46bef6d3e99836af9586e97bfc035cd0d6d991a4e1d40f3261efc567aa",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Amen Thompson：预期命中率44.2%，预期1.33分，实际0分。"
+      }
+    },
+    {
+      "game_id": "0022500701",
+      "event_id": 246,
+      "player_id": 1642843,
+      "player": "Cooper Flagg",
+      "period": 2,
+      "clock": "7:29",
+      "shot_quality": 0.358,
+      "expected_points": 0.716,
+      "actual_points": 2,
+      "scoring_residual_points": 1.284,
+      "official_clip_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/246/45ab9399-57b7-d613-36bb-ca148cb8c9e2_1280x720.mp4",
+      "alignment_status": "official event ID; offset in uploaded training video not verified",
+      "source": "https://stats.nba.com/stats/shotqualityvideologs?GameID=0022500701&PlayerID=1642843",
+      "source_raw_sha256": "2ff116a862bce76fd31dbd103dfc2c5a076730dd4f0d58d3ee2825f18325ab29",
+      "overlay": {
+        "label": "出手难度与结果",
+        "text": "Cooper Flagg：预期命中率35.8%，预期0.72分，实际2分。"
+      }
+    }
+  ],
+  "featured_criterion": "absolute realized-minus-expected scoring residual; NOT event leverage or WPA",
+  "high_leverage_replay_status": "unverified: no event-level leverage or uploaded-video offset in supplied source",
+  "scope": "two training-game players, not all shots or all possessions"
+}

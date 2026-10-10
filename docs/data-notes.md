@@ -1,5 +1,23 @@
 # 深度数据格式与对齐方案
 
+## 已获取的官方深度数据与字段字典（2026-10-10）
+
+NBA 主站 <https://www.nba.com/inside-the-game> 可访问，无需登录即可通过页面使用的 stats.nba.com 接口取得数据。门户给出的 china.nba.cn 地址当前返回 404，因此采用主站官方来源。已保存 data/deep 下的 5 张真实 CSV、原始 JSON 及 manifest.json（URL、UTC 抓取时间、双格式哈希）。
+
+| 数据 | 官方接口 | 本次记录数 | 关键字段与口径 |
+| --- | --- | ---: | --- |
+| 出手难度 | shotqualityleaders | 125 | PLAYERID/PLAYERNAME/TEAMABBREVIATION；AVGSHOTQUALITY=预期 FG 概率；FGPCT=实际 FG 概率；FGPCTABOVEEXPECTED=实际减预期；FGA/FG2A/FG3A=跟踪出手次数 |
+| 引力 | gravityleaders | 234 | AVGGRAVITYSCORE=高于预期的平均防守压力；ONBALL/OFFBALL、PERIMETER/INTERIOR 分项；FRAMES=计算覆盖帧数；GAMESPLAYED、MINUTES |
+| 关键度 | leverageleaders | 234 | FULL、OFFENSE、DEFENSE、SHOOTING、CREATION、REBOUNDS、TURNOVERS、ONBALLDEF；保留 API 原始值，不把球员汇总当回合 WPA |
+| 弗拉格单场出手 | shotqualityvideologs | 23 | gameId=0022500701、playerId=1642843、eventNum、period、gameClock、shotQuality、success、shotType、locX/locY、官方视频 URL |
+| 阿门单场出手 | shotqualityvideologs | 18 | gameId=0022500491、playerId=1641708；字段同上 |
+
+定义依据 <https://www.nba.com/news/inside-the-game-stat-glossary>：xFG 表示平均 NBA 球员在同等跟踪条件下的预期命中率，FG%+ 是实际减预期。接口单位为 0–1，展示时转百分比；125 行均核验守恒。Leverage 官网显示层会对 FULL 等列乘 10，CSV 保留原始值，不擅自定义胜率单位。引力不是百分比。locX/locY 原样留存，坐标原点、单位尚未核验，不用于画面映射。
+
+两队在出手质量样本中 HOU 5 人、DAL 3 人，其余人员不补零。基准为这 125 人按跟踪 FGA 加权的 xFG=46.5813473%，不是完整联盟实际 FG%。已有真实模型 JSON/图表及 41 条单球叠加数据；5 个大残差候选不冒充高 Leverage 回合。两场官方 winprobabilitypbp 请求返回 500，WPA 和训练视频偏移未得到验证。
+
+NBA 美国比赛日期 2026-01-31/01-03 对应训练视频北京日期 02-01/01-04。通过官方 GameID 与节次、比赛时钟匹配，不直接把 gameClock 当视频时间。
+
 ## 官方门户数据入口核查（2026-10-10）
 
 ### 后续 NBA Stats 拉取成功

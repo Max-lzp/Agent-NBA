@@ -36,6 +36,8 @@ def decompose(frame, baseline, unit, quality_column="AVGSHOTQUALITY",
         actual = q + excess
         if not 0 <= actual <= 1:
             raise ValueError(f"Derived FG probability outside [0,1]: {name}")
+        if "FGPCT" in frame.columns and abs(probability(row["FGPCT"], unit) - actual) > .0011:
+            raise ValueError(f"Reported FG% disagrees with quality + residual: {name}")
         quality = q - baseline
         quadrant = ("优质出手" if quality >= 0 else "高难度出手") + " / " + ("超预期命中" if excess >= 0 else "低于预期命中")
         # Values are percentage points / extra makes per 100 FGA, not points scored.
@@ -45,6 +47,15 @@ def decompose(frame, baseline, unit, quality_column="AVGSHOTQUALITY",
             "quadrant": quadrant,
             "overlay": {"label": "出手质量 / 命中偏差", "text":
                 f"{name}：每100次出手，质量较基准{100*quality:+.1f}次命中，实际较预期{100*excess:+.1f}次。"}})
+        if "PLAYERID" in frame.columns:
+            records[-1]["player_id"] = int(row["PLAYERID"])
+        if "TEAMABBREVIATION" in frame.columns:
+            records[-1]["team"] = str(row["TEAMABBREVIATION"])
+        if "FGA" in frame.columns:
+            attempts = float(row["FGA"])
+            if not np.isfinite(attempts) or not attempts.is_integer() or attempts <= 0:
+                raise ValueError(f"Invalid tracking FGA: {name}")
+            records[-1]["tracked_attempts"] = int(attempts)
     return {"model": "xfg_decomposition_v1", "baseline_fg_probability": baseline,
             "scope": "season player aggregates; descriptive, not a single-play or causal estimate",
             "players": sorted(records, key=lambda r: (-r["execution_residual_pp"], r["player"]))}
@@ -98,16 +109,22 @@ def main():
     parser.add_argument("--quality-column", default="AVGSHOTQUALITY")
     parser.add_argument("--excess-column", default="FGPCTABOVEEXPECTED")
     parser.add_argument("--name-column", default="PLAYER_NAME")
+    parser.add_argument("--teams", nargs="+", help="Optional TEAMABBREVIATION filter; baseline stays as explicitly supplied")
     parser.add_argument("--replay-input", type=Path)
     parser.add_argument("--leverage-definition", help="Verified per-event leverage definition, required with replay input")
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     datetime.strptime(args.fetched_at, "%Y-%m-%d")
     frame = pd.read_csv(args.input)
+    if args.teams:
+        if "TEAMABBREVIATION" not in frame.columns:
+            parser.error("--teams requires TEAMABBREVIATION")
+        frame = frame[frame["TEAMABBREVIATION"].isin(args.teams)]
     result = decompose(frame, args.baseline, args.unit, args.quality_column, args.excess_column, args.name_column)
     result["provenance"] = {"source": args.source, "fetched_at": args.fetched_at,
         "generated_at": datetime.now(timezone.utc).isoformat(), "input": provenance(args.input),
         "baseline_source": args.baseline_source, "input_unit": args.unit,
+        "teams_filter": args.teams,
         "columns": {"quality": args.quality_column, "excess": args.excess_column, "name": args.name_column}}
     if args.replay_input:
         if not args.leverage_definition:

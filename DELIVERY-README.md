@@ -1,6 +1,23 @@
 # Team04 名单与 xFG 模型交付
 
-分支：`feat/team04-rosters-xfg`。这是接入框架；正式名单与真实模型结果仍待数据，不声称任务 A/B 已完全验收。
+分支：`feat/team04-rosters-xfg`，草稿 PR #8。已取得官方赛季统计及深度 CSV，生成真实 xFG 模型结果；正式名单仍待历史登记核验，高 Leverage 回放和训练视频内偏移尚未验收。
+
+## 官方深度数据与真实模型结果
+
+data/deep 已包含 NBA 官方 125 人出手难度、234 人引力、234 人 Leverage，以及弗拉格 23 次/阿门 18 次出手的 CSV。无需另找账号或上传 CSV。原始 JSON、URL、UTC 抓取时间及 SHA-256 在 raw/ 和 manifest.json；字段定义与样本限制见 data/deep/README.md。
+
+```bash
+cd /workspace/nba-hackathon-team04
+source /workspace/.venvs/team04/bin/activate
+export XDG_CACHE_HOME=/workspace/.cache
+export MPLCONFIGDIR=/workspace/.cache/matplotlib
+python -m pip install --cache-dir /workspace/.cache/pip -r pipeline/vision/models/requirements-model.txt
+# 可选刷新；已有真实快照时无需每次下载
+python pipeline/vision/models/fetch_deep_data.py --output-dir data/deep
+python pipeline/vision/models/run_official_model.py
+```
+
+真实结果在 pipeline/vision/models/results：8 名两队球员的 xfg_deviation_output.json、xfg_decomposition.png，及 41 条单球叠加数据 shot_sequence_output.json。后者选 5 个大残差候选，未冒充高 Leverage 回合。runner 校验原始与 CSV 哈希；基准为返回 125 人的 FGA 加权 xFG，不是完整联盟实际 FG%。
 
 ## 2026-10-10 官方统计更新
 
@@ -59,6 +76,6 @@ git diff --check
 
 测试使用明确标记的合成数据验证公式守恒、单位转换、非法输入拒绝、关键度排序、号码 00、short_name、零出场、换号区间；它们不证明 NBA 数据已取得。
 
-当前验证：8 项新增测试、4 项原有后端测试通过；使用 /tmp 中标记为 SYNTHETIC TEST ONLY 的 CSV 完成生成器与模型 CLI 验证，确认名单 JSON、模型 JSON、PNG 和 5 个候选事件可生成。正式数据结果尚未生成。检查了 main、events-possession-eval、p1-build、p2-build、vision-build；只有 events-possession-eval 含名单种子，其 ID/统计为 null，不能作为正式名单复用。
+验证包括模型/名单契约测试、原有后端测试、合成输入的 CLI 检查，以及官方抓取与真实 CSV→JSON/PNG 流程。其他分支中的名单种子 ID/统计为空，未作为正式名单复用。正式深度结果已生成；历史号码/登记缺失仍阻止正式名单验收。
 
-任务书已授权提交分支与 PR。若仓库写入或 GitHub API 权限不可用，保留本地提交/补丁，提供具体失败原因；PR 描述应明确“数据接入框架，真实数据待接入”，不能声称正式名单或增强回放已经完成。团队群地址未提供，暂不发送消息。
+任务书已授权提交分支与 PR，现已推送并创建草稿 PR #8。PR 描述区分已取得的真实数据/模型结果与尚未完成的历史名单/高 Leverage 回放。团队群地址未提供，暂不发送消息。

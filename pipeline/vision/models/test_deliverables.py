@@ -1,11 +1,15 @@
 """Synthetic contract tests; fixtures are not official NBA data or deliverable results."""
 import importlib.util
+import hashlib
+import json
+import tempfile
 import unittest
 from pathlib import Path
 
 import pandas as pd
 
 from xfg_decomposition import decompose, replay_candidates
+from run_official_model import run
 
 spec = importlib.util.spec_from_file_location("build_roster", Path(__file__).parents[1] / "rosters/build_roster.py")
 roster = importlib.util.module_from_spec(spec)
@@ -27,6 +31,30 @@ class ModelTests(unittest.TestCase):
         frame = self.frame()
         frame[["AVGSHOTQUALITY", "FGPCTABOVEEXPECTED"]] *= 100
         self.assertEqual(decompose(frame, 45, "percent"), decompose(self.frame(), .45, "fraction"))
+
+    def test_reported_fg_disagreement_rejected(self):
+        frame = self.frame()
+        frame["FGPCT"] = .6
+        with self.assertRaises(ValueError):
+            decompose(frame, .45, "fraction")
+
+    def test_official_identity_and_attempts_preserved(self):
+        frame = self.frame()
+        frame["PLAYERID"], frame["TEAMABBREVIATION"], frame["FGA"] = 42, "HOU", 100
+        row = decompose(frame, .45, "fraction")["players"][0]
+        self.assertEqual((row["player_id"], row["team"], row["tracked_attempts"]), (42, "HOU", 100))
+
+    def test_changed_source_is_rejected_before_running_model(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "raw.json").write_bytes(b"{}")
+            (root / "data.csv").write_text("changed\n")
+            manifest = {"datasets": {"test": {"raw": "raw.json", "csv": "data.csv",
+                "sha256": hashlib.sha256(b"{}").hexdigest(), "csv_sha256": hashlib.sha256(b"original\n").hexdigest()}}}
+            (root / "manifest.json").write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(ValueError, "Source hash mismatch"):
+                run(root, root / "output")
+            self.assertFalse((root / "output").exists())
 
     def test_invalid_or_missing_probabilities_rejected(self):
         for q, excess in [(float("nan"), 0), (.9, .2), (.1, -.2), (40, 10)]:

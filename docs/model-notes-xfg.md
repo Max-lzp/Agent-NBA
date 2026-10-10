@@ -34,8 +34,12 @@
 
 ## 当前交付状态
 
-当前 checkout 没有任务书中的 data/deep 或 nba-hackathon-deliverables；远端 main 也未包含这些文件。NBA 中国、NBA Stats、飞书与选手门户在当前代理均返回 403。只提交模型与校验框架；不提交伪装成正式 NBA 结果的示例输出或图表。合成数据只存在于测试和临时验证目录。
+已直接从 NBA 官方主站页面确认接口并拉取真实数据：data/deep 内有 125 人出手难度、234 人引力、234 人 Leverage 及两名训练球员共 41 次出手的 CSV、原始响应与哈希清单。官方 glossary 确认 AVGSHOTQUALITY 和 FGPCTABOVEEXPECTED 的定义；125 行均满足 `AVGSHOTQUALITY + FGPCTABOVEEXPECTED = FGPCT`。
 
-其他远端分支已检查。events-possession-eval 中的赛季名单为两场 box score 的种子并集，player_id 和统计均为空；其余分支也没有所需真实 CSV，不能用种子替代完整赛季名单。
+已生成 `pipeline/vision/models/results/xfg_deviation_output.json` 与 PNG，覆盖返回样本中的 HOU 5 人、DAL 3 人。基准是 125 人官方跟踪 FGA 加权 xFG，约 46.5813%；只是该合格样本的预期基准，不能称作联盟实际命中率。原始 xFG 四舍五入会影响汇总精度。模型保留球员 ID、球队、跟踪出手次数及来源。
 
-导入真实 CSV 后按 DELIVERY-README.md 运行，输出携带源标识、抓取日期、输入 SHA-256、单位和基准来源，供复核与重复运行。
+可上画面的真实结论：“杜兰特的跟踪出手预期命中率为 43.3%，实际 52.0%，比预期高 8.7 个百分点；阿门的预期为 58.7%，实际 53.4%，比预期低 5.3 个百分点。”这是赛季描述统计，不是单次出手能力或运气的因果结论。不能把赛季数值直接贴到单球上当单球 xFG。
+
+`shot_sequence_output.json` 包含 41 条真实单球 xFG/预期得分叠加信息及 5 个按绝对得分残差挑选的候选，留存官方视频 URL、eventNum、比赛时钟。这 5 个是“出手结果偏差大”的候选，**不是已核验的高 Leverage 回合**。源 shotList 没有事件级 Leverage；已尝试官方 winprobabilitypbp 接口，两场均返回 HTTP 500，未得到可用 WPA。高关键度排序和上传训练视频内的偏移仍待接入；不伪造赢球概率或时间锚点。
+
+复现程序 `run_official_model.py` 首先核对原始响应和 CSV 的 SHA-256，任何变动会拒绝继续，之后按明确的样本基准生成 JSON 与图表。合成数据仅用于测试，不作为正式输出。
