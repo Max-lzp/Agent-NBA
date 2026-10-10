@@ -184,6 +184,8 @@ def _link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> d
         return chain.link(job_id, video, frames, board, bucket)
     except Exception as exc:  # noqa: BLE001 — 认人或官方数据失败仍要交出成片
         print(f"认人、事件或官方数据没写完：{exc}")
+        import traceback
+        traceback.print_exc()
         return {}
 
 

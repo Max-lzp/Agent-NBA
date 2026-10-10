@@ -127,9 +127,11 @@ def _replace_events(job_id: str, events: list[dict]) -> None:
         KeyConditionExpression=Key("jobId").eq(job_id),
         ProjectionExpression="jobId, sk",
     )
+    # 同一把钥匙不能在一批里又删又写，DynamoDB 会直接拒绝。
     with _events.batch_writer() as batch:
         for item in existing.get("Items", []):
             batch.delete_item(Key={"jobId": item["jobId"], "sk": item["sk"]})
+    with _events.batch_writer() as batch:
         for index, ev in enumerate(events):
             batch.put_item(
                 Item={

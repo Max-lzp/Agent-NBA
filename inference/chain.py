@@ -39,12 +39,12 @@ def link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> di
     _download_official(s3, bucket)
     roster = _roster()
     reads = _read_jerseys(textract, video, frames)
-    matches = [_match(item, roster) for item in reads]
+    matches = [item for item in (_match(read, roster) for read in reads) if item]
     identity = {
         "jobId": job_id,
         "service": "textract",
         "reads": reads,
-        "matches": [item for item in matches if item],
+        "matches": matches,
     }
     s3.put_object(
         Bucket=bucket,
@@ -271,17 +271,27 @@ def _holder_events(frames, matches, away, home) -> list[dict]:
         holder = min(players, key=lambda box: _foot_distance(box, ball))
         who = named.get(round(float(frame["t"]), 1))
         actor = _actor(who, away)
-        if previous and previous["actor"].get("name") == actor.get("name"):
+        if previous and previous.get("name") == actor.get("name"):
             continue
-        kind = "receive" if previous is None else "pass"
-        events.append({
-            "t": round(float(frame["t"]), 3),
-            "type": kind,
-            "actor": actor,
-            "source": "textract" if who else "cv",
-            "confidence": 0.7 if who else 0.4,
-        })
-        previous = events[-1]
+        if previous is None:
+            event = {
+                "t": round(float(frame["t"]), 3),
+                "type": "receive",
+                "actor": actor,
+                "source": "textract" if who else "cv",
+                "confidence": 0.7 if who else 0.4,
+            }
+        else:
+            event = {
+                "t": round(float(frame["t"]), 3),
+                "type": "pass",
+                "actor": previous,
+                "target": actor,
+                "source": "textract" if who else "cv",
+                "confidence": 0.7 if who else 0.4,
+            }
+        events.append(event)
+        previous = actor
         if len(events) >= 24:
             break
     return events
@@ -292,25 +302,25 @@ def _shot_events(ticks, reads, plays, quality) -> list[dict]:
     for tick in ticks:
         read = _nearest_read(reads, tick.get("t_sec") or 0)
         play = _shot_play(tick, read, plays)
+        if not play:
+            continue
         label_team = tick.get("team") or ""
-        official = {}
-        if play:
-            official = {
-                "made": play["made"],
-                "value": play["value"],
-                "description": play["description"],
-            }
-            if play.get("assist"):
-                official["assist"] = {"name": play["assist"]}
-            xfg = _xfg(play, quality)
-            if xfg is not None:
-                official["xfg"] = xfg
+        official = {
+            "made": play["made"],
+            "value": play["value"],
+            "description": play["description"],
+        }
+        if play.get("assist"):
+            official["assist"] = {"name": play["assist"]}
+        xfg = _xfg(play, quality)
+        if xfg is not None:
+            official["xfg"] = xfg
         events.append({
             "t": tick.get("t_sec") or 0,
             "type": "shot",
             "actor": _shot_actor(play, label_team),
-            "source": "official" if play else "scoreboard",
-            "confidence": 0.8 if play else 0.5,
+            "source": "official",
+            "confidence": 0.8,
             "official": official,
         })
     return events
