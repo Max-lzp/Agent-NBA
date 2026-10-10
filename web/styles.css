@@ -421,10 +421,6 @@ h2 {
 .rail p { margin: 0 0 6px; }
 .rail .muted { color: var(--muted); font-size: 12px; }
 .rail .contrast { color: var(--orange); }
-.rail .lineup { display: grid; gap: 8px; margin-top: 10px; }
-.rail .lineup div { border-top: 2px solid var(--line); padding-top: 6px; }
-.rail .lineup span { display: block; color: var(--muted); font-size: 12px; }
-.script { margin: 12px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
 
 .hud, .callout, .xfg, .dps {
   position: absolute;
