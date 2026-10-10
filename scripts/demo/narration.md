@@ -1,6 +1,6 @@
 # Deep Court 演示解说稿
 
-初赛演示，按镜头写。下面的时间是口播。训练片初版成片 1 分 50 秒，最后几秒停在服务表上。页面加载若让某一镜略长，烧进画面的字幕以当次生成的 SRT 为准，句子不变。
+初赛演示，按镜头写。下面的时间是口播。计划时长 2 分钟。已经烧进初版成片的字幕仍是上一版，到 1 分 46 秒；这份稿和 `narration.srt` 给下一次重录用，这次不重录。页面加载若让某一镜略长，烧进画面的字幕以当次生成的 SRT 为准，句子不变。
 
 事实只来自 `docs/pipeline-map.md`、`docs/architecture.md`、`web/readme.html`。不写这三份里没有的数字。这支初版用的是训练片 `flagg`（弗拉格），不是考试片。
 
@@ -10,7 +10,7 @@
 
 这支训练片本身：追踪、记分牌、认人、领防、脱手帧、分差效率、队内排名，以及中英两条音轨，都在本机做好，再放进网页桶。播放器没有 `jobId`，事件打在页面包里，不是当场向 DynamoDB 拉的。
 
-考试片才走云上那条：同一台保持开着的 `c7i.48xlarge` 上追踪、读记分牌、认人、用 ffmpeg 出成片；成片之后做 Transcribe、Translate、Polly。清单进 S3 `structured/`，Lambda 调 Bedrock AgentCore 校验，事件写入 DynamoDB。带任务号之后，回放从 `GET /jobs/{id}` 和 `/events` 读。
+考试片才走云上那条：同一台保持开着的 `c7i.48xlarge` 上追踪、读记分牌、认人、用 ffmpeg 出成片；成片之后做 Transcribe、Translate、Polly。认人把轨迹里框够大、重叠少的帧交给 Qwen3 VL，读号码和球衣颜色，多帧投票定号码；Rekognition 的读数算第二票。号码只在这一刻场上的同队 5 人里对，场上这 10 人由这场的逐回合换人推出来，对不上就不写名字。同一个名字只留在票数最多的那一条轨迹上。官方逐回合里的得分人、助攻人先钉。Textract 只在 Qwen 调用失败时兜底。清单进 S3 `structured/`，Lambda 调 Bedrock AgentCore 校验，事件写入 DynamoDB。带任务号之后，回放从 `GET /jobs/{id}` 和 `/events` 读。
 
 作品说明里写了右栏分区热区。播放器当前把右栏收起，画面上能直接看到的是人名、定格卡和场上十人。解说按看得到的说。
 
@@ -19,8 +19,8 @@
 | 评分 | 镜头 |
 | --- | --- |
 | 机器评分：架构，输入到输出 | 0:12 的本机边界，1:16 作品说明，1:32 服务表 |
-| 机器评分：AWS 服务组合 | 1:04 音轨三件，1:16 接入层，1:32 服务表 |
-| 数据与内容准确性 | 0:12 记分牌和人名，0:30 时间线，0:38 定格，1:08 场上十人，1:16「数字从哪来」 |
+| 机器评分：AWS 服务组合 | 1:04 音轨三件，1:16 接入层，1:32 服务表，1:42 认人 |
+| 数据与内容准确性 | 0:12 记分牌和人名，0:30 时间线，0:38 定格，1:08 场上十人，1:16「数字从哪来」，1:42 认人规则 |
 | UX / UI | 0:00 打开即看，0:30 时间线，0:38 定格五秒，1:04 中英切换，1:08 名单 |
 
 ## 0:00–0:12 打开播放器
@@ -111,9 +111,9 @@
 
 区域是 `us-east-1`。栈名 `Team04DeepCourt`。网页桶不公开，只经 CloudFront OAC 读。
 
-## 1:32–1:46 AWS 服务表
+## 1:32–2:00 AWS 服务表
 
-画面：停在 `/readme` 的服务表上，从「收片」滚到「认人」，再到「成片」和「观测和密钥」。
+画面：停在 `/readme` 的服务表上。先「收片」，再记分牌的 RapidOCR，再停在认人那一行（Bedrock Qwen3 VL），最后到「成片」和「观测和密钥」。
 
 解说：
 
@@ -121,14 +121,19 @@
 >
 > 记分牌在考试片那台 c7i 上，用 RapidOCR。这支训练片的记分牌仍在本机。
 >
+> 认人已接通。Qwen3 VL 看多帧，投票定号码和球衣颜色。Rekognition 算第二票。只认场上十个人，一个名字一条轨迹。
+>
+> 官方逐回合先钉得分人和助攻人。Qwen 调失败才用 Textract。认不出名字的，即将挂队色标签，写着 Agent detecting。
+>
 > 成片用 ffmpeg。MediaConvert 还没交作业。密钥仍是空占位。
 
 评分：服务组合和状态，跟全景、跟 `/readme` 同一张表。
 
 - 主路径：收片（CloudFront、API Gateway、Lambda、S3、DynamoDB）、校验（Lambda、Bedrock AgentCore、DynamoDB、CloudWatch Logs）、回放（API Gateway、Lambda）、网页呈现（CloudFront、S3 网页桶）。
-- 已接通：追踪（Batch、EC2 `c7i.48xlarge`、EBS、ECR、S3；标准配额 256 vCPU，单机用其中 192，并且保持开着）、认人（Textract `DetectDocumentText`、S3 名单）、事件清单、官方数据（S3 `official/`）、解说（Transcribe、Translate、Polly Neural 知语）、成片（同一台机器上的 ffmpeg；MediaConvert 模板 `deepcourt-render-template` 已建，还没有提交转码作业）、观测（CloudWatch、X-Ray、Secrets Manager、Cost Explorer）。
+- 已接通：追踪（Batch、EC2 `c7i.48xlarge`、EBS、ECR、S3；标准配额 256 vCPU，单机用其中 192，并且保持开着）、认人（Bedrock Qwen3 VL、Rekognition `DetectText`、S3 `official/` 与 `identity/`）、事件清单、官方数据（S3 `official/`）、解说（Transcribe、Translate、Polly Neural 知语）、成片（同一台机器上的 ffmpeg；MediaConvert 模板 `deepcourt-render-template` 已建，还没有提交转码作业）、观测（CloudWatch、X-Ray、Secrets Manager、Cost Explorer）。
 - 记分牌：考试片在那台 `c7i.48xlarge` 上读，`/readme` 写的是 RapidOCR。Textract 认记分牌只做过探测，不在主路径。训练片记分牌仍在本机。
-- 认人：仓库里的全景和 `web/readme.html` 写的是 Textract `DetectDocumentText`。线上这一版 `/readme` 的认人行仍写着 Bedrock Qwen3 VL 和 Rekognition，和仓库不一致。口播不跟那一行唱反调，只说两边都写着的 RapidOCR、ffmpeg 和空密钥。
+- 认人：考试片把每条轨迹里框够大、重叠少的帧交给 Qwen3 VL 读号码和球衣颜色，多数票定号码。Rekognition 的读数算第二票。号码只在这一刻场上的同队 5 人里对，对不上就不写名字。场上 10 人由这场的逐回合换人推出来。同一个名字只留在票数最多的那条轨迹上。官方逐回合里的得分人、助攻人先钉。Textract 只在 Qwen 调用失败时兜底。训练片的身体坑和排除法仍在本机。
+- 认不出名字的球员即将挂队色标签，字是 `Agent detecting`。全景和服务表还没写这一行，口播按即将来说。
 - 密钥 `deepcourt/feishu-webhook`、`deepcourt/github-token`、`deepcourt/kuaishou` 仍是空占位。
 - 不在这条管道里：Cognito 不建。没有快手 app_id 时，分享接口只返回敬请期待。演示不点分享。
 
