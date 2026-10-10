@@ -408,13 +408,18 @@ function renderFloor() {
 function offenseTeam(t) {
   const rows = state.pack?.possessions || [];
   if (!rows.length) return "";
-  for (let i = 0; i < rows.length; i += 1) {
-    const start = Number(rows[i].t0);
-    const end = Number(rows[i].t1);
-    const next = i + 1 < rows.length ? Number(rows[i + 1].t0) : end + 0.001;
-    if (t >= start && t < next) return rows[i].team || "";
-  }
-  return rows[rows.length - 1].team || "";
+  let found = "";
+  rows.forEach((row) => {
+    const start = Number(row.t0);
+    const end = Number(row.t1);
+    if (t + 1e-4 >= start && t <= end + 1e-4) {
+      const onSharedBoundary = found && Math.abs(t - start) < 1e-3;
+      found = onSharedBoundary ? found : (row.team || "");
+    }
+  });
+  if (found) return found;
+  const last = rows[rows.length - 1];
+  return t >= Number(last.t0) ? (last.team || "") : (rows[0].team || "");
 }
 
 function teamName(team) {
@@ -424,7 +429,12 @@ function teamName(team) {
 function fillSide(node, role, team, players) {
   if (!node) return;
   const color = TEAM_COLOR[team] || "#F3EDE2";
-  const list = players.map((player) => `<li><b>#${player.jersey}</b>${player.name}</li>`).join("");
+  const list = players.map((player) => {
+    const en = player.full || player.name || "";
+    const zh = player.name && player.name !== en ? player.name : "";
+    const pos = player.position || "";
+    return `<li><b>#${player.jersey}</b><span class="who"><strong>${en}</strong>${zh ? `<em>${zh}</em>` : ""}</span><i>${pos}</i></li>`;
+  }).join("");
   node.innerHTML = `<p style="color:${color}">${role} · ${teamName(team)}</p><ul>${list}</ul>`;
 }
 

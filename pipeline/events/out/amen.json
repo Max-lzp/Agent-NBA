@@ -537,54 +537,64 @@
         {
           "jersey": "3",
           "name": "Davis",
-          "full_name": "Anthony Davis"
+          "full_name": "Anthony Davis",
+          "position": "前锋"
         },
         {
           "jersey": "21",
           "name": "Gafford",
-          "full_name": "Daniel Gafford"
+          "full_name": "Daniel Gafford",
+          "position": "中锋"
         },
         {
           "jersey": "13",
           "name": "Marshall",
-          "full_name": "Naji Marshall"
+          "full_name": "Naji Marshall",
+          "position": "前锋"
         },
         {
           "jersey": "00",
           "name": "Christie",
-          "full_name": "Max Christie"
+          "full_name": "Max Christie",
+          "position": "后卫"
         },
         {
           "jersey": "32",
           "name": "Flagg",
-          "full_name": "Cooper Flagg"
+          "full_name": "Cooper Flagg",
+          "position": "后卫"
         }
       ],
       "HOU": [
         {
           "jersey": "7",
           "name": "Durant",
-          "full_name": "Kevin Durant"
+          "full_name": "Kevin Durant",
+          "position": "前锋"
         },
         {
           "jersey": "30",
           "name": "Capela",
-          "full_name": "Clint Capela"
+          "full_name": "Clint Capela",
+          "position": "中锋"
         },
         {
           "jersey": "10",
           "name": "Smith Jr.",
-          "full_name": "Jabari Smith Jr."
+          "full_name": "Jabari Smith Jr.",
+          "position": "前锋"
         },
         {
           "jersey": "17",
           "name": "Eason",
-          "full_name": "Tari Eason"
+          "full_name": "Tari Eason",
+          "position": "后卫"
         },
         {
           "jersey": "1",
           "name": "Thompson",
-          "full_name": "Amen Thompson"
+          "full_name": "Amen Thompson",
+          "position": "后卫"
         }
       ]
     },

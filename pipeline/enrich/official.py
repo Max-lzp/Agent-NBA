@@ -187,7 +187,7 @@ def position_zh(code: str | None) -> str:
 
 
 def _fill_roster_positions(players: dict[int, dict], data_dir: Path) -> None:
-    """boxscore 只给首发写位置。全队名单里的 POSITION 覆盖它，替补才有位置。"""
+    """boxscore 只给首发写这场的位置。替补空着，用全队名单的 POSITION 补上。"""
     if not players:
         return
     for path in sorted(data_dir.rglob("commonteamroster_*.json")):
@@ -203,7 +203,7 @@ def _fill_roster_positions(players: dict[int, dict], data_dir: Path) -> None:
             for row in rs.get("rowSet") or []:
                 pid = _int(row[pid_i])
                 code = str(row[pos_i] or "").strip()
-                if pid in players and code:
+                if pid in players and code and not players[pid].get("position"):
                     players[pid]["position"] = code
 
 
