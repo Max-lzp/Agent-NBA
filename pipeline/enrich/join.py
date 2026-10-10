@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
+from .margin import season_margin
 from .official import DATA, calibrate_side, clock_seconds, game_roster, load_game, on_court, period_number
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -201,6 +202,9 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
                                                          play["assist_name"] or "")))
         ev["confidence"] = max(ev["confidence"], OFFICIAL_CONF)
         ev["official"] = official_detail(play, players, shots)
+        margin = season_margin(play, players, clock.away, clock.home)
+        if margin:
+            ev["official"]["season_margin"] = margin
         if play["kind"] == "shot" and play["x_ft"] is not None:
             geom = ev.setdefault("geometry", {})
             geom.update({"x_ft": play["x_ft"], "y_ft": play["y_ft"]})

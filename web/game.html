@@ -4,30 +4,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DEEP COURT 播放器</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
   <div class="court court-tr"></div>
   <main class="page">
-    <p class="kicker"><span class="mark">NBA × AWS BROADCAST CODE 12</span>　·　DEEP COURT 播放器</p>
+    <p class="kicker"><span class="mark">NBA × AWS BROADCAST CODE 12</span>　·　Team 04　·　DEEP COURT 播放器</p>
     <h1 class="player-title">DEEP COURT <span class="accent">播放器</span></h1>
     <p class="subhead" id="subhead">Team 04 · 打开即看。比分和出手卡来自记分牌与官方逐回合，人名来自球衣号码。</p>
     <nav class="clip-switch" id="clip-switch" aria-label="选择片段"></nav>
     <hr class="rule">
 
-    <section class="chrome" aria-hidden="true">
-      <span class="dot dot-r"></span>
-      <span class="dot dot-y"></span>
-      <span class="dot dot-g"></span>
-      <span class="url" id="chrome-url">d3ejckbpw87ih4.cloudfront.net/game.html</span>
-      <span class="live-chip" id="live">● LIVE · Q4 01:40</span>
-    </section>
-
     <div class="replay">
-      <section class="stage" id="stage">
-        <video id="reel" playsinline preload="metadata"></video>
-        <canvas id="names" aria-hidden="true"></canvas>
-      </section>
+      <div class="player-col">
+        <section class="stage" id="stage">
+          <video id="reel" playsinline preload="metadata"></video>
+          <canvas id="names" aria-hidden="true"></canvas>
+        </section>
+        <div class="scrub" id="scrub">
+          <div class="track"></div>
+          <div class="fill" id="fill"></div>
+          <div class="ticks" id="ticks"></div>
+        </div>
+      </div>
       <aside class="rail" aria-label="这一球">
         <p class="rail-kicker">半场落点 · 官方坐标</p>
         <div id="court"></div>
@@ -40,11 +39,6 @@
       <button class="pause" id="pause" type="button" aria-label="暂停或播放">
         <svg id="pause-icon" width="12" height="14" viewBox="0 0 12 14" aria-hidden="true"><rect x="1" y="0" width="3.2" height="14" fill="#14110E"/><rect x="7.6" y="0" width="3.2" height="14" fill="#14110E"/></svg>
       </button>
-      <div class="scrub" id="scrub">
-        <div class="track"></div>
-        <div class="fill" id="fill"></div>
-        <div class="ticks" id="ticks"></div>
-      </div>
       <div>
         <div class="clock" id="clock">00:00</div>
         <div class="aside"><span class="teal">◆</span> 解说由程序根据官方事件生成，已混入成片<br><span class="brand">TEAM 04 · DEEP COURT</span></div>
@@ -57,31 +51,30 @@
       <h2 id="share-title">分享</h2>
       <div class="share-row">
         <button class="share-btn on" id="share-kuaishou" type="button">
-          <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="2" y="2" width="24" height="24" rx="6" fill="#F1681E"/><path d="M12 9.5v9l7-4.5-7-4.5z" fill="#14110E"/></svg>
+          <img src="brands/kuaishou.svg" alt="" width="28" height="28">
           <span>快手</span>
         </button>
         <button class="share-btn" type="button" disabled>
-          <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="4" y="6" width="20" height="16" rx="3" fill="none" stroke="#A3988A" stroke-width="1.6"/><path d="M9 11v6M14 9v8M19 12v5" stroke="#A3988A" stroke-width="1.6"/></svg>
+          <img src="brands/bilibili.svg" alt="" width="28" height="28">
           <span>哔哩哔哩</span>
           <em>即将推出</em>
         </button>
         <button class="share-btn" type="button" disabled>
-          <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M7 10h10a4 4 0 0 1 0 8H11l-4 3v-3" fill="none" stroke="#A3988A" stroke-width="1.6"/></svg>
+          <img src="brands/wechat.svg" alt="" width="28" height="28">
           <span>微信</span>
           <em>即将推出</em>
         </button>
         <button class="share-btn" type="button" disabled>
-          <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="8" fill="none" stroke="#A3988A" stroke-width="1.6"/><circle cx="14" cy="14" r="2" fill="#A3988A"/></svg>
+          <img src="brands/weibo.svg" alt="" width="28" height="28">
           <span>微博</span>
           <em>即将推出</em>
         </button>
         <button class="share-btn" type="button" disabled>
-          <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M10 8h6l2 4-5 8-5-8 2-4z" fill="none" stroke="#A3988A" stroke-width="1.6"/></svg>
+          <img src="brands/douyin.svg" alt="" width="28" height="28">
           <span>抖音</span>
           <em>即将推出</em>
         </button>
       </div>
-      <p class="hint" id="share-note">片段还不能发出去。快手可以点，其余渠道先占位。</p>
       <iframe id="kuaishou-frame" class="kuaishou-frame" title="快手扫码" hidden></iframe>
     </section>
 
@@ -101,6 +94,6 @@
   </main>
   <script src="config.js"></script>
   <script src="replay/clips.js"></script>
-  <script src="game.js?v=5"></script>
+  <script src="game.js?v=7"></script>
 </body>
 </html>

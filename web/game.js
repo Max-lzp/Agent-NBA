@@ -4,8 +4,6 @@ const BASKET_Y = 5.25;
 
 const els = {
   subhead: document.querySelector("#subhead"),
-  live: document.querySelector("#live"),
-  chromeUrl: document.querySelector("#chrome-url"),
   stage: document.querySelector("#stage"),
   reel: document.querySelector("#reel"),
   names: document.querySelector("#names"),
@@ -40,7 +38,6 @@ const state = {
 init();
 
 function init() {
-  if (els.chromeUrl) els.chromeUrl.textContent = location.host + location.pathname;
   renderSwitcher();
   els.reel.addEventListener("timeupdate", onTimeUpdate);
   els.reel.addEventListener("loadedmetadata", () => {
@@ -63,9 +60,8 @@ function init() {
     if (!button) return;
     seekEvent(Number(button.dataset.index));
   });
-  const shareNote = document.querySelector("#share-note");
   const kuaishou = document.querySelector("#share-kuaishou");
-  if (kuaishou && shareNote) kuaishou.addEventListener("click", () => openKuaishou(shareNote));
+  if (kuaishou) kuaishou.addEventListener("click", () => openKuaishou());
   document.querySelectorAll(".layer").forEach((button) => {
     button.addEventListener("click", () => {
       const key = button.dataset.layer;
@@ -85,7 +81,6 @@ function loadPack(pack) {
   state.clipDuration = pack.duration || 1;
   state.active = nearestEventIndex(pack.anchor || 0);
   els.subhead.textContent = `Team 04 · ${pack.title || pack.clip}${pack.gameId ? " · 官方 " + pack.gameId : ""}`;
-  els.live.textContent = pack.title || "回放";
   const start = Number(pack.anchor) || 0;
   els.reel.src = start > 0 ? `${pack.video}#t=${start}` : pack.video;
   if (els.foot) {
@@ -182,7 +177,6 @@ function render() {
   els.fill.style.width = `${Math.min(100, (t / state.clipDuration) * 100)}%`;
   const bug = scoreAt(t);
   els.clock.textContent = bug ? `${bug.period} ${bug.clock}` : format(t);
-  if (bug && els.live) els.live.textContent = `${bug.awayName} ${bug.awayScore} · ${bug.homeName} ${bug.homeScore}`;
   els.pauseIcon.innerHTML = state.paused
     ? '<rect x="1" y="0" width="3.2" height="14" fill="#14110E"/><rect x="7.6" y="0" width="3.2" height="14" fill="#14110E"/>'
     : '<path d="M2 0 L12 7 L2 14 Z" fill="#14110E"/>';
@@ -257,9 +251,14 @@ function drawDetail() {
     return;
   }
   const xfg = shot.xfg == null ? "清单里没有预期命中率" : `预期命中率 ${(Number(shot.xfg) * 100).toFixed(1)}%（${Number(shot.xfg).toFixed(3)}）`;
+  const margin = shot.season_margin;
+  const marginLine = margin && margin.ts != null
+    ? `<p>赛季${margin.bucket_zh}：真实命中率 ${(Number(margin.ts) * 100).toFixed(1)}%，每球权 ${Number(margin.ppp).toFixed(3)}（${margin.fga} 投）</p>`
+    : "";
   const bits = [shot.zone, shot.distance ? `${Number(shot.distance).toFixed(1)} 英尺` : "", shot.assist ? `${shot.assist} 助攻` : ""].filter(Boolean);
   els.detail.innerHTML = `<p><b>${shot.name}</b> ${shot.value || ""} 分${shot.made ? "命中" : shot.made === false ? "不中" : "出手"}</p>
     <p>${xfg}</p>
+    ${marginLine}
     <p>${bits.join(" · ")}</p>
     <p class="muted">${shot.description || ""}</p>
     ${shot.contrast ? `<p class="contrast">${shot.contrast}</p>` : ""}
@@ -325,14 +324,13 @@ function format(total) {
 }
 
 async function pollJob() {
-  els.live.textContent = "任务读取中";
+  els.subhead.textContent = "任务读取中";
   let attempts = 0;
   while (attempts < 60) {
     attempts += 1;
     try {
       const job = await getJson(`/jobs/${encodeURIComponent(jobId)}`);
       els.subhead.textContent = `${statusText(job.status)} · ${job.gameMeta || job.filename || jobId}`;
-      els.live.textContent = statusText(job.status);
       if (job.playbackUrl && els.reel.src !== job.playbackUrl) els.reel.src = job.playbackUrl;
       if (job.status === "DONE" || job.status === "FAILED") {
         const listed = await getJson(`/jobs/${encodeURIComponent(jobId)}/events`);
@@ -385,8 +383,7 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function openKuaishou(note) {
-  note.textContent = "正在打开快手扫码…";
+async function openKuaishou() {
   const frame = document.querySelector("#kuaishou-frame");
   try {
     const response = await fetch(`${apiBase()}/oauth/kuaishou/start`);
@@ -394,11 +391,8 @@ async function openKuaishou(note) {
     if (data.url && frame) {
       frame.hidden = false;
       frame.src = data.url;
-      note.textContent = data.message || "用快手 APP 扫码绑定。";
-      return;
     }
-    note.textContent = data.message || "敬请期待。快手资质还在审核。";
   } catch {
-    note.textContent = "敬请期待。快手资质还在审核。";
+    // 扫码入口没接上时，按钮保持原样。
   }
 }

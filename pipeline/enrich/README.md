@@ -11,6 +11,7 @@
 | 逐回合 `playbyplayv3`（stats）或 CDN liveData `playbyplay` | 有 `game.actions` | 出手人、进没进、几分、助攻、坐标、篮板、失误 |
 | boxscore（`boxscoresummaryv3` / `boxscoretraditionalv3` / CDN） | 有 `homeTeam.players` | 号码 → 球员，这场的出场名单 |
 | `shotqualityshotlog` | 有非空 `shots` | xFG%、防守人 |
+| `2025-26/dal_margin_offense.json` | 固定文件名，不按场次 | 独行侠球员在四档分差下的赛季真实命中率、每球权得分 |
 
 `DEEPCOURT_DATA=/别的目录` 可以临时换数据目录。
 
@@ -32,7 +33,7 @@ python3 -m unittest pipeline.enrich.test_join
 
 ## 产出字段
 
-- 事件 `official`：action_number / period / clock_s / made / value / shot_type / distance_ft / assist / xfg / defender / description；出手还会填 `geometry.x_ft / y_ft / shot_zone`。
+- 事件 `official`：action_number / period / clock_s / made / value / shot_type / distance_ft / assist / xfg / defender / description；独行侠出手多一个 `season_margin`（分差档、真实命中率、每球权得分）。出手还会填 `geometry.x_ft / y_ft / shot_zone`。
 - 回合 `official`：period / clock_start_s / clock_end_s / score_start / score_end。
 - 顶层 `official`：game_id / 用到的文件 / 时间窗 / 对上与补入统计 / 片段内全部官方记录 `plays`（含罚球、犯规、换人）。
 

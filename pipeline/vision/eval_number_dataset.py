@@ -36,7 +36,7 @@ VISION = Path(__file__).resolve().parent
 WORKSPACE = VISION.parents[2]
 FRAMES = WORKSPACE / "data" / "2025-26" / "frames"
 OUT = VISION / "results" / "number_eval"
-MIN_H, MAX_H, MAX_BOXES = 90, 520, 12  # 与 apply_jersey_ocr.choose_boxes 同款过滤
+MIN_H, MAX_H, MAX_BOXES = 90, 520, 6  # 与生产同款高/宽过滤；每帧只 OCR 最大的 6 个框（控制成本，见报告说明）
 
 
 def norm(n: str | None) -> str | None:
@@ -55,18 +55,23 @@ def eval_clip(clip_dir: Path, truth: dict) -> dict:
     import cv2
 
     from jersey_ocr import RapidJerseyReader
+    from rapidocr_onnxruntime import RapidOCR
     from team_color import torso_crop
     from ultralytics import YOLO
 
+    class _Reader(RapidJerseyReader):  # 限 onnx 线程，防多进程把核打爆
+        def __init__(self):
+            self.ocr = RapidOCR(intra_op_num_threads=2, inter_op_num_threads=1)
+
     model = YOLO(str(VISION / "models" / "player_detector.pt"))
-    reader = RapidJerseyReader()
+    reader = _Reader()
     truth_num = norm(truth["number"])
     frames_out = []
     for img_path in sorted(clip_dir.glob("f_*.jpg")):
         frame = cv2.imread(str(img_path))
         if frame is None:
             continue
-        result = model.predict(frame, conf=0.5, classes=[4], verbose=False)[0]
+        result = model.predict(frame, conf=0.5, classes=[4], device="cpu", verbose=False)[0]
         boxes = []
         if result.boxes is not None:
             for b in result.boxes:
@@ -107,6 +112,18 @@ def eval_clip(clip_dir: Path, truth: dict) -> dict:
             "frames": frames_out}
 
 
+def _init_worker():
+    # 每个 worker 只占 2 线程，避免多进程争抢打爆 10 核小机器
+    import os
+    os.environ["OMP_NUM_THREADS"] = "2"
+    os.environ["MKL_NUM_THREADS"] = "2"
+    try:
+        import torch
+        torch.set_num_threads(2)
+    except Exception:
+        pass
+
+
 def _run(job):
     d_name, out_path, truth = job
     out_file = Path(out_path)
@@ -122,6 +139,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--clips", nargs="*", help="只跑指定剪辑")
+    ap.add_argument("--aggregate-only", action="store_true", help="不跑识别，只汇总现有 clips/*.json")
     args = ap.parse_args()
 
     labels = [json.loads(l) for l in (FRAMES / "_labels.jsonl").read_text().splitlines()]
@@ -140,13 +158,17 @@ def main() -> None:
             done += 1
         else:
             todo.append((d.name, str(out_file), truth_by_clip[d.name]))
+
+    if args.aggregate_only:
+        todo = []
+        done = len(list((OUT / "clips").glob("*.json")))
     print(f"剪辑 {len(clip_dirs)}：已完成 {done}，待跑 {len(todo)}", flush=True)
 
     import multiprocessing as mp
 
-    with mp.Pool(args.workers) as pool:
+    with mp.Pool(args.workers, initializer=_init_worker) as pool:
         for i, name in enumerate(pool.imap_unordered(_run, todo), 1):
-            if i % 20 == 0 or i == len(todo):
+            if True:
                 print(f"[{i}/{len(todo)}] {name}", flush=True)
 
     # ---- 汇总 ----
@@ -240,7 +262,7 @@ def build_report(summary, miss_frames, no_read_frames) -> None:
         items = []
         for r in rows_[:20]:
             p = FRAMES / r["clip"] / r["frame"]
-            b = thumb(p)
+            b = thumb(p, 480)
             if not b:
                 continue
             items.append(

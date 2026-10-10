@@ -296,6 +296,7 @@ def _shots(stream: dict) -> list[dict]:
                 "assist": assist_name,
                 "phrase": shot_phrase(official) if official else "出手",
                 "contrast": contrast(made, xfg),
+                "season_margin": official.get("season_margin"),
             })
     return shots
 

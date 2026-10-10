@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DEEP COURT · 团队协作台</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="hub-body">
+  <div class="court court-tr"></div>
+  <div class="court court-bl"></div>
+  <main class="hub">
+    <header class="hub-top">
+      <p class="kicker"><span class="mark">TEAM 04</span>　·　协作台 · 不是评委提交页</p>
+      <h1>DEEP <span class="accent">COURT</span> <span class="hub-tag">HUB</span></h1>
+      <p class="hub-lede">全队入口：看现状、开回放、进仓库、抄正式提交链接。评委打开的是根路径 <code>game.html</code>，请用下面「正式作品」那一行。</p>
+    </header>
+
+    <section class="hub-rail" aria-label="关键入口">
+      <a class="hub-pill submit" id="submit-link" href="#">
+        <span class="hub-pill-k">正式作品提交</span>
+        <strong id="submit-label">部署后填入 CloudFront 根链接</strong>
+        <span class="hub-pill-hint" id="submit-hint">根路径 = 回放页，给组委会 / 评委</span>
+      </a>
+      <a class="hub-pill" href="game.html?clip=flagg">
+        <span class="hub-pill-k">视觉回放台</span>
+        <strong>弗拉格 · 独行侠进攻</strong>
+        <span class="hub-pill-hint">考试模板同场 · 0022500701</span>
+      </a>
+      <a class="hub-pill" href="game.html?clip=amen">
+        <span class="hub-pill-k">视觉回放台</span>
+        <strong>阿门 · 火箭进攻</strong>
+        <span class="hub-pill-hint">演示用 · 非考试模板</span>
+      </a>
+      <a class="hub-pill" id="github-link" href="https://github.com/jasonlovegugu/nba-hackathon-team04/tree/events-possession-eval" target="_blank" rel="noopener">
+        <span class="hub-pill-k">GitHub</span>
+        <strong>nba-hackathon-team04</strong>
+        <span class="hub-pill-hint">分支 events-possession-eval · Private</span>
+      </a>
+    </section>
+
+    <section class="hub-grid" aria-labelledby="status-title">
+      <div class="hub-block">
+        <h2 id="status-title">项目现状</h2>
+        <ul class="hub-list">
+          <li><b>考试约束</b>18:00 视频是独行侠进攻、火箭防守；主模板 <code>0022500701</code></li>
+          <li><b>已通</b>CV 事件流 → 官方 xFG / 阵容补全 → 烧进成片 + 本机中文解说 → 回放页</li>
+          <li><b>本地成片</b><code>web/assets/*-broadcast.mp4</code>（不上 Git，走 CloudFront）</li>
+          <li><b>基础数据</b>四场 HOU↔DAL 深度 JSON 已齐，在仓库外 <code>data/2025-26/</code></li>
+          <li><b>阻断</b>team04 Polly / Bedrock 仍 AccessDenied；GPU=0，部署用 <code>enableP1/P2=false</code></li>
+          <li><b>未完成</b>CloudFront 公网正式链接、Agent 平台接口对齐、考试片再跑一遍</li>
+        </ul>
+      </div>
+      <div class="hub-block">
+        <h2>今天怎么跑</h2>
+        <ol class="hub-steps">
+          <li>账号能用后在仓库根目录：<code>sh scripts/publish.sh</code></li>
+          <li>把输出的 CloudFront 域名写进 <code>web/config.js</code> 的 <code>submitUrl</code>，再发一版</li>
+          <li>考试片：<code>python3 -m pipeline.run_clip … --clip exam</code> 再 <code>present --clip exam</code></li>
+          <li>全队验收：本页 + 回放台 + 正式提交链接各点一次</li>
+        </ol>
+        <p class="hub-note">协作文档在飞书共享文件夹；调研见 <a href="https://hu6srn8qnl.feishu.cn/docx/Cdp4dNMAzogcPYxRyHbc9hiBndh" target="_blank" rel="noopener">解说管道与数据可视化调研</a>。</p>
+      </div>
+    </section>
+
+    <section class="hub-links" aria-label="更多链接">
+      <a href="readme.html">作品说明 /readme</a>
+      <a href="index.html">内部上传页（勿交评委）</a>
+      <a href="arch.html">架构页</a>
+      <a href="https://hu6srn8qnl.feishu.cn/drive/folder/Ndbufq6uLlAgawdFtnkczyGaneh" target="_blank" rel="noopener">飞书协作文件夹</a>
+    </section>
+
+    <footer class="hub-foot">
+      <span>本页路径 <code>/hub.html</code></span>
+      <span id="hub-origin"></span>
+    </footer>
+  </main>
+  <script src="config.js"></script>
+  <script src="hub.js"></script>
+</body>
+</html>

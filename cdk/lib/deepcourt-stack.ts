@@ -236,7 +236,11 @@ export class DeepCourtStack extends cdk.Stack {
       },
     });
 
-    const configJs = `window.DEEPCOURT_CONFIG=${JSON.stringify({ apiBase: '/api' })};\n`;
+    const configJs = `window.DEEPCOURT_CONFIG=${JSON.stringify({
+      apiBase: '/api',
+      submitUrl: `https://${distribution.distributionDomainName}/`,
+      githubUrl: 'https://github.com/jasonlovegugu/nba-hackathon-team04/tree/events-possession-eval',
+    })};\n`;
     new s3deploy.BucketDeployment(this, 'DeployWeb', {
       sources: [
         s3deploy.Source.asset(webDir, { exclude: ['design-ref', 'design-ref/**'] }),
