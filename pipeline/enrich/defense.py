@@ -14,6 +14,7 @@ from typing import Optional
 
 from .join import _side, _zone
 from .official import DATA, calibrate_side, load_game, period_number, clock_seconds
+from .season_zones import attach_event
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "pipeline" / "vision" / "results" / "local"
@@ -266,4 +267,5 @@ def attach(stream: dict, clip_id: str, game: dict, game_id: str) -> dict:
                 official["shooter_rank"] = ranks[shooter]
             if shooter:
                 official["zone_chart"] = zone_chart(shooter)
+            attach_event(ev)
     return stream

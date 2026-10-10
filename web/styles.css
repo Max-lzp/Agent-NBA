@@ -1368,6 +1368,20 @@ h2 {
 .freeze .dot { width: .7em; height: .7em; border-radius: 50%; display: inline-block; }
 .freeze .dot.red { background: #ff2b2b; }
 .freeze .dot.gold { background: #f5c542; }
+.freeze .bio { color: var(--cream); }
+.freeze .zone-note { color: #f5c542; margin-top: 4px; }
+.freeze .zone-diff { color: var(--cream); }
+.freeze .bands {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin: 3px 0 2px;
+}
+.freeze .bands span {
+  display: block; padding: 3px 2px 2px; text-align: center; line-height: 1.2; color: var(--muted);
+  background: rgba(255,255,255,.04); border: 1px solid rgba(243,237,226,.16);
+}
+.freeze .bands b { display: block; font-weight: 600; color: var(--muted); }
+.freeze .bands small { display: block; font-size: .92em; }
+.freeze .bands span.is-shot { border-color: #f5c542; color: var(--cream); }
+.freeze .bands span.is-shot b { color: #f5c542; }
 .mini-court.heat .zone-label { fill: var(--cream); font-size: 10px; text-anchor: middle; dominant-baseline: middle; font-weight: 600; paint-order: stroke; stroke: rgba(20,17,14,.7); stroke-width: 2px; }
 .mini-court.heat .pulse { animation: heat-pulse 1s ease-in-out infinite; }
 @keyframes heat-pulse { 50% { stroke-width: 6; } }
