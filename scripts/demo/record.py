@@ -32,7 +32,7 @@ RATE = 48000
 MAX_BYTES = 50 * 1024 * 1024
 DEFAULT_BASE = "https://d2vzd2batw1eqe.cloudfront.net"
 
-# 计划总长 106 秒（1:46）。偏移是镜头内的秒。
+# 计划总长 120 秒。偏移是镜头内的秒。
 SHOTS = [
     {
         "id": "open",
@@ -100,11 +100,13 @@ SHOTS = [
     {
         "id": "aws",
         "title": "AWS 服务",
-        "seconds": 14,
+        "seconds": 28,
         "cues": [
             (0, 5, "收片、校验、回放、网页是主路径。\n考试片追踪走 Batch，c7i.48xlarge，192 个 vCPU 保持开着。"),
             (5, 10, "记分牌在考试片那台 c7i 上，用 RapidOCR。\n这支训练片的记分牌仍在本机。"),
-            (10, 14, "成片用 ffmpeg。MediaConvert 还没交作业。\n密钥仍是空占位。"),
+            (10, 17, "认人已接通。Qwen3 VL 看多帧，投票定号码和球衣颜色。\nRekognition 算第二票。只认场上十个人，一个名字一条轨迹。"),
+            (17, 24, "官方逐回合先钉得分人和助攻人。Qwen 调失败才用 Textract。\n认不出名字的，即将挂队色标签，写着 Agent detecting。"),
+            (24, 28, "成片用 ffmpeg。MediaConvert 还没交作业。\n密钥仍是空占位。"),
         ],
     },
 ]
@@ -901,6 +903,8 @@ def action_aws(demo: Demo) -> None:
     demo.hold_until(5)
     demo.scroll_to_text("RapidOCR", margin=160)
     demo.hold_until(10)
+    demo.scroll_to_text("Bedrock Qwen3 VL", margin=160)
+    demo.hold_until(24)
     demo.scroll_to_text("MediaConvert", margin=160)
     demo.snap("aws-end")
 
@@ -1115,7 +1119,7 @@ def record(args: argparse.Namespace) -> int:
 
 def run_check() -> int:
     total = planned_total()
-    assert abs(total - 106) < 0.1, total
+    assert abs(total - 120) < 0.1, total
     done = []
     cursor = 0.0
     for shot in SHOTS:
@@ -1124,6 +1128,12 @@ def run_check() -> int:
     entries = realize_cues(done)
     text = render_srt(entries)
     assert "Team 04 · Deep Court" in text
+    assert "Qwen3 VL 看多帧" in text
+    assert "Rekognition 算第二票" in text
+    assert "只认场上十个人，一个名字一条轨迹" in text
+    assert "官方逐回合先钉得分人和助攻人" in text
+    assert "Qwen 调失败才用 Textract" in text
+    assert "Agent detecting" in text
     assert text.strip().endswith("密钥仍是空占位。")
     cues = [
         {"wall": 1.0, "type": "play", "media": 2.0, "src": "zh.mp4"},
