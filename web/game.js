@@ -546,7 +546,7 @@ function fillSide(node, role, team, players) {
 function followHtml(team) {
   const links = TEAM_LINKS[team];
   if (!links) return "";
-  return `<span class="floor-actions"><a class="companion-add" href="${links.ics}">关注本队未来赛程</a><a class="companion-ics" href="${links.ics}" download>下载 .ics</a></span>`;
+  return `<span class="floor-actions"><a class="companion-add" href="${links.ics}">关注本队未来赛程</a></span>`;
 }
 
 function faceHtml(team, jersey, name) {
