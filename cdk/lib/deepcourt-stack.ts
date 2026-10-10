@@ -198,7 +198,7 @@ export class DeepCourtStack extends cdk.Stack {
     const webOrigin = origins.S3BucketOrigin.withOriginAccessControl(webBucket);
     const distribution = new cloudfront.Distribution(this, 'Site', {
       comment: 'Deep Court Team 04',
-      defaultRootObject: 'index.html',
+      defaultRootObject: 'game.html',
       priceClass: cloudfront.PriceClass.PRICE_CLASS_200,
       defaultBehavior: {
         origin: webOrigin,
@@ -256,6 +256,9 @@ export class DeepCourtStack extends cdk.Stack {
     });
     new cdk.CfnOutput(this, 'MediaBucketName', {
       value: mediaBucket.bucketName,
+    });
+    new cdk.CfnOutput(this, 'WebBucketName', {
+      value: webBucket.bucketName,
     });
     new cdk.CfnOutput(this, 'AgentRuntimeArn', {
       value: runtime.attrAgentRuntimeArn,

@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><title>号码识别基线评测</title>
+<style>
+body{font-family:-apple-system,sans-serif;margin:24px;max-width:1200px}
+table{border-collapse:collapse;margin:12px 0}td,th{border:1px solid #ccc;padding:4px 10px;font-size:13px}
+h2{margin-top:28px}.grid{display:flex;flex-wrap:wrap;gap:10px}
+figure{margin:0;width:320px}img{width:320px}figcaption{font-size:12px;color:#444}
+.big{font-size:20px}
+</style>
+<h1>号码识别基线评测（官方录像 249 剪辑 / 0 帧）</h1>
+<p class="big">帧级命中率 <b>-</b>（投篮人号码出现在该帧任一 OCR 结果中）</p>
+<table><tr><th>结局</th><th>帧数</th><th>占比</th></tr>
+<tr><td>hit 命中</td><td>0</td><td>-</td></tr>
+<tr><td>miss_with_reads 读错/读到别人</td><td>0</td><td>-</td></tr>
+<tr><td>no_read 有球员没读出数字</td><td>0</td><td>-</td></tr>
+<tr><td>no_player 没检测到球员</td><td>0</td><td>-</td></tr></table>
+<h2>按真值号码的命中情况</h2>
+<table><tr><th>真值</th><th>hit</th><th>miss</th><th>no_read</th><th>no_player</th><th>命中率</th></tr></table>
+<h2>混淆对（帧里真值缺席时被读成什么，top15）</h2>
+<table><tr><th>真值</th><th>被读成</th><th>次数</th></tr></table>
+<h2>读错案例（前 12）</h2><div class="grid"></div>
+<h2>无读数案例（前 8）</h2><div class="grid"></div>

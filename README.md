@@ -36,15 +36,16 @@ ffmpeg 预渲染增强成片（保底：打开即看，不点任何交互也成�
 aws sso login --profile team04
 aws sts get-caller-identity --profile team04 --region us-east-1
 
-# 1. 本地构建
-cd cdk && npm install && npm run build && npx cdk synth
+# 1. 本地构建（不离开仓库根目录）
+(cd cdk && npm install && npm run build && npx cdk synth)
 
-# 2. 构建通过并推到 Git 之后，再部署。
-#    本队账号若提示找不到 bootstrap，再执行：
-#    npx cdk bootstrap aws://405496568869/us-east-1 --profile team04
-npx cdk deploy Team04DeepCourt --profile team04
-#    GPU 配额挡住 Batch 时，先去掉 P1：npx cdk deploy Team04DeepCourt -c enableP1=false --profile team04
-#    不要数字解说、密钥和追踪时：再加 -c enableP2=false
+# 2. 评委成片 + 部署。先生成回放，再部署。
+#    根路径打开的是回放页 game.html，上传页仍在 /index.html。
+#    GPU 配额为 0，不带 Batch。Polly 未开通时解说留在本地成片里，不带 P2。
+#    账号还不能登录时，脚本会停在本地成片，不报部署失败。
+sh scripts/publish.sh
+#    若只要手动部署：
+#    cd cdk && npx cdk deploy Team04DeepCourt -c enableP1=false -c enableP2=false --profile team04
 
 # 3. 验收闭环（把 <api> 换成栈输出 ApiUrl，不要带末尾多余空格）
 curl -sS -X POST "<api>jobs" -H 'content-type: application/json' \

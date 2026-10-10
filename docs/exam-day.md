@@ -2,6 +2,8 @@
 
 目标：拿到一段新的 24 秒进攻视频，5 分钟内出结构化清单（谁持球、谁传给谁、谁投、进没进、xFG、场上阵容）。
 
+组委会确认（10-10）：**考试视频是独行侠进攻、火箭防守**，形式与训练片相同，只换回合。数据主模板是 `0022500701`（弗拉格片同场）。细节与第四节出手速查见 [exam-dal-offense.md](exam-dal-offense.md)。
+
 ## 0. 到场先做（5 分钟）
 
 ```bash
@@ -15,6 +17,18 @@ python3 -m pipeline.events.evaluate                                             
 评测应为：`amen poss=2/2 team_acc=100% fake_to=0 shot=R 1/1`、`flagg poss=2/2 team_acc=98% fake_to=0 shot=R 1/1`。
 
 ## 1. 跑新视频（一条命令）
+
+考试片可先按弗拉格同场写死（独行侠进攻、白衣火箭）：
+
+```bash
+python3 -m pipeline.run_clip \
+  --video "../官方资料/<考试视频>.mp4" \
+  --clip exam \
+  --away DAL --home HOU --white HOU \
+  --game-id 0022500701
+```
+
+比分对不上 0701 时去掉 `--game-id`，让程序在四场里认。通用写法：
 
 ```bash
 python3 -m pipeline.run_clip --video "../官方资料/<考试视频>.mp4" --clip exam
@@ -77,7 +91,17 @@ python3 -m pipeline.run_clip --clip exam --skip-vision --upload --bucket <桶名
 
 上传失败只报警告，不影响本地结果。
 
-## 6. 出问题时
+## 6. 评委成片
+
+清单出来之后：
+
+```bash
+python3 -m pipeline.present --clip exam
+```
+
+浏览器打开 `web/game.html?clip=exam`。比分条和出手卡烧进 `web/assets/exam-broadcast.mp4`，人名在页面上跟着框走。云账号可用时在仓库根目录跑 `sh scripts/publish.sh`，提交 CloudFront 根路径。
+
+## 7. 出问题时
 
 | 现象 | 处理 |
 | --- | --- |

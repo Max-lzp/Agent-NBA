@@ -6,11 +6,13 @@
       "matchup": "DAL @ HOU",
       "home": "HOU",
       "away": "DAL",
+      "official_game_id": "0022500701",
       "final": {
         "HOU": 111,
         "DAL": 107
       },
       "video_hint": "官方资料/train_video/训练_弗拉格2月1日.mp4",
+      "exam_template": "独行侠进攻 / 火箭防守；深色衣=DAL，白衣=HOU",
       "active": {
         "DAL": {
           "32": "Flagg",
@@ -39,14 +41,23 @@
       },
       "dnp": {
         "DAL": {
+          "1": "Hardy",
           "5": "Russell",
-          "1": "Hardy"
+          "3": "Davis",
+          "0": "Exum",
+          "11": "Irving",
+          "14": "Kelly",
+          "2": "Lively"
         },
         "HOU": {
           "32": "Green",
           "8": "Tate",
           "27": "Crawford",
-          "0": "Holiday"
+          "0": "Holiday",
+          "12": "Adams",
+          "4": "Davison",
+          "13": "Newton",
+          "5": "VanVleet"
         }
       },
       "on_court": {
@@ -64,7 +75,15 @@
           "28",
           "7"
         ]
-      }
+      },
+      "q4_dal_shots_last3min": [
+        {"clock": "2:14", "player": "Gafford", "jersey": "21", "made": true, "xfg": 0.659, "desc": "DUNK"},
+        {"clock": "1:34", "player": "Flagg", "jersey": "32", "made": true, "xfg": 0.504, "desc": "driving finger roll Layup（训练片）"},
+        {"clock": "0:50", "player": "Flagg", "jersey": "32", "made": false, "xfg": 0.407, "desc": "17' pullup"},
+        {"clock": "0:47", "player": "Marshall", "jersey": "13", "made": true, "xfg": 0.573, "desc": "12' pullup（Christie 助攻）"},
+        {"clock": "0:25", "player": "Flagg", "jersey": "32", "made": false, "xfg": 0.215, "desc": "driving Layup"},
+        {"clock": "0:09", "player": "Flagg", "jersey": "32", "made": false, "xfg": 0.336, "desc": "25' pullup 3PT"}
+      ]
     },
     "amen_20260104": {
       "date": "2026-01-04",
