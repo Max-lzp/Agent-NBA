@@ -210,7 +210,7 @@ def _has_highlights() -> bool:
     return (Path(__file__).resolve().parent / "highlights.py").is_file()
 
 
-def _highlights(job_id: str, film: Path, board: dict, linked: dict) -> list:
+def _highlights(job_id: str, film: Path, board: dict, linked: dict, replay_video: Path | None = None) -> list:
     """成片后面接精彩回放：每段 5 秒，慢放到球离手那一帧再定格，卡片左右分列。失败就只发原片。"""
     if not _has_highlights():
         return []
@@ -234,6 +234,7 @@ def _highlights(job_id: str, film: Path, board: dict, linked: dict) -> list:
     try:
         doc = highlights.render_highlights(
             film, board, str(pbp),
+            replay_video=replay_video if replay_video and replay_video.is_file() else None,
             shotquality=opt("shotqualityshotlog"),
             matchups=opt("boxscorematchupsv3"),
             boxscore=opt("boxscore"),
@@ -373,7 +374,7 @@ def _render(video: Path, reads: list, dest: Path, away: str, home: str, tags: li
             "-i", "pipe:0",
             "-i", str(video),
             "-map", "0:v:0", "-map", "1:a:0?",
-            "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", os.environ.get("RENDER_CRF", "16"), "-pix_fmt", "yuv420p",
             "-c:a", "aac", "-shortest", "-movflags", "+faststart",
             str(dest),
         ],
@@ -387,7 +388,7 @@ def _render(video: Path, reads: list, dest: Path, away: str, home: str, tags: li
         ok, frame = cap.read()
         if not ok:
             break
-        frame = cv2.resize(frame, (width, height))
+        frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_LANCZOS4 if frame.shape[1] > width else cv2.INTER_LINEAR)
         label = _label_at(timed, index / fps, away, home)
         players = _players_at(tags or [], index / fps)
         showing = [card for card in cards or [] if card["t0"] <= index / fps <= card["t1"]]
@@ -640,14 +641,22 @@ def _render_and_voice(job_id: str, render_args: tuple, script: list, board: dict
     work.mkdir(parents=True, exist_ok=True)
     duration = mod.media_duration(source)
     print(f"{job_id} 成片和中英文配音同时开始，解说稿 {len(script)} 句")
-    with ThreadPoolExecutor(3) as pool:
+    replay_src = Path("/tmp/replay-source.mp4")
+    replay_args = (source, [], replay_src, render_args[3], render_args[4], render_args[5], [])
+    langs = [lang for lang in os.environ.get("VOICE_LANGS", "en").split(",") if lang in {"zh", "en"}]
+    with ThreadPoolExecutor(4) as pool:
         render = pool.submit(_render, *render_args)
+        replay = pool.submit(_render, *replay_args)
         voices = {
             lang: pool.submit(_voice_track, mod, source, work, script, lang, voice, code, duration)
-            for lang, voice, code in (("zh", mod.VOICE_ID, "cmn-CN"), ("en", mod.EN_VOICE_ID, "en-US"))
+            for lang, voice, code in (("zh", mod.VOICE_ID, "cmn-CN"), ("en", mod.EN_VOICE_ID, "en-US")) if lang in langs
         }
         render.result()
-        linked["events"] = (linked.get("events") or []) + _highlights(job_id, film, board, linked)
+        try:
+            replay.result()
+        except Exception as exc:  # noqa: BLE001 — 回放源没做出来就用成片截
+            print(f"回放源片没做出来：{exc}")
+        linked["events"] = (linked.get("events") or []) + _highlights(job_id, film, board, linked, replay_src)
         try:
             tracks = {lang: future.result() for lang, future in voices.items()}
         except Exception as exc:  # noqa: BLE001 — 配音失败就退回转写原解说，仍然三支一起发
@@ -726,12 +735,16 @@ def _publish(job_id: str, film: Path, board: dict, web_bucket: str, distribution
         track_keys.append(key)
     clips = _merge_clips(s3, web_bucket, job_id, video_key, board, spoken, linked)
     body = _clips_js(job_id, clips)
+    _verify_upload(s3, web_bucket, {video_key: film, **{f"assets/{job_id}-{lang}.mp4": path for lang, path in ((spoken or {}).get("files") or {}).items()}})
     s3.put_object(
         Bucket=web_bucket,
         Key="replay/clips.js",
         Body=body.encode("utf-8"),
         ContentType="application/javascript; charset=utf-8",
     )
+    if s3.get_object(Bucket=web_bucket, Key="replay/clips.js")["Body"].read() != body.encode("utf-8"):
+        raise RuntimeError("replay/clips.js 下载回来和本地不一致")
+    print(f"已核对 replay/clips.js：{len(body.encode('utf-8'))} 字节一致")
     # 只发成片和片单。页面文件由仓库部署，作业里的副本可能是旧的，不能覆盖线上。
     if distribution:
         items = [f"/{video_key}", "/replay/clips.js"]
@@ -743,6 +756,19 @@ def _publish(job_id: str, film: Path, board: dict, web_bucket: str, distribution
                 "CallerReference": f"{job_id}-{int(film.stat().st_mtime)}",
             },
         )
+
+
+def _verify_upload(s3, bucket: str, files: dict) -> None:
+    """传完下载回来逐字节比对，对不上就报错，不往下发片单。"""
+    import filecmp
+
+    for key, path in files.items():
+        check = Path("/tmp/verify") / Path(key).name
+        check.parent.mkdir(parents=True, exist_ok=True)
+        s3.download_file(bucket, key, str(check))
+        if not filecmp.cmp(str(check), str(path), shallow=False):
+            raise RuntimeError(f"{key} 下载回来和本地不一致")
+        print(f"已核对 {key}：{check.stat().st_size} 字节一致")
 
 
 def _merge_clips(s3, web_bucket: str, job_id: str, video_key: str, board: dict, spoken: dict | None = None, linked: dict | None = None) -> dict:

@@ -58,6 +58,8 @@ WINDOW_AFTER_S = 1.6
 HOLD_S = 2.5
 RESET_JUMP = 3.0
 OUT_W, OUT_H = 1280, 720
+CARD_W = int(OUT_W * 0.36)  # 卡片字号放大 1.5 倍后，单张卡不超过画面宽度的 36%
+CRF = "16"
 PANEL = (20, 17, 14, 230)
 RED = (255, 43, 43, 255)
 GOLD = (245, 197, 66, 255)
@@ -1736,38 +1738,38 @@ def _render_panel(rows, width, edge):
 
     image = Image.new("RGBA", (width, 8), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
-    head = _font(22)
-    body = _font(18)
-    title = _font(28)
+    head = _font(32)
+    body = _font(27)
+    title = _font(42)
     wrapped = []
     for row in rows or []:
         style = row.get("style") or "line"
         font = title if style == "title" else head if style in {"off", "def"} else body
-        for piece in _wrap(draw, row.get("text") or "", font, width - 36):
+        for piece in _wrap(draw, row.get("text") or "", font, width - 54):
             wrapped.append((style if piece == row.get("text") else "line", piece, font, row.get("stars") if piece == row.get("text") else None))
     if not wrapped:
         return image
     heights = []
     for style, _text, font, stars in wrapped:
-        line_h = draw.textbbox((0, 0), "字", font=font)[3] + (10 if style in {"title", "off", "def"} else 6)
+        line_h = draw.textbbox((0, 0), "字", font=font)[3] + (15 if style in {"title", "off", "def"} else 9)
         if stars:
-            line_h += 18
+            line_h += 27
         heights.append(line_h)
-    height = sum(heights) + 22
+    height = sum(heights) + 33
     image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(image)
     draw.rectangle((0, 0, width, height), fill=PANEL)
-    draw.rectangle((0, 0, 5, height), fill=edge)
-    y = 10
+    draw.rectangle((0, 0, 7, height), fill=edge)
+    y = 15
     for (style, text, font, stars), line_h in zip(wrapped, heights):
         color = RED if style == "title" else CREAM if style in {"off", "def"} else MUTED
-        x = 16
+        x = 24
         if style in {"off", "def"}:
-            draw.ellipse((x, y + 6, x + 10, y + 16), fill=RED if style == "off" else GOLD)
-            x += 16
+            draw.ellipse((x, y + 9, x + 15, y + 24), fill=RED if style == "off" else GOLD)
+            x += 24
         draw.text((x, y), text, font=font, fill=color)
         if stars:
-            _paint_stars(draw, x, y + draw.textbbox((0, 0), "字", font=font)[3] + 2, 12, stars)
+            _paint_stars(draw, x, y + draw.textbbox((0, 0), "字", font=font)[3] + 3, 18, stars)
         y += line_h
     return image
 
@@ -1829,8 +1831,8 @@ def draw_overlay(highlight, frame=None):
 
     image = Image.new("RGBA", (OUT_W, OUT_H), (0, 0, 0, 0))
     panels = (highlight.get("card") or {}).get("panels") or {}
-    offense = _render_panel(panels.get("offense") or [], 360, RED)
-    defense = _render_panel(panels.get("defense") or [], 360, GOLD)
+    offense = _render_panel(panels.get("offense") or [], CARD_W, RED)
+    defense = _render_panel(panels.get("defense") or [], CARD_W, GOLD)
     if offense.height <= 8 and defense.height <= 8:
         return image
     analysis = None
@@ -1907,14 +1909,14 @@ def _encode_prefix(video: Path, dest: Path, preset: str):
     if not audio:
         cmd += ["-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo"]
     cmd += [
-        "-vf", f"scale={OUT_W}:{OUT_H}:force_original_aspect_ratio=decrease,pad={OUT_W}:{OUT_H}:(ow-iw)/2:(oh-ih)/2,fps=30,format=yuv420p,setsar=1",
+        "-vf", f"scale={OUT_W}:{OUT_H}:force_original_aspect_ratio=decrease:flags=lanczos,pad={OUT_W}:{OUT_H}:(ow-iw)/2:(oh-ih)/2,fps=30,format=yuv420p,setsar=1",
     ]
     if audio:
         cmd += ["-af", "aresample=48000,aformat=channel_layouts=stereo", "-shortest"]
     else:
         cmd += ["-map", "0:v:0", "-map", "1:a:0", "-shortest"]
     cmd += [
-        "-c:v", "libx264", "-preset", preset, "-crf", "23", "-pix_fmt", "yuv420p",
+        "-c:v", "libx264", "-preset", preset, "-crf", CRF, "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-ar", "48000", "-ac", "2", str(dest),
     ]
     _run(cmd)
@@ -1928,7 +1930,7 @@ def _encode_replay(video: Path, highlight: dict, overlay: Path, dest: Path, pres
     freeze = plan["freeze"]
     # 慢放整段，关键帧用 tpad 定格。回放没有现场声。
     graph = (
-        f"[0:v]scale={OUT_W}:{OUT_H}:force_original_aspect_ratio=decrease,"
+        f"[0:v]scale={OUT_W}:{OUT_H}:force_original_aspect_ratio=decrease:flags=lanczos,"
         f"pad={OUT_W}:{OUT_H}:(ow-iw)/2:(oh-ih)/2,fps=30,setsar=1,setpts=PTS-STARTPTS,split=3[a][b][c];"
         f"[a]trim=0:{pre:.3f},setpts=PTS/{speed:.4f}[pre];"
         f"[b]trim={pre:.3f}:{pre + 0.08:.3f},setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration={freeze:.3f}[fr];"
@@ -1945,7 +1947,7 @@ def _encode_replay(video: Path, highlight: dict, overlay: Path, dest: Path, pres
         "-filter_complex", graph,
         "-map", "[out]", "-map", "2:a:0",
         "-t", f"{max(plan['duration'], MIN_REPLAY_S):.3f}",
-        "-c:v", "libx264", "-preset", preset, "-crf", "23", "-pix_fmt", "yuv420p",
+        "-c:v", "libx264", "-preset", preset, "-crf", CRF, "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-ar", "48000", "-ac", "2", str(dest),
     ]
     try:
@@ -1953,7 +1955,7 @@ def _encode_replay(video: Path, highlight: dict, overlay: Path, dest: Path, pres
     except RuntimeError:
         # 定格滤镜失败时退回整段慢放，长度仍然至少 10 秒。
         fallback = (
-            f"[0:v]scale={OUT_W}:{OUT_H}:force_original_aspect_ratio=decrease,"
+            f"[0:v]scale={OUT_W}:{OUT_H}:force_original_aspect_ratio=decrease:flags=lanczos,"
             f"pad={OUT_W}:{OUT_H}:(ow-iw)/2:(oh-ih)/2,fps=30,setsar=1,setpts=PTS-STARTPTS,"
             f"setpts=PTS/{speed:.4f}[cat];"
             f"[1:v]format=rgba[card];[cat][card]overlay=0:0:format=auto[out]"
@@ -1971,7 +1973,7 @@ def _concat(parts, dest, preset):
     graph = f"{inputs}concat=n={len(parts)}:v=1:a=1[cv][ca];[cv]fps=30,format=yuv420p[v]"
     _run(cmd + [
         "-filter_complex", graph, "-map", "[v]", "-map", "[ca]",
-        "-c:v", "libx264", "-preset", preset, "-crf", "23", "-pix_fmt", "yuv420p",
+        "-c:v", "libx264", "-preset", preset, "-crf", CRF, "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-ar", "48000", "-ac", "2", "-movflags", "+faststart", str(dest),
     ])
 
@@ -1984,7 +1986,8 @@ def render_highlights(
     out_video,
     out_json=None,
     work_dir=None,
-    preset="veryfast",
+    preset="medium",
+    replay_video=None,
     duration=None,
     min_replay_s=MIN_REPLAY_S,
     **kwargs,
@@ -2000,6 +2003,7 @@ def render_highlights(
     work.mkdir(parents=True, exist_ok=True)
     prefix = work / "prefix.mp4"
     _encode_prefix(video, prefix, preset)
+    source = Path(replay_video) if replay_video else video
     parts = [prefix]
     cursor = _probe(prefix)[0]
     for index, highlight in enumerate(doc["highlights"]):
@@ -2013,7 +2017,7 @@ def render_highlights(
             _run([
                 "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
                 "-ss", f"{max(0.0, highlight['sourceSeconds']['key']):.3f}",
-                "-i", str(video), "-frames:v", "1", str(still),
+                "-i", str(source), "-frames:v", "1", str(still),
             ])
             from PIL import Image
             shot = Image.open(still)
@@ -2021,7 +2025,7 @@ def render_highlights(
             shot = None
         draw_overlay(highlight, shot).save(overlay)
         piece = work / f"replay-{index}.mp4"
-        _encode_replay(video, highlight, overlay, piece, preset)
+        _encode_replay(source, highlight, overlay, piece, preset)
         length = _probe(piece)[0]
         highlight["replay"] = {"start": round(cursor, 3), "end": round(cursor + length, 3)}
         highlight["segment"]["renderedDuration"] = round(length, 3)
