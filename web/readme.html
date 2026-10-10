@@ -26,15 +26,16 @@
 
     <h2>作品亮点</h2>
     <ol>
-      <li>打开就是成片。播放、暂停、进度用浏览器自带控件，页面不再铺传球清单和自制进度条。</li>
-      <li>有定格回放成片就播那一份：进球后出手帧停 5 秒，圈和卡片做在片子里。没有这份文件时播转播成片。</li>
-      <li>中文解说由程序根据官方事件写成，已经混进成片。当前声音是本机中文语音；Amazon Polly 开通后只换声音，不改词。</li>
+      <li>比分条跟着记分牌走：节次、比赛钟、客队和主队比分。出手后约三秒弹出这一球的预期命中率、区域和距离。</li>
+      <li>人名标在球衣号码对得上、而且票数够的轨迹上。对不上的人不编名字。</li>
+      <li>暂停后展开官方逐回合原文、助攻和当时场上的十个人。半场图上的点用官方坐标。</li>
+      <li>中文解说由程序根据这些事件写成，已经混进成片。当前声音是本机中文语音；Amazon Polly 开通后只换声音，不改词。</li>
     </ol>
 
     <h2>数字从哪来</h2>
     <p>事件不由模型看图编造。记分牌读出节次、比赛钟和比分；追踪给出人和框；官方逐回合补上投篮人、助攻和预期命中率（xFG）。AgentCore 只取回并校验这份清单。</p>
     <p>决策反差是二次加工，不是另一套数据：预期命中率低于四成却进了，标成英雄球；高于六成却没进，标成可惜。其余出手只显示预期命中率本身。</p>
-    <p>引力和关键度来自官方赛季汇总，标明不是这一球的胜率变化。这些数若出现，出现在成片里，不在页面上另开一块。</p>
+    <p>引力和关键度来自官方赛季汇总。暂停后写在该球员这一球旁边，标明不是这一球的胜率变化。</p>
 
     <h2>数据管道</h2>
     <p>本地追踪写出结构化清单，上传到 S3 <code>structured/</code>。Lambda 调 Bedrock AgentCore 校验；Agent 不可用时 Lambda 直接读清单，回放不会停住。页面通过 CloudFront 打开成片。上传入口在 <a href="/index.html">/index.html</a>，只给我们自己用。</p>
@@ -42,7 +43,7 @@
       <li>收片：浏览器经 CloudFront、API Gateway、Lambda 把视频直传到 S3，任务记在 DynamoDB。本地命令也可以直接读文件。</li>
       <li>追踪和记分牌：YOLO、ByteTrack、RapidOCR 在本地跑。记分牌不走 Textract。</li>
       <li>事件清单在本地生成，再用本地的官方逐回合数据补出手人、助攻和预期命中率。独行侠的出手还会按当时分差，带上 2025-26 赛季效率。对得上的人再带上赛季出手质量、引力和关键度。每次出手还会找到球离手那一帧，记下投篮人。再从出手往前看 5 秒，跟住投篮人，贴他最久的对方球员就是领防人。号码只在当时在场的人里认，读不准就写「号码没读出」，不拿对位表顶替。</li>
-      <li>回放页用系统控件播放成片。有 <code>{clip}-replay.mp4</code> 就播这一份：进球后出手帧定格 5 秒，投篮人脚下画红圈，卡片写当时比分和领防人。页面不读事件列表，也不再在旁边铺半场图。</li>
+      <li>回放时，进球后画面跳回出手那一帧，定格 5 秒：投篮人脚下画红圈，卡片写当时比分、投篮人的数据和领防人；认出领防人才写他的名字、本场对位和赛季场均。右栏是投篮人的分区热区图，红圈标出这一投，并写出这个位置的预期命中率。</li>
       <li>清单放到 S3。Lambda 调 Bedrock AgentCore 校验，页面事件写入 DynamoDB。</li>
       <li>CloudFront 打开回放。两句解说可以交给 Bedrock 写；现在混进成片的声音仍是本机中文语音。Polly 已接通，还没替换这段声音。</li>
     </ol>
@@ -55,7 +56,7 @@
         <tr><td>追踪</td><td>无。计划用 ECR、Batch、EC2、EBS</td><td>本地。GPU 配额为 0，实例没开</td></tr>
         <tr><td>记分牌、认人、事件、官方数据</td><td>无。Textract 只做过探测</td><td>本地</td></tr>
         <tr><td>校验清单</td><td>Lambda、Bedrock AgentCore、DynamoDB、CloudWatch Logs</td><td>主路径</td></tr>
-        <tr><td>回放</td><td>CloudFront、S3、API Gateway <code>GET /jobs/{id}</code>、Lambda <code>get_job</code></td><td>主路径。页面不读事件列表</td></tr>
+        <tr><td>回放</td><td>CloudFront、S3、API Gateway、Lambda</td><td>主路径</td></tr>
         <tr><td>解说</td><td>Bedrock、Polly、S3</td><td>成片仍用本机语音</td></tr>
         <tr><td>成片</td><td>无。MediaConvert 模板已建</td><td>本地 ffmpeg。还没提交转码作业</td></tr>
         <tr><td>观测和密钥</td><td>CloudWatch、X-Ray、Secrets Manager、Cost Explorer</td><td>已接通。密钥是空占位</td></tr>
@@ -65,7 +66,7 @@
 
     <h2>页面</h2>
     <ul>
-      <li><a href="/">回放页</a>：系统控件播放成片。页面上有 Team 04。</li>
+      <li><a href="/">回放页</a>：成片、人名、时间线和半场落点。页面上有 Team 04。</li>
       <li><a href="/index.html">上传页</a>：生产用，不是提交链接。</li>
       <li>本页路径是 <code>/readme</code>。</li>
     </ul>

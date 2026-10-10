@@ -364,14 +364,6 @@ h2 {
 
 .player-title { font-size: 44px; margin-top: 18px; }
 
-.film {
-  display: block;
-  width: 100%;
-  margin-top: 16px;
-  background: #100e0c;
-  border: 1px solid var(--court);
-}
-
 .subhead { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
 .subhead .dataset {
   display: inline-block;
