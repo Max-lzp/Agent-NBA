@@ -1,0 +1,46 @@
+{
+  "clip": "flagg",
+  "model": "player_detector.pt",
+  "window_s": [
+    1.0,
+    0.4
+  ],
+  "shots": [
+    {
+      "event_id": "P01-E8",
+      "t_official": 17.018,
+      "frames": 86,
+      "fps": 59.94,
+      "t": 16.75,
+      "source": "ball_left_hand",
+      "shooter_box": [
+        824.3,
+        248.8,
+        920.6,
+        623.2
+      ],
+      "ball_box": [
+        834.6,
+        222.1,
+        862.0,
+        264.7
+      ],
+      "defender": {
+        "box": [
+          814.6,
+          315.2,
+          858.4,
+          561.2
+        ],
+        "color": "white",
+        "color_votes": 6,
+        "shooter_color": "dark",
+        "foot_gap_px": 72,
+        "number": null,
+        "ocr_conf": 0.618,
+        "ocr_votes": 1,
+        "team": "HOU"
+      }
+    }
+  ]
+}

@@ -103,6 +103,7 @@ def season_margin(play: dict, players: dict, away: Optional[str], home: Optional
     key = bucket_of(margin)
     stats = row.get(key) or {}
     meta = (doc.get("buckets") or {}).get(key) or {}
+    team_row = (doc.get("team_totals") or {}).get(key) or {}
     return {
         "season": doc.get("season"),
         "team": team,
@@ -114,4 +115,6 @@ def season_margin(play: dict, players: dict, away: Optional[str], home: Optional
         "efg": stats.get("efg"),
         "ts": stats.get("ts"),
         "ppp": stats.get("ppp"),
+        "team_ts": team_row.get("ts"),
+        "team_ppp": team_row.get("ppp"),
     }

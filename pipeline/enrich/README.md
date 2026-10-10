@@ -34,6 +34,12 @@ python3 -m unittest pipeline.enrich.test_join
 ## 产出字段
 
 - 事件 `official`：action_number / period / clock_s / made / value / shot_type / distance_ft / assist / xfg / defender / description；独行侠出手多一个 `season_margin`（分差档、真实命中率、每球权得分）。出手还会填 `geometry.x_ft / y_ft / shot_zone`。
+- 出手还会多这几项（`defense.attach`，读 `pipeline/vision/results/local/{clip}.release.json`、`boxscorematchupsv3`、`leaguedashplayerstats`、四场 `shotqualityshotlog`）：
+  - `release`：出手帧时刻、投篮人框、球框。由 `pipeline/vision/release.py` 按原帧率重检得出。
+  - `defense.nearest` / `defense.nearest_box`：出手帧离投篮人最近的对方球员。号码读不出时只有球队。
+  - `official.defender`：画面读出号码时用画面（`source: cv`），否则用本场对位表里对位时间最长的人（`source: matchup`）。对位表是全场统计，不是这一投的防守人。附 `vs_shooter`（本场对位秒数、回合、投篮人的出手和得分）和 `season`（赛季场均）。
+  - `official.shooter_season`：投篮人赛季场均。
+  - `official.zone_chart`：投篮人四场在 8 个区的出手、命中、平均 xFG，以及全部球员同区平均。不足 3 投不给 xFG。
 - 回合 `official`：period / clock_start_s / clock_end_s / score_start / score_end。
 - 顶层 `official`：game_id / 用到的文件 / 时间窗 / 对上与补入统计 / 片段内全部官方记录 `plays`（含罚球、犯规、换人）。
 

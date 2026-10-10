@@ -22,6 +22,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "lambdas"))
 from common import TEAM_ZH, timeline_from_stream  # noqa: E402
+from pipeline.present.freeze import render_replay  # noqa: E402
 
 OUT = REPO / "pipeline" / "events" / "out"
 VISION = REPO / "pipeline" / "vision" / "results" / "local"
@@ -261,6 +262,22 @@ def _at(reads: list[dict], t: float) -> dict | None:
     return found
 
 
+def _nearest(defense: dict) -> dict | None:
+    near = defense.get("nearest")
+    if not near:
+        return None
+    team = near.get("team") or ""
+    return {**near, "box": defense.get("nearest_box"),
+            "display": display_name(team, str(near.get("number") or ""), near.get("name") or "") if near.get("name") else ""}
+
+
+def _defender(defender: dict | None) -> dict | None:
+    if not defender:
+        return None
+    team = defender.get("team") or ""
+    return {**defender, "display": display_name(team, str(defender.get("number") or ""), defender.get("name") or "")}
+
+
 def _shots(stream: dict) -> list[dict]:
     shots = []
     for poss in stream.get("possessions") or []:
@@ -297,6 +314,12 @@ def _shots(stream: dict) -> list[dict]:
                 "phrase": shot_phrase(official) if official else "出手",
                 "contrast": contrast(made, xfg),
                 "season_margin": official.get("season_margin"),
+                "zoneKey": geom.get("shot_zone") or "",
+                "release": ev.get("release"),
+                "nearest": _nearest(ev.get("defense") or {}),
+                "defender": _defender(official.get("defender")),
+                "season": official.get("shooter_season"),
+                "zoneChart": official.get("zone_chart"),
             })
     return shots
 
@@ -368,6 +391,7 @@ def build_pack(clip: str) -> dict:
     return {
         "clip": clip,
         "title": title or clip,
+        "dataset": "训练数据" if "train_video" in _video_path(stream).parts else "",
         "video": f"assets/{clip}-broadcast.mp4",
         "width": FRAME_W,
         "height": FRAME_H,
@@ -384,6 +408,7 @@ def build_pack(clip: str) -> dict:
         "voice": "本机中文语音 Tingting。解说由程序根据官方事件生成。Polly 开通后只替换声音。",
         "anchor": focus["t"] if focus else 0.8,
         "sourceVideo": str(_video_path(stream)),
+        "replayVideo": f"assets/{clip}-replay.mp4" if (WEB / "assets" / f"{clip}-replay.mp4").exists() else "",
     }
 
 
@@ -429,6 +454,17 @@ def _card_lines(shot: dict) -> tuple[str, str]:
     if shot.get("contrast"):
         bits.append(shot["contrast"].split("：")[0])
     return head, " · ".join(bits)
+
+
+def _margin_line(shot: dict) -> str:
+    margin = shot.get("season_margin") or {}
+    if margin.get("ts") is None:
+        return ""
+    line = f"赛季{margin['bucket_zh']} 真实命中率 {float(margin['ts']) * 100:.1f}%"
+    if margin.get("team_ts") is not None:
+        diff = (float(margin["ts"]) - float(margin["team_ts"])) * 100
+        line += f" · 比全队同档{'高' if diff >= 0 else '低'} {abs(diff):.1f} 个百分点"
+    return line
 
 
 def _pil():
@@ -485,12 +521,18 @@ def write_overlay(clip: str, pack: dict) -> Path:
         read = _read_at(pack, t)
         if read:
             _label(draw, font, (28, 22), _scorebug_text(read))
+        if pack.get("dataset"):
+            tag_w = draw.textbbox((0, 0), pack["dataset"], font=small)[2]
+            _label(draw, small, (width - 28 - 14 - tag_w, 26), pack["dataset"])
         for shot in pack["shots"]:
             if float(shot["t"]) - 0.25 <= t <= float(shot["t"]) + 3.2:
                 head, sub = _card_lines(shot)
                 _label(draw, font, (28, 84), head)
                 if sub:
                     _label(draw, small, (28, 136), sub)
+                margin = _margin_line(shot)
+                if margin:
+                    _label(draw, small, (28, 182), margin)
         proc.stdin.write(image.tobytes())
     proc.stdin.close()
     if proc.wait() != 0:
@@ -546,6 +588,10 @@ def render_video(clip: str, pack: dict) -> Path:
     final = WEB / "assets" / f"{clip}-broadcast.mp4"
     final.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(["sh", str(MIX), str(bed), str(padded), str(final)], check=True)
+    replay = render_replay(clip, pack, bed, padded, WEB / "assets" / f"{clip}-replay.mp4", WORK, FONT)
+    if replay:
+        pack["replayVideo"] = f"assets/{replay.name}"
+        print("定格回放", replay)
     return final
 
 
