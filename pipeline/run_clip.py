@@ -227,7 +227,32 @@ def enrich_official(clip_id: str, path: Path | str) -> bool:
           f"补入 {info['added_events']}，删掉视觉失误 {info['dropped_cv_turnovers']}")
     for row in common.timeline_from_stream(doc):
         print(f"   {row['t']:6.2f}s  {row['label']}  ({row['confidence']:.2f}, {row['source']})")
+    release_and_defense(clip_id, path, game, game_id)
     return False
+
+
+def release_and_defense(clip_id: str, path: Path, game: dict, game_id: str) -> None:
+    """官方出手对上以后：逐帧找出手帧和最近防守人，再并入防守人、赛季数据和分区 xFG。"""
+    from pipeline.enrich.defense import attach, load_release
+
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    shots = {ev["event_id"]: ev["t"] for poss in doc["possessions"] for ev in poss["events"]
+             if ev["type"] == "shot" and ev.get("official")}
+    cached = load_release(clip_id)
+    if shots and any(abs((cached.get(eid) or {}).get("t_official", -99) - t) > 1e-3 for eid, t in shots.items()):
+        _finish("出手帧", *_start(["release.py", "--clip", clip_id]))
+    doc = attach(doc, clip_id, game, game_id)
+    path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    for poss in doc["possessions"]:
+        for ev in poss["events"]:
+            if ev["type"] != "shot" or not ev.get("official"):
+                continue
+            rel = ev.get("release") or {}
+            d = ev["official"].get("defender") or {}
+            print(f"[出手帧] {ev['event_id']} 官方对时 {ev['t']:.2f}s → 出手帧 "
+                  f"{rel['t']:.3f}s" if rel else f"[出手帧] {ev['event_id']} 没找到，回放用官方对时")
+            if d:
+                print(f"[防守人] {d.get('team')} #{d.get('number')} {d.get('name')}（{d['source']}）")
 
 
 def upload(path: Path, job_id: str, bucket: str = "") -> None:

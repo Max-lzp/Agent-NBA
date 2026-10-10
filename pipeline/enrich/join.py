@@ -152,6 +152,7 @@ def _made_by_score(game: dict, clock: Clock, scoreboard: dict) -> dict[float, di
 def official_detail(play: dict, players: dict, shots: list) -> dict:
     detail = {
         "action_number": play["action_number"],
+        "person_id": play["person_id"],
         "period": play["period"],
         "clock_s": play["clock_s"],
         "kind": play["kind"],

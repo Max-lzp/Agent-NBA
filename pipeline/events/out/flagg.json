@@ -151,6 +151,7 @@
           },
           "official": {
             "action_number": 666,
+            "person_id": 1642843,
             "period": 4,
             "clock_s": 94.0,
             "kind": "shot",
@@ -162,6 +163,7 @@
             "xfg": 0.504,
             "video_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/666/734c2a04-b3a2-e414-6430-a04326a4559a_1280x720.mp4",
             "thumbnail": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/666/734c2a04-b3a2-e414-6430-a04326a4559a_1280x720.jpg",
+            "player_id": 1642843,
             "season_margin": {
               "season": "2025-26",
               "team": "DAL",
@@ -176,7 +178,177 @@
               "team_ts": 0.5521,
               "team_ppp": 0.975
             },
-            "court_half": "right"
+            "season_profile": {
+              "player_id": 1642843,
+              "name": "Cooper Flagg",
+              "team": "DAL",
+              "source": "data/deep",
+              "tracked_fga": 1194,
+              "xfg": 0.481,
+              "fg": 0.468,
+              "fg_above": -0.013,
+              "gravity": 3.98313,
+              "leverage": 0.2111231428,
+              "baseline_xfg": 0.46581347311236154,
+              "quality_ppt": 1.518652688763844
+            },
+            "court_half": "right",
+            "defender": {
+              "team": "HOU",
+              "number": "1",
+              "name": "Thompson",
+              "full_name": "Amen Thompson",
+              "person_id": 1641708,
+              "source": "matchup",
+              "vs_shooter": {
+                "seconds": 251.0,
+                "possessions": 21.8,
+                "fgm": 0,
+                "fga": 0,
+                "points": 0,
+                "blocks": 0
+              },
+              "season": {
+                "season": "2025-26",
+                "team": "HOU",
+                "gp": 79,
+                "pts": 18.3,
+                "reb": 7.8,
+                "ast": 5.3,
+                "stl": 1.5,
+                "blk": 0.6,
+                "dreb": 4.8,
+                "fg_pct": 0.534,
+                "fg3_pct": 0.216,
+                "ft_pct": 0.779
+              }
+            },
+            "shooter_season": {
+              "season": "2025-26",
+              "team": "DAL",
+              "gp": 70,
+              "pts": 21.0,
+              "reb": 6.7,
+              "ast": 4.5,
+              "stl": 1.2,
+              "blk": 0.9,
+              "dreb": 5.4,
+              "fg_pct": 0.468,
+              "fg3_pct": 0.295,
+              "ft_pct": 0.827
+            },
+            "zone_chart": {
+              "games": [
+                "0022500160",
+                "0022500356",
+                "0022500491",
+                "0022500701"
+              ],
+              "min_shots": 3,
+              "zones": {
+                "restricted": {
+                  "fga": 13,
+                  "fgm": 7,
+                  "xfg": 0.549,
+                  "league_xfg": 0.669,
+                  "league_fga": 203
+                },
+                "paint": {
+                  "fga": 26,
+                  "fgm": 14,
+                  "xfg": 0.454,
+                  "league_xfg": 0.465,
+                  "league_fga": 206
+                },
+                "midrange": {
+                  "fga": 8,
+                  "fgm": 3,
+                  "xfg": 0.434,
+                  "league_xfg": 0.399,
+                  "league_fga": 71
+                },
+                "corner3_l": {
+                  "fga": 1,
+                  "fgm": 0,
+                  "xfg": null,
+                  "league_xfg": 0.399,
+                  "league_fga": 41
+                },
+                "corner3_r": {
+                  "fga": 0,
+                  "fgm": 0,
+                  "xfg": null,
+                  "league_xfg": 0.398,
+                  "league_fga": 20
+                },
+                "wing3_l": {
+                  "fga": 7,
+                  "fgm": 1,
+                  "xfg": 0.341,
+                  "league_xfg": 0.353,
+                  "league_fga": 67
+                },
+                "wing3_r": {
+                  "fga": 3,
+                  "fgm": 2,
+                  "xfg": 0.354,
+                  "league_xfg": 0.363,
+                  "league_fga": 50
+                },
+                "top3": {
+                  "fga": 2,
+                  "fgm": 1,
+                  "xfg": null,
+                  "league_xfg": 0.36,
+                  "league_fga": 37
+                }
+              }
+            }
+          },
+          "release": {
+            "t": 16.75,
+            "source": "ball_left_hand",
+            "shooter_box": [
+              824.3,
+              248.8,
+              920.6,
+              623.2
+            ],
+            "ball_box": [
+              834.6,
+              222.1,
+              862.0,
+              264.7
+            ],
+            "t_official": 17.018
+          },
+          "defense": {
+            "nearest": {
+              "team": "HOU",
+              "number": "",
+              "source": "cv",
+              "foot_gap_px": 72
+            },
+            "nearest_box": [
+              814.6,
+              315.2,
+              858.4,
+              561.2
+            ],
+            "matchup": {
+              "person_id": 1641708,
+              "team": "HOU",
+              "number": "1",
+              "name": "Thompson",
+              "full_name": "Amen Thompson",
+              "seconds": 251.0,
+              "possessions": 21.8,
+              "fgm": 0,
+              "fga": 0,
+              "points": 0,
+              "blocks": 0,
+              "source": "boxscorematchupsv3"
+            }
           }
         }
       ],
@@ -998,7 +1170,7 @@
   "meta": {
     "mode": "full",
     "generator": "pipeline/events",
-    "created_at": "2026-10-10T02:17:55.899643+00:00"
+    "created_at": "2026-10-10T02:52:21.571027+00:00"
   },
   "official": {
     "game_id": "0022500701",

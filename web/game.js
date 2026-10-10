@@ -24,7 +24,7 @@ const els = {
 const params = new URLSearchParams(location.search);
 const jobId = params.get("jobId");
 const clips = window.DEEPCOURT_CLIPS || {};
-const clipName = params.get("clip") || (clips.amen ? "amen" : Object.keys(clips)[0] || "");
+const clipName = params.get("clip") || (clips.flagg ? "flagg" : Object.keys(clips)[0] || "");
 
 const state = {
   pack: null,
@@ -33,6 +33,8 @@ const state = {
   clipDuration: 1,
   paused: true,
   layers: { resident: true, event: true, expand: true },
+  freeze: null,
+  replayed: new Set(),
 };
 
 init();
@@ -47,6 +49,7 @@ function init() {
     else render();
   });
   els.reel.addEventListener("ended", () => {
+    state.replayed.clear();
     pause(true);
     state.active = Math.max(0, state.events.length - 1);
     render();
@@ -76,17 +79,27 @@ function init() {
 }
 
 function loadPack(pack) {
+  endFreeze(false);
+  state.replayed.clear();
   state.pack = pack;
   state.events = pack.events || [];
   state.clipDuration = pack.duration || 1;
   state.active = nearestEventIndex(pack.anchor || 0);
-  els.subhead.textContent = `Team 04 · ${pack.title || pack.clip}${pack.gameId ? " · 官方 " + pack.gameId : ""}`;
+  els.subhead.innerHTML = `${pack.dataset ? `<span class="dataset">${pack.dataset}</span>` : ""}Team 04 · ${pack.title || pack.clip}${pack.gameId ? " · 官方 " + pack.gameId : ""}`;
   const start = Number(pack.anchor) || 0;
   els.reel.src = start > 0 ? `${pack.video}#t=${start}` : pack.video;
   if (els.foot) {
     els.foot.textContent = pack.gameId
       ? `官方比赛 ${pack.gameId}。${pack.voice || ""}`
       : (pack.voice || "画面上的数字来自记分牌和官方逐回合。");
+    if (pack.replayVideo) {
+      const link = document.createElement("a");
+      link.href = pack.replayVideo;
+      link.download = "";
+      link.className = "replay-link";
+      link.textContent = "下载定格版成片（进球后出手帧定格 5 秒）";
+      els.foot.append(" ", link);
+    }
   }
   if (els.script) els.script.textContent = (pack.script || []).join("");
   drawCourt();
@@ -99,7 +112,7 @@ function renderSwitcher() {
   const names = Object.keys(clips);
   els.switcher.innerHTML = names.map((name) => {
     const on = name === clipName ? " on" : "";
-    const label = clips[name].title || name;
+    const label = `${clips[name].dataset ? clips[name].dataset + " · " : ""}${clips[name].title || name}`;
     return `<a class="clip${on}" href="game.html?clip=${encodeURIComponent(name)}">${label}</a>`;
   }).join("");
 }
@@ -116,9 +129,75 @@ function resizeCanvas() {
   drawNames();
 }
 
+function startFreeze(shot) {
+  const freeze = window.DeepFreeze;
+  state.replayed.add(shot.t);
+  state.freeze = { shot, resumeAt: els.reel.currentTime, until: Date.now() + freeze.FREEZE_MS };
+  els.reel.pause();
+  els.reel.currentTime = shot.release.t;
+  let card = document.querySelector("#freeze");
+  if (!card) {
+    card = document.createElement("div");
+    card.id = "freeze";
+    card.className = "freeze";
+    els.stage.appendChild(card);
+  }
+  card.hidden = false;
+  const [x1, , x2] = shot.release.shooter_box;
+  card.classList.toggle("right", (x1 + x2) / 2 < state.pack.width / 2);
+  card.style.fontSize = `${Math.max(8.5, Math.min(12, els.stage.clientWidth / 62)).toFixed(1)}px`;
+  const tick = () => {
+    if (!state.freeze || state.freeze.shot !== shot) return;
+    const left = state.freeze.until - Date.now();
+    if (left <= 0) {
+      endFreeze(true);
+      return;
+    }
+    card.innerHTML = freeze.cardHtml(state.pack, shot, left);
+    state.freeze.timer = setTimeout(tick, 200);
+  };
+  tick();
+  drawCourt();
+}
+
+function endFreeze(resume) {
+  const current = state.freeze;
+  if (!current) return;
+  clearTimeout(current.timer);
+  state.freeze = null;
+  const card = document.querySelector("#freeze");
+  if (card) card.hidden = true;
+  if (resume) {
+    els.reel.currentTime = current.resumeAt;
+    if (!state.paused) els.reel.play().catch(() => {});
+  }
+  render();
+}
+
+function maybeFreeze() {
+  if (!window.DeepFreeze || !state.pack || state.paused || state.freeze) return false;
+  const t = els.reel.currentTime;
+  const shot = window.DeepFreeze.candidates(state.pack).find((item) => !state.replayed.has(item.t)
+    && t >= window.DeepFreeze.goalTime(state.pack, item) && t <= window.DeepFreeze.goalTime(state.pack, item) + 1.5);
+  if (!shot) return false;
+  startFreeze(shot);
+  return true;
+}
+
+function rearmFreeze(t) {
+  endFreeze(false);
+  (state.pack?.shots || []).forEach((shot) => {
+    if (shot.release && t < window.DeepFreeze?.goalTime(state.pack, shot)) state.replayed.delete(shot.t);
+  });
+}
+
 function pause(shouldPause) {
   state.paused = shouldPause;
   state.layers.expand = shouldPause;
+  if (state.freeze) {
+    endFreeze(!shouldPause);
+    return;
+  }
   if (!els.reel.src) return;
   if (state.paused) els.reel.pause();
   else els.reel.play().catch(() => { state.paused = true; state.layers.expand = true; });
@@ -129,6 +208,7 @@ function seekEvent(index) {
   pause(true);
   const event = state.events[index];
   if (event) {
+    rearmFreeze(event.t);
     const duration = els.reel.duration;
     const limit = Number.isFinite(duration) && duration > 0.2 ? duration - 0.05 : event.t;
     try {
@@ -148,12 +228,13 @@ function onScrub(event) {
   els.reel.currentTime = ratio * state.clipDuration;
   state.active = nearestEventIndex(els.reel.currentTime);
   pause(true);
+  rearmFreeze(els.reel.currentTime);
   render();
 }
 
 function onTimeUpdate() {
   drawNames();
-  if (state.paused) return;
+  if (state.paused || state.freeze || maybeFreeze()) return;
   const next = nearestEventIndex(els.reel.currentTime);
   if (next !== state.active) state.active = next;
   render();
@@ -206,6 +287,10 @@ function drawNames() {
   if (!frame) return;
   const ratio = window.devicePixelRatio || 1;
   const scale = canvas.width / pack.width;
+  if (state.freeze && window.DeepFreeze) {
+    window.DeepFreeze.drawMarks(ctx, state.freeze.shot, scale, ratio);
+    return;
+  }
   ctx.font = `${Math.round(13 * ratio)}px MiSans, "PingFang SC", sans-serif`;
   ctx.textBaseline = "bottom";
   const t = els.reel.currentTime || 0;
@@ -285,6 +370,14 @@ function drawCourt() {
     return;
   }
   const shots = state.pack?.shots || [];
+  const focus = state.freeze?.shot || state.events[state.active]?.shot || shots.find((shot) => shot.zoneChart);
+  const kicker = els.court.parentElement?.querySelector(".rail-kicker");
+  if (window.DeepFreeze && focus?.zoneChart) {
+    if (kicker) kicker.textContent = `${focus.name} · 出手分区热区图`;
+    els.court.innerHTML = window.DeepFreeze.heatmap(focus, Boolean(state.freeze));
+    return;
+  }
+  if (kicker) kicker.textContent = "半场落点 · 官方坐标";
   const w = 50 * PX;
   const h = 34 * PX;
   const sx = (x) => (25 + x) * PX;

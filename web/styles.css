@@ -365,6 +365,14 @@ h2 {
 .player-title { font-size: 44px; margin-top: 18px; }
 
 .subhead { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+.subhead .dataset {
+  display: inline-block;
+  margin-right: 10px;
+  padding: 2px 8px;
+  border: 1px solid var(--orange);
+  color: var(--orange);
+  font-size: 13px;
+}
 
 .rule { height: 1px; background: var(--line); border: 0; margin: 0 0 18px; }
 
@@ -1018,3 +1026,33 @@ h2 {
   .zone { left: 8%; width: 112px; height: 62px; }
   .grav { left: 44%; }
 }
+
+.freeze {
+  position: absolute; z-index: 3; left: 2.5%; top: 4%;
+  width: min(48%, 460px); max-height: 90%; overflow: hidden; padding: .7em 1em .7em;
+  background: rgba(20,17,14,0.9); border-left: 4px solid #ff2b2b;
+  font-size: 11px; line-height: 1.4; color: var(--cream);
+}
+.freeze[hidden] { display: none; }
+.freeze.right { left: auto; right: 2%; top: 9%; border-left: 0; border-right: 4px solid #ff2b2b; }
+.freeze-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.freeze-head b { color: #ff2b2b; letter-spacing: .12em; font-size: 1.05em; }
+.freeze-head span { color: var(--muted); font-size: .95em; }
+.freeze .freeze-score { color: var(--cream); font-weight: 600; margin: 0 0 6px; }
+.freeze h3 { margin: .4em 0 .1em; font-size: 1.1em; display: flex; align-items: center; gap: 6px; }
+.freeze p { margin: 0; color: var(--muted); }
+.freeze .dot { width: .7em; height: .7em; border-radius: 50%; display: inline-block; }
+.freeze .dot.red { background: #ff2b2b; }
+.freeze .dot.gold { background: #f5c542; }
+.mini-court.heat .zone-label { fill: var(--cream); font-size: 10px; text-anchor: middle; dominant-baseline: middle; font-weight: 600; paint-order: stroke; stroke: rgba(20,17,14,.7); stroke-width: 2px; }
+.mini-court.heat .pulse { animation: heat-pulse 1s ease-in-out infinite; }
+@keyframes heat-pulse { 50% { stroke-width: 6; } }
+.heat-caption { margin: 8px 0 2px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.heat-caption b { color: var(--cream); }
+.heat-legend { margin: 0 0 10px; font-size: 10px; color: var(--muted); }
+.heat-legend .sw { display: inline-block; width: 9px; height: 9px; margin: 0 3px 0 6px; vertical-align: -1px; }
+.heat-legend .sw.hot { background: rgba(241,104,30,.8); }
+.heat-legend .sw.cold { background: rgba(0,100,177,.8); }
+.heat-legend .sw.none { background: rgba(92,81,70,.6); }
+
+.replay-link { color: var(--orange); margin-left: 6px; }
