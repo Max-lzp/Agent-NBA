@@ -12,6 +12,30 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as mediaconvert from 'aws-cdk-lib/aws-mediaconvert';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 
+const TRACK_BOOTSTRAP = [
+  'import os, boto3, runpy',
+  'from pathlib import Path',
+  'bucket = os.environ["MEDIA_BUCKET"]',
+  'root = Path("/opt/track")',
+  's3 = boto3.client("s3")',
+  'required = {"run_job.py", "dub.py", "commentary.py"}',
+  'missing = []',
+  'names = ["run_job.py", "dub.py", "commentary.py", "web/game.html", "web/game.js", "web/styles.css"]',
+  'for name in names:',
+  '    dest = root / name',
+  '    dest.parent.mkdir(parents=True, exist_ok=True)',
+  '    try:',
+  '        s3.download_file(bucket, "bootstrap/track/" + name, str(dest))',
+  '        print("overlay", name)',
+  '    except Exception as exc:',
+  '        print("keep baked", name, type(exc).__name__)',
+  '        if name in required:',
+  '            missing.append(name)',
+  'if missing:',
+  '    raise SystemExit("解说脚本没拉下来: " + ",".join(missing))',
+  'runpy.run_path(str(root / "run_job.py"), run_name="__main__")',
+].join('\n');
+
 /**
  * P1 加在同一个栈里，避免再做一层跨栈导出。
  * 上下文 enableP1=false 时整段跳过。
@@ -95,6 +119,17 @@ export function addP1(
   props.webBucket.grantPut(jobRole, 'replay/*');
   props.webBucket.grantPut(jobRole, 'game.html');
   props.webBucket.grantPut(jobRole, 'game.js');
+  props.webBucket.grantPut(jobRole, 'styles.css');
+  props.mediaBucket.grantReadWrite(jobRole, 'commentary/asr/*');
+  jobRole.addToPolicy(new iam.PolicyStatement({
+    actions: [
+      'transcribe:StartTranscriptionJob',
+      'transcribe:GetTranscriptionJob',
+      'translate:TranslateText',
+      'polly:SynthesizeSpeech',
+    ],
+    resources: ['*'],
+  }));
   jobRole.addToPolicy(new iam.PolicyStatement({
     actions: ['cloudfront:CreateInvalidation'],
     resources: [`arn:aws:cloudfront::${stack.account}:distribution/${props.distribution.distributionId}`],
@@ -116,7 +151,7 @@ export function addP1(
       memory: cdk.Size.gibibytes(340),
       jobRole,
       executionRole,
-      command: ['python3', '/opt/track/run_job.py'],
+      command: ['python3', '-c', TRACK_BOOTSTRAP],
       environment: {
         MEDIA_BUCKET: props.mediaBucket.bucketName,
         WEB_BUCKET: props.webBucket.bucketName,

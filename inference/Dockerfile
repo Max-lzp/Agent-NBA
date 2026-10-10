@@ -8,11 +8,12 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/track
-COPY requirements.txt track.py run_job.py ./
+COPY requirements.txt ./
+RUN python3 -m pip install --no-cache-dir -r requirements.txt \
+  && python3 -c "from rapidocr_onnxruntime import RapidOCR; RapidOCR(det_limit_side_len=640)"
+COPY track.py run_job.py dub.py ./
 COPY scoreboard.py clips.json ./vision/
 COPY web/game.html web/game.js ./web/
 COPY models/ ./models/
-RUN python3 -m pip install --no-cache-dir -r requirements.txt \
-  && python3 -c "from rapidocr_onnxruntime import RapidOCR; RapidOCR(det_limit_side_len=640)"
 
 CMD ["python3", "/opt/track/run_job.py"]

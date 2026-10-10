@@ -1,0 +1,12 @@
+{
+  "scriptEn": "7 assists for Sengun 21 points for Thompson the lead is back to four. Flagg with five seconds left on the shot clock, drives to the basket left-handed layup goes in. Cooper's playing very well here in the 4th quarter.",
+  "scriptZh": "申京已经 7 次助攻，阿门 21 分，分差回到 4 分。弗拉格，进攻时间还剩 5 秒，杀进内线，左手上篮打进。第四节，弗拉格手感正热。",
+  "tracks": {
+    "zh": "assets/flagg-zh.mp4",
+    "en": "assets/flagg-en.mp4"
+  },
+  "voice": "中文音轨是英文解说的译文，用 Amazon Polly Neural 知语合成，不含原解说。英文音轨是原声。",
+  "voiceId": "Zhiyu",
+  "engine": "neural",
+  "speechStart": 2.5
+}

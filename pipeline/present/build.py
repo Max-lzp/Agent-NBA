@@ -6,8 +6,7 @@
 
 成片写到 web/assets/{clip}-broadcast.mp4。
 回放数据写到 web/replay/clips.js，game.html 直接读。
-解说由模板根据官方事件生成，声音用本机 Tingting。
-Polly 开通后只替换 synthesize()，词和混音不变。
+页面上的英文原声和中文解说由 pipeline.present.tracks 另出，不混进这一步的短句。
 """
 from __future__ import annotations
 
@@ -25,6 +24,7 @@ from common import TEAM_ZH, timeline_from_stream  # noqa: E402
 from pipeline.enrich.deep_season import season_profile  # noqa: E402
 from pipeline.enrich.official import position_zh  # noqa: E402
 from pipeline.present.freeze import pick, render_replay  # noqa: E402
+from pipeline.present.tracks import VOICE_NOTE  # noqa: E402
 
 OUT = REPO / "pipeline" / "events" / "out"
 VISION = REPO / "pipeline" / "vision" / "results" / "local"
@@ -353,6 +353,24 @@ def _script(shot: dict | None, read: dict | None, board_end: dict | None) -> lis
     return ["这一段没有对上官方出手。画面上的名字来自球衣号码。"]
 
 
+def _audio_fields(clip: str) -> dict:
+    """页面音轨。文件由 pipeline.present.tracks 生成；没有文件时不假装已经换上。"""
+    meta_path = Path(__file__).resolve().parent / "audio" / f"{clip}.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+    tracks = {}
+    for lang in ("zh", "en"):
+        if (WEB / "assets" / f"{clip}-{lang}.mp4").exists():
+            tracks[lang] = f"assets/{clip}-{lang}.mp4"
+    fields = {
+        "scriptEn": meta.get("scriptEn") or "",
+        "scriptZh": meta.get("scriptZh") or "",
+        "voice": VOICE_NOTE if tracks else "本机中文语音 Tingting。解说由程序根据官方事件生成。Polly 开通后只替换声音。",
+    }
+    if tracks:
+        fields["tracks"] = tracks
+    return fields
+
+
 def build_pack(clip: str) -> dict:
     stream_path = OUT / f"{clip}.json"
     vision_path = VISION / f"{clip}.json"
@@ -411,8 +429,16 @@ def build_pack(clip: str) -> dict:
             {"t0": p.get("t_start") or 0, "t1": p.get("t_end") or 0, "team": p.get("offense_team") or ""}
             for p in stream.get("possessions") or []
         ],
+        "passes": [
+            {"t": ev["t"]}
+            for poss in stream.get("possessions") or []
+            for ev in poss.get("events") or []
+            if ev.get("type") == "pass" and ev.get("t") is not None
+        ],
+        "playersFull": stream.get("players_full") or [],
+        "ballPath": stream.get("ball_path") or [],
         "script": spoken,
-        "voice": "本机中文语音 Tingting。解说由程序根据官方事件生成。Polly 开通后只替换声音。",
+        **_audio_fields(clip),
         "anchor": focus["t"] if focus else 0.8,
         "sourceVideo": str(_video_path(stream)),
         "replayVideo": f"assets/{clip}-replay.mp4" if (WEB / "assets" / f"{clip}-replay.mp4").exists() else "",
@@ -526,10 +552,42 @@ def _iou(a: list[float], b: list[float]) -> float:
     return inter / ((a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - inter)
 
 
+def _focused_tags(pack: dict, t: float) -> list[tuple]:
+    """回溯名单：前 3 秒标出这一帧上已经认出的人；之后只标持球人、传球双方和防守人。"""
+    from pipeline.vision.backtrack import visible_at
+
+    shot_t = None
+    for shot in pack.get("shots") or []:
+        rel = (shot.get("release") or {}).get("t")
+        if rel is not None:
+            shot_t = float(rel)
+    shown = visible_at(
+        pack.get("playersFull") or [], pack.get("ballPath") or [], pack.get("passes") or [],
+        pack.get("possessions") or [], t, shot_t,
+    )
+    handler = next((p for p in shown if p["role"] == "handler"), None)
+    tags = []
+    for person in shown:
+        name = display_name(person.get("team") or "", str(person.get("number") or ""), person.get("name") or "")
+        text = f"{name} #{person['number']}".strip()
+        if person["role"] == "handler":
+            edge = NAME_RED
+        elif person["role"] in ("defender", "lead"):
+            edge = NAME_GOLD
+        else:
+            edge = NAME_EDGE.get(person.get("team") or "", NAME_EDGE["HOU"])
+        side = None
+        if handler and person["role"] in ("defender", "lead"):
+            side = "right" if person["box"][0] + person["box"][2] >= handler["box"][0] + handler["box"][2] else "left"
+        tags.append((text, person["box"], edge, side))
+    return tags
+
+
 def name_tags_at(pack: dict, t: float) -> list[tuple]:
-    """(文字, 源视频坐标框 x1 y1 x2 y2, 边色, 贴边)。出手前跟住的投篮人和领防人一定标；
-    领防人贴在球衣旁、背向投篮人那一侧（贴边 right / left），其他人放头顶（贴边 None）。
-    其他人只标号码票数够、对上在场名单的轨迹。"""
+    """(文字, 源视频坐标框 x1 y1 x2 y2, 边色, 贴边)。有回溯名单时按前 3 秒全员、之后聚焦。
+    没有回溯名单时，出手前跟住的投篮人和领防人一定标；其他人只标号码票数够的轨迹。"""
+    if pack.get("playersFull"):
+        return _focused_tags(pack, t)
     out: list[tuple] = []
     taken: set[tuple[str, str]] = set()
     for shot in pack.get("shots") or []:

@@ -51,9 +51,23 @@ def main() -> None:
     local_video = Path("/tmp/video.mp4")
     board = _scoreboard(local_video)
     film = Path("/tmp/broadcast.mp4")
-    _render(local_video, board.get("reads") or [], film)
-    _publish(job_id, film, board, web_bucket, distribution)
-    print(json.dumps({"jobId": job_id, "frames": len(frames), "film": f"assets/{job_id}-broadcast.mp4"}))
+    _render(
+        local_video,
+        board.get("reads") or [],
+        film,
+        board.get("away") or os.environ.get("AWAY", "DAL"),
+        board.get("home") or os.environ.get("HOME_TEAM", "HOU"),
+    )
+    if not bucket_name:
+        raise RuntimeError("缺少 MEDIA_BUCKET，解说无法把原声送去转写")
+    spoken = _dub(job_id, local_video, film, bucket_name)
+    _publish(job_id, film, board, web_bucket, distribution, spoken)
+    print(json.dumps({
+        "jobId": job_id,
+        "frames": len(frames),
+        "film": f"assets/{job_id}-broadcast.mp4",
+        "tracks": spoken.get("tracks") if spoken else {},
+    }))
 
 
 def _scoreboard(video: Path) -> dict:
@@ -74,7 +88,7 @@ def _scoreboard(video: Path) -> dict:
         return {"reads": [], "ticks": [], "away": os.environ.get("AWAY", ""), "home": os.environ.get("HOME_TEAM", "")}
 
 
-def _render(video: Path, reads: list, dest: Path) -> None:
+def _render(video: Path, reads: list, dest: Path, away: str, home: str) -> None:
     import cv2
     from PIL import Image, ImageDraw, ImageFont
 
@@ -107,11 +121,12 @@ def _render(video: Path, reads: list, dest: Path) -> None:
         if not ok:
             break
         frame = cv2.resize(frame, (width, height))
-        label = _label_at(timed, index / fps)
+        label = _label_at(timed, index / fps, away, home)
         if label and font is not None:
             image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             draw = ImageDraw.Draw(image)
-            draw.rectangle((24, 18, 36 + 28 * len(label), 70), fill=(0, 0, 0))
+            box = int(getattr(font, "getlength", lambda _text: 28 * len(label))(label)) + 28
+            draw.rectangle((24, 18, 36 + box, 70), fill=(0, 0, 0))
             draw.text((36, 24), label, fill=(255, 255, 255), font=font)
             frame = cv2.cvtColor(__import__("numpy").asarray(image), cv2.COLOR_RGB2BGR)
         proc.stdin.write(frame.tobytes())
@@ -134,7 +149,7 @@ def _font(size: int):
     return ImageFont.load_default()
 
 
-def _label_at(reads: list, t: float) -> str:
+def _label_at(reads: list, t: float, away_default: str, home_default: str) -> str:
     current = None
     for row in reads:
         if row["t"] <= t + 0.05:
@@ -143,12 +158,10 @@ def _label_at(reads: list, t: float) -> str:
             break
     if not current:
         return ""
-    away, home = current.get("teams") or (None, None)
+    teams = current.get("teams") or (None, None)
     scores = current.get("scores") or [None, None]
-    if not away:
-        away = os.environ.get("AWAY", "")
-    if not home:
-        home = os.environ.get("HOME_TEAM", "")
+    away = (teams[0] if teams else None) or away_default
+    home = (teams[1] if teams and len(teams) > 1 else None) or home_default
     period = _period(current.get("period"))
     clock = current.get("clock") or ""
     left = f"{NAMES.get(away, away)} {scores[0]}"
@@ -164,7 +177,14 @@ def _period(value: str | None) -> str:
     return PERIODS.get(value, value)
 
 
-def _publish(job_id: str, film: Path, board: dict, web_bucket: str, distribution: str) -> None:
+def _dub(job_id: str, source: Path, film: Path, media_bucket: str) -> dict:
+    import dub
+
+    print(f"{job_id} 开始做英文原声和中文解说")
+    return dub.attach(source, film, Path("/tmp/dub"), media_bucket, job_id)
+
+
+def _publish(job_id: str, film: Path, board: dict, web_bucket: str, distribution: str, spoken: dict | None = None) -> None:
     s3 = boto3.client("s3", region_name=REGION)
     video_key = f"assets/{job_id}-broadcast.mp4"
     s3.upload_file(
@@ -173,7 +193,12 @@ def _publish(job_id: str, film: Path, board: dict, web_bucket: str, distribution
         video_key,
         ExtraArgs={"ContentType": "video/mp4"},
     )
-    clips = _merge_clips(s3, web_bucket, job_id, video_key, board)
+    track_keys = []
+    for lang, path in ((spoken or {}).get("files") or {}).items():
+        key = f"assets/{job_id}-{lang}.mp4"
+        s3.upload_file(str(path), web_bucket, key, ExtraArgs={"ContentType": "video/mp4"})
+        track_keys.append(key)
+    clips = _merge_clips(s3, web_bucket, job_id, video_key, board, spoken)
     body = _clips_js(job_id, clips)
     s3.put_object(
         Bucket=web_bucket,
@@ -181,30 +206,28 @@ def _publish(job_id: str, film: Path, board: dict, web_bucket: str, distribution
         Body=body.encode("utf-8"),
         ContentType="application/javascript; charset=utf-8",
     )
-    for name in ("game.html", "game.js"):
+    pages = {
+        "game.html": "text/html; charset=utf-8",
+        "game.js": "application/javascript; charset=utf-8",
+        "styles.css": "text/css; charset=utf-8",
+    }
+    for name, kind in pages.items():
         path = Path("/opt/track/web") / name
         if path.is_file():
-            kind = "text/html; charset=utf-8" if name.endswith(".html") else "application/javascript; charset=utf-8"
             s3.upload_file(str(path), web_bucket, name, ExtraArgs={"ContentType": kind})
     if distribution:
+        items = [f"/{video_key}", "/replay/clips.js", "/game.html", "/game.js", "/styles.css"]
+        items.extend(f"/{key}" for key in track_keys)
         boto3.client("cloudfront", region_name=REGION).create_invalidation(
             DistributionId=distribution,
             InvalidationBatch={
-                "Paths": {
-                    "Quantity": 4,
-                    "Items": [
-                        f"/{video_key}",
-                        "/replay/clips.js",
-                        "/game.html",
-                        "/game.js",
-                    ],
-                },
+                "Paths": {"Quantity": len(items), "Items": items},
                 "CallerReference": f"{job_id}-{int(film.stat().st_mtime)}",
             },
         )
 
 
-def _merge_clips(s3, web_bucket: str, job_id: str, video_key: str, board: dict) -> dict:
+def _merge_clips(s3, web_bucket: str, job_id: str, video_key: str, board: dict, spoken: dict | None = None) -> dict:
     text = ""
     try:
         text = s3.get_object(Bucket=web_bucket, Key="replay/clips.js")["Body"].read().decode("utf-8")
@@ -216,7 +239,7 @@ def _merge_clips(s3, web_bucket: str, job_id: str, video_key: str, board: dict) 
     for key in ("flagg", "amen"):
         if key in text and key not in data:
             raise RuntimeError(f"现有回放数据里的 {key} 没读出来，停止覆盖")
-    data[job_id] = _pack(job_id, video_key, board)
+    data[job_id] = _pack(job_id, video_key, board, spoken)
     return data
 
 
@@ -242,7 +265,7 @@ def _clips_js(job_id: str, data: dict) -> str:
     return f"{lead}window.DEEPCOURT_CLIPS={payload};\n"
 
 
-def _pack(job_id: str, video_key: str, board: dict) -> dict:
+def _pack(job_id: str, video_key: str, board: dict, spoken: dict | None = None) -> dict:
     import cv2
 
     cap = cv2.VideoCapture("/tmp/video.mp4")
@@ -256,7 +279,7 @@ def _pack(job_id: str, video_key: str, board: dict) -> dict:
     events = _events(board.get("ticks") or [])
     title = os.environ.get("TITLE") or _title(scorebug, away, home, job_id)
     anchor = events[0]["t"] if events else 0
-    return {
+    pack = {
         "clip": job_id,
         "title": title,
         "dataset": os.environ.get("DATASET", "云上作业"),
@@ -272,8 +295,13 @@ def _pack(job_id: str, video_key: str, board: dict) -> dict:
         "events": events,
         "shots": [],
         "anchor": anchor,
-        "voice": "比分来自云上记分牌。出手、领防和官方预期命中率仍由本机清单补。",
+        "voice": (spoken or {}).get("voice") or "比分来自云上记分牌。出手、领防和官方预期命中率仍由本机清单补。",
     }
+    if spoken and spoken.get("tracks"):
+        pack["tracks"] = spoken["tracks"]
+        pack["scriptEn"] = spoken.get("scriptEn") or ""
+        pack["scriptZh"] = spoken.get("scriptZh") or ""
+    return pack
 
 
 def _scorebug(reads: list, away: str, home: str) -> list[dict]:

@@ -435,6 +435,30 @@ h2 {
   letter-spacing: 0.02em;
 }
 
+.lang-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+}
+.lang-switch button {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  padding: 4px 10px;
+  font-size: 13px;
+}
+.lang-switch button.on { color: var(--ink); background: var(--orange); border-color: var(--orange); }
+.lang-switch button:disabled { opacity: 0.45; }
+.track-script {
+  margin: 8px 0 0;
+  max-width: 46rem;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .replay {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

@@ -107,6 +107,8 @@ const state = {
   freeze: null,
   replayed: new Set(),
   watch: params.get("watch") === "date" ? "date" : "commentary",
+  lang: initialLang(),
+  switchingTrack: null,
 };
 
 init();
@@ -117,6 +119,18 @@ function init() {
   els.reel.addEventListener("loadedmetadata", () => {
     if (Number.isFinite(els.reel.duration) && els.reel.duration > 0) state.clipDuration = els.reel.duration;
     resizeCanvas();
+    if (state.switchingTrack) {
+      const job = state.switchingTrack;
+      const closeEnough = Math.abs((els.reel.currentTime || 0) - job.t) < 0.08;
+      if (closeEnough) {
+        state.switchingTrack = null;
+        if (job.playing) els.reel.play().catch(() => {});
+        render();
+      } else {
+        try { els.reel.currentTime = job.t; } catch (error) { state.switchingTrack = null; }
+      }
+      return;
+    }
     if (state.pack && els.reel.currentTime < 0.2) seekEvent(state.active);
     else render();
   });
@@ -139,6 +153,13 @@ function init() {
     render();
   });
   els.reel.addEventListener("seeked", () => {
+    if (state.switchingTrack) {
+      const job = state.switchingTrack;
+      state.switchingTrack = null;
+      if (job.playing) els.reel.play().catch(() => {});
+      render();
+      return;
+    }
     if (state.freeze) return;
     rearmFreeze(els.reel.currentTime);
     state.active = nearestEventIndex(els.reel.currentTime);
@@ -171,6 +192,14 @@ function init() {
       setWatch(button.dataset.watch);
     });
   }
+  const langSwitch = document.querySelector("#lang-switch");
+  if (langSwitch) {
+    langSwitch.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-lang]");
+      if (!button || button.disabled) return;
+      setLang(button.dataset.lang);
+    });
+  }
   syncWatch();
   document.querySelectorAll(".layer").forEach((button) => {
     button.addEventListener("click", () => {
@@ -194,7 +223,9 @@ function loadPack(pack) {
   state.active = nearestEventIndex(pack.anchor || 0);
   els.subhead.innerHTML = `${pack.dataset ? `<span class="dataset">${pack.dataset}</span>` : ""}Team 04 · ${pack.title || pack.clip}${pack.gameId ? " · 官方 " + pack.gameId : ""}`;
   const start = Number(pack.anchor) || 0;
-  els.reel.src = start > 0 ? `${pack.video}#t=${start}` : pack.video;
+  const tracked = pack.tracks && pack.tracks[state.lang];
+  els.reel.src = tracked || (start > 0 ? `${pack.video}#t=${start}` : pack.video);
+  syncLang();
   if (els.foot) {
     els.foot.textContent = pack.gameId
       ? `官方比赛 ${pack.gameId}。${pack.voice || ""}`
@@ -220,7 +251,8 @@ function renderSwitcher() {
     const on = name === clipName ? " on" : "";
     const label = `${clips[name].dataset ? clips[name].dataset + " · " : ""}${clips[name].title || name}`;
     const watch = state.watch === "date" ? "&watch=date" : "";
-    return `<a class="clip${on}" href="game.html?clip=${encodeURIComponent(name)}${watch}">${label}</a>`;
+    const lang = state.lang === "en" ? "&lang=en" : "&lang=zh";
+    return `<a class="clip${on}" href="game.html?clip=${encodeURIComponent(name)}${watch}${lang}">${label}</a>`;
   }).join("");
 }
 
@@ -486,6 +518,51 @@ function syncWatch() {
   document.querySelectorAll("[data-watch]").forEach((button) => {
     button.classList.toggle("on", button.dataset.watch === state.watch);
   });
+}
+
+function initialLang() {
+  const query = params.get("lang");
+  if (query === "en" || query === "zh") return query;
+  try {
+    const saved = localStorage.getItem("deepcourt-lang");
+    if (saved === "en" || saved === "zh") return saved;
+  } catch (error) {
+    return "zh";
+  }
+  return "zh";
+}
+
+function setLang(next) {
+  if (next !== "zh" && next !== "en") return;
+  if (state.lang === next) return;
+  const tracks = state.pack && state.pack.tracks;
+  if (!tracks || !tracks[next]) return;
+  state.lang = next;
+  try { localStorage.setItem("deepcourt-lang", next); } catch (error) { /* 记不住就只留在这次打开里 */ }
+  const url = new URL(location.href);
+  url.searchParams.set("lang", next);
+  history.replaceState(null, "", url);
+  const playing = !els.reel.paused && !state.freeze;
+  state.switchingTrack = { t: els.reel.currentTime || 0, playing };
+  els.reel.src = tracks[next];
+  syncLang();
+  renderSwitcher();
+}
+
+function syncLang() {
+  const tracks = state.pack && state.pack.tracks;
+  const nav = document.querySelector("#lang-switch");
+  const line = document.querySelector("#track-script");
+  const ready = Boolean(tracks && (tracks.zh || tracks.en));
+  if (nav) nav.hidden = !ready;
+  document.querySelectorAll("#lang-switch button").forEach((button) => {
+    button.classList.toggle("on", button.dataset.lang === state.lang);
+    button.disabled = !(tracks && tracks[button.dataset.lang]);
+  });
+  if (!line) return;
+  const text = state.lang === "en" ? (state.pack && state.pack.scriptEn) : (state.pack && state.pack.scriptZh);
+  line.hidden = !text;
+  line.textContent = text ? `${state.lang === "en" ? "英文原声" : "中文解说"}：${text}` : "";
 }
 
 function renderFloor() {

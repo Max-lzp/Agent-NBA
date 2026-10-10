@@ -37,7 +37,7 @@ URL 模式不经过 S3：create_job 只把任务标成 TRACKING，等本地追�
 | DynamoDB | `JobsTable`（PK jobId），`EventsTable`（PK jobId，SK `TS#序号`） | 任务状态机和事件列表分开，回放页按 jobId 查询。 |
 | Lambda | `lambdas/create_job` `analyze_job` `get_job` `list_events` | 四个入口对应建任务、分析、读状态、读事件。日志进 CloudWatch Logs，保留 7 天。 |
 | API Gateway | `JobsApi` REST：`POST /jobs`，`GET /jobs/{id}`，`GET /jobs/{id}/events` | 和组委会样例一样用 REST API。浏览器不直连执行地址，走 CloudFront 的 `/api/*`。 |
-| Bedrock | `lambdas/commentary` | Claude Sonnet 4.6 只根据事件清单写两句解说，不参与生成事件。本队账号目前调用被拒（AccessDenied），解说暂时出不了声。 |
+| Bedrock | `lambdas/commentary` | 事件接口可以用 Claude 写短解说，不参与生成事件。页面上的中文音轨不走这里，见 pipeline-map 第 10 步。 |
 | Bedrock AgentCore | `AWS::BedrockAgentCore::Runtime` `DeepCourtAnalyst` | 硬性要求：分析编排跑在 AgentCore，而不是笔记本上的循环。Lambda 用 `bedrock-agentcore:InvokeAgentRuntime` 调用它；Agent 负责取回、校验结构化清单，不调模型；Agent 不可用时 Lambda 直接读清单，页面不会停在 ANALYZING。 |
 | CloudFront | `Site` | 硬性要求的作品链接。默认行为是网页桶，函数把 `/readme` 指到 `readme.html`；`/api/*` 转到 API Gateway，函数去掉 `/api` 前缀。 |
 | CloudWatch Logs | 每个 Lambda 的日志组 | 分析日志带 jobId，排错不用进机器。仪表盘留到 P1。 |
@@ -67,7 +67,7 @@ URL 模式不经过 S3：create_job 只把任务标成 TRACKING，等本地追�
 
 | 服务 | 代码位置 | 为什么是它 |
 | --- | --- | --- |
-| Polly + Bedrock | `lambdas/commentary` | 两句中文解说，合成 MP3 放到 `commentary/`。混进成片用本机 `commentary/mix.sh`，因为 Lambda 里没有 ffmpeg。 |
+| Polly + Bedrock | `lambdas/commentary` | 事件接口的短解说。页面音轨是 Transcribe、Translate 和 Polly Neural 知语，在本机合成后放进回放页。 |
 | X-Ray | API 阶段和 Lambda `tracing: ACTIVE` | 处理段调用 `trace_job.annotate`，装了 SDK 时片段上会有 jobId。 |
 | Secrets Manager | `deepcourt/feishu-webhook`、`deepcourt/github-token`、`deepcourt/kuaishou` | 真实密钥部署后写入。仓库和前端都不放。 |
 | Cost Explorer | `scripts/cost-report.sh` | 按 `project` 标签看花费。栈上的 `team`、`stage`、`project` 会传到可标记的资源。 |
