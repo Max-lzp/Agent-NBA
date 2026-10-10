@@ -90,6 +90,9 @@ export function addP1(
     code: props.code,
     timeout: cdk.Duration.seconds(20),
     memorySize: 256,
+    tracing: stack.node.tryGetContext('enableP2') === 'false'
+      ? lambda.Tracing.DISABLED
+      : lambda.Tracing.ACTIVE,
     environment: {
       JOB_QUEUE: queue.jobQueueName,
       JOB_DEFINITION: jobDef.jobDefinitionName,
@@ -111,6 +114,9 @@ export function addP1(
     code: props.code,
     timeout: cdk.Duration.seconds(30),
     memorySize: 512,
+    tracing: stack.node.tryGetContext('enableP2') === 'false'
+      ? lambda.Tracing.DISABLED
+      : lambda.Tracing.ACTIVE,
     environment: {
       JOBS_TABLE: props.jobs.tableName,
       EVENTS_TABLE: props.events.tableName,

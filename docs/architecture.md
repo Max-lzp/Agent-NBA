@@ -46,7 +46,7 @@ URL 模式不经过 S3：create_job 异步调用 analyze_job，只把链接和 g
 
 ## 和后续阶段的边界
 
-P0 不包含 Polly、Cognito、X-Ray。播放器里的数字解说开关标着即将推出，对应 Polly。画面上的示例回合（弗拉格 / 申京）只在没有 `jobId` 时出现，用来对齐设计稿；带 `jobId` 之后时间线换成表里的事件。
+播放器里的数字解说开关标着即将推出，对应 Polly。画面上的示例回合（弗拉格 / 申京）只在没有 `jobId` 时出现，用来对齐设计稿；带 `jobId` 之后时间线换成表里的事件。
 
 ## P1（代码在同一栈，尚未部署）
 
@@ -59,6 +59,18 @@ P0 不包含 Polly、Cognito、X-Ray。播放器里的数字解说开关标着�
 | Textract | `lambdas/ocr_scoreboard` | 读记分牌帧上的比分、节次、时钟。解析失败置信度记 0。 |
 | MediaConvert | 模板 `deepcourt-render-template` | 把 PNG 叠加层合成 1080p MP4，写到 `rendered/`。 |
 | CloudWatch | 仪表盘 `deepcourt-overview`，两条告警 | 看分析吞吐、延迟、Bedrock 限流。告警先不接通知。 |
+
+## P2（代码在同一栈，尚未部署）
+
+上下文 `enableP2=false` 时不建解说、密钥和 X-Ray。创建任务和回放都不登录。
+
+| 服务 | 代码位置 | 为什么是它 |
+| --- | --- | --- |
+| Polly + Bedrock | `lambdas/commentary` | 两句中文解说，合成 MP3 放到 `commentary/`。混进成片用本机 `commentary/mix.sh`，因为 Lambda 里没有 ffmpeg。 |
+| X-Ray | API 阶段和 Lambda `tracing: ACTIVE` | 处理段调用 `trace_job.annotate`，装了 SDK 时片段上会有 jobId。 |
+| Secrets Manager | `deepcourt/feishu-webhook`、`deepcourt/github-token`、`deepcourt/kuaishou` | 真实密钥部署后写入。仓库和前端都不放。 |
+| Cost Explorer | `scripts/cost-report.sh` | 按 `project` 标签看花费。栈上的 `team`、`stage`、`project` 会传到可标记的资源。 |
+| 快手 OAuth | `lambdas/kuaishou` | 扫码地址由后端拼。没有 app_id 时接口返回敬请期待，不把密钥给浏览器。 |
 
 ## 本地检查
 

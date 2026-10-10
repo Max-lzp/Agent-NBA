@@ -102,7 +102,7 @@ async function postJson(path, body) {
   try {
     response = await fetch(`${apiBase()}${path}`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers,
       body: JSON.stringify(body),
     });
   } catch {

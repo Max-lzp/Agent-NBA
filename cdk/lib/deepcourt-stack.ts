@@ -14,6 +14,7 @@ import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import { Construct } from 'constructs';
 import { addP1 } from './p1';
+import { addP2 } from './p2';
 
 const VISION_MODEL = 'qwen.qwen3-vl-235b-a22b';
 const TEXT_MODEL = 'global.anthropic.claude-sonnet-4-6';
@@ -167,7 +168,10 @@ export class DeepCourtStack extends cdk.Stack {
       proxy: false,
       description: 'Deep Court jobs API',
       endpointTypes: [apigw.EndpointType.REGIONAL],
-      deployOptions: { stageName: 'prod' },
+      deployOptions: {
+        stageName: 'prod',
+        tracingEnabled: this.node.tryGetContext('enableP2') !== 'false',
+      },
       defaultCorsPreflightOptions: {
         allowOrigins: apigw.Cors.ALL_ORIGINS,
         allowMethods: ['GET', 'POST', 'OPTIONS'],
@@ -275,6 +279,14 @@ export class DeepCourtStack extends cdk.Stack {
     if (this.node.tryGetContext('enableP1') !== 'false') {
       addP1(this, { mediaBucket, jobs, events, analyzeFn, code });
     }
+    if (this.node.tryGetContext('enableP2') !== 'false') {
+      addP2(this, {
+        api,
+        mediaBucket,
+        code,
+        callbackUrl: `https://${distribution.distributionDomainName}/api/oauth/kuaishou/callback`,
+      });
+    }
   }
 
   private pyFunction(
@@ -294,6 +306,9 @@ export class DeepCourtStack extends cdk.Stack {
       memorySize: memory,
       ephemeralStorageSize: cdk.Size.mebibytes(ephemeralMb),
       environment,
+      tracing: this.node.tryGetContext('enableP2') === 'false'
+        ? lambda.Tracing.DISABLED
+        : lambda.Tracing.ACTIVE,
       logGroup: new logs.LogGroup(this, `${id}Logs`, {
         retention: logs.RetentionDays.ONE_WEEK,
         removalPolicy: cdk.RemovalPolicy.DESTROY,

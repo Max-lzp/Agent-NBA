@@ -104,8 +104,18 @@ function init() {
   const shareNote = document.querySelector("#share-note");
   const kuaishou = document.querySelector("#share-kuaishou");
   if (kuaishou && shareNote) {
-    kuaishou.addEventListener("click", () => {
-      shareNote.textContent = "敬请期待。快手资质还在审核，通过后再从这里发布片段。";
+    kuaishou.addEventListener("click", () => openKuaishou(shareNote));
+  }
+  const narrate = document.querySelector("#narrate");
+  const narration = document.querySelector("#narration");
+  if (narrate && narration) {
+    narrate.addEventListener("change", () => {
+      if (!narrate.checked) {
+        narration.pause();
+        return;
+      }
+      narration.play().catch(() => {});
+      requestCommentary();
     });
   }
   document.querySelectorAll(".layer").forEach((button) => {
@@ -345,4 +355,49 @@ function format(total) {
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function openKuaishou(note) {
+  note.textContent = "正在打开快手扫码…";
+  const frame = document.querySelector("#kuaishou-frame");
+  try {
+    const response = await fetch(`${apiBase()}/oauth/kuaishou/start`);
+    const data = await response.json();
+    if (data.url && frame) {
+      frame.hidden = false;
+      frame.src = data.url;
+      note.textContent = data.message || "用快手 APP 扫码绑定。";
+      return;
+    }
+    note.textContent = data.message || "敬请期待。快手资质还在审核，通过后再从这里发布片段。";
+  } catch {
+    note.textContent = "敬请期待。快手资质还在审核，通过后再从这里发布片段。";
+  }
+}
+
+async function requestCommentary() {
+  if (!jobId) return;
+  try {
+    const response = await fetch(`${apiBase()}/commentary`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        jobId,
+        gameMeta: "",
+        events: state.events.map((event) => ({
+          timecode: event.timecode,
+          label: event.label,
+          eventType: event.eventType,
+        })),
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    const narration = document.querySelector("#narration");
+    if (data.audioUrl && narration) {
+      narration.src = data.audioUrl;
+      narration.play().catch(() => {});
+    }
+  } catch {
+    return;
+  }
 }

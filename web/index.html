@@ -72,17 +72,84 @@
       </article>
     </div>
 
-    <p class="aws-label">POWERED BY AWS</p>
-    <div class="aws-row">
-      <span>Amazon Bedrock</span>
-      <span>Amazon S3</span>
-      <span>Amazon CloudFront</span>
-      <span>AWS Lambda</span>
-      <em>以最终部署为准</em>
+    <h2 id="arch-title">技术架构</h2>
+    <p class="arch-lead">录像不进应用服务器。浏览器经 CloudFront 进来，直传到 S3；分析编排在 AgentCore，事件写入 DynamoDB，回放页再按任务号取回。</p>
+    <ol class="pipe" aria-labelledby="arch-title">
+      <li>
+        <span class="step">01</span>
+        <b>打开</b>
+        <span>CloudFront 发网页。<code>/api</code> 转到 API Gateway。</span>
+      </li>
+      <li>
+        <span class="step">02</span>
+        <b>入库</b>
+        <span>Lambda 建任务，浏览器用预签名地址把视频放进 S3。</span>
+      </li>
+      <li>
+        <span class="step">03</span>
+        <b>理解</b>
+        <span>AgentCore 调 Bedrock：画面用 Qwen3-VL，事件用 Claude。</span>
+      </li>
+      <li>
+        <span class="step">04</span>
+        <b>成片</b>
+        <span>Batch 做 GPU 跟踪，Textract 读记分牌，MediaConvert 合成。</span>
+      </li>
+      <li>
+        <span class="step">05</span>
+        <b>回放</b>
+        <span>DynamoDB 里的事件画到时间线。Polly 出两句解说。</span>
+      </li>
+    </ol>
+
+    <div class="svc-board" aria-label="使用的 AWS 产品">
+      <header>
+        <span>AWS · us-east-1</span>
+        <span>一个栈 · Team04DeepCourt</span>
+      </header>
+      <div class="svc-grid">
+        <article>
+          <h3>接入与存储</h3>
+          <ul>
+            <li><b>Amazon CloudFront</b><span>作品页、/readme、接口转发</span></li>
+            <li><b>Amazon API Gateway</b><span>建任务、查状态、读事件</span></li>
+            <li><b>Amazon S3</b><span>原片、成片、网页、解说音频</span></li>
+            <li><b>Amazon DynamoDB</b><span>任务状态与回合事件</span></li>
+          </ul>
+        </article>
+        <article>
+          <h3>理解与编排</h3>
+          <ul>
+            <li><b>AWS Lambda</b><span>建任务、分析、查询、解说</span></li>
+            <li><b>Bedrock AgentCore</b><span>分析运行时 DeepCourtAnalyst</span></li>
+            <li><b>Amazon Bedrock</b><span>Qwen3-VL 235B · Claude Sonnet 4.6</span></li>
+            <li><b>Amazon CloudWatch</b><span>日志、仪表盘、错误与限流告警</span></li>
+          </ul>
+        </article>
+        <article>
+          <h3>跟踪与成片</h3>
+          <ul>
+            <li><b>AWS Batch</b><span>g4dn GPU 队列，空闲时缩到 0</span></li>
+            <li><b>Amazon EC2 · EBS</b><span>跟踪实例与加密系统盘</span></li>
+            <li><b>Amazon ECR</b><span>跟踪镜像 deepcourt-tracker</span></li>
+            <li><b>Textract · MediaConvert</b><span>记分牌文字，叠加层合成 1080p</span></li>
+          </ul>
+        </article>
+        <article>
+          <h3>解说与密钥</h3>
+          <ul>
+            <li><b>Amazon Polly</b><span>中文解说，语音 Zhiyu</span></li>
+            <li><b>AWS X-Ray</b><span>按任务号看处理段</span></li>
+            <li><b>Secrets Manager</b><span>飞书、GitHub、快手密钥</span></li>
+            <li><b>Cost Explorer</b><span>按 project 标签看花费</span></li>
+          </ul>
+        </article>
+      </div>
     </div>
+    <p class="tech-note">画面侧用 Ultralytics YOLO11 检测、ByteTrack 跟踪、FFmpeg 合成。整套基础设施用 AWS CDK（TypeScript）写成一个栈，权限按函数拆开，密钥不进仓库。</p>
     <footer class="foot">
-      <span class="foot-links"><span id="host">deepcourt.team04.cloudfront.net</span><a href="game.html">播放器样例</a><a href="arch.html">架构与开源合规</a></span>
-      <b>TEAM 04 · 2026.10.07</b>
+      <span class="foot-links"><span id="host">deepcourt.team04.cloudfront.net</span><a href="game.html">播放器样例</a><a href="/readme">作品说明</a><a href="arch.html">架构与开源合规</a></span>
+      <b>TEAM 04 · 2026.10.09</b>
     </footer>
   </main>
   <script src="config.js"></script>
