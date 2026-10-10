@@ -252,8 +252,13 @@ function drawDetail() {
   }
   const xfg = shot.xfg == null ? "清单里没有预期命中率" : `预期命中率 ${(Number(shot.xfg) * 100).toFixed(1)}%（${Number(shot.xfg).toFixed(3)}）`;
   const margin = shot.season_margin;
+  const vsTeam = margin && margin.ts != null && margin.team_ts != null
+    ? (Number(margin.ts) - Number(margin.team_ts)) * 100
+    : null;
+  const vsTeamText = vsTeam == null ? ""
+    : `，比全队同档${vsTeam >= 0 ? "高" : "低"} ${Math.abs(vsTeam).toFixed(1)} 个百分点`;
   const marginLine = margin && margin.ts != null
-    ? `<p>赛季${margin.bucket_zh}：真实命中率 ${(Number(margin.ts) * 100).toFixed(1)}%，每球权 ${Number(margin.ppp).toFixed(3)}（${margin.fga} 投）</p>`
+    ? `<p>赛季${margin.bucket_zh}：真实命中率 ${(Number(margin.ts) * 100).toFixed(1)}%${vsTeamText}，每球权 ${Number(margin.ppp).toFixed(3)}（${margin.fga} 投）</p>`
     : "";
   const bits = [shot.zone, shot.distance ? `${Number(shot.distance).toFixed(1)} 英尺` : "", shot.assist ? `${shot.assist} 助攻` : ""].filter(Boolean);
   els.detail.innerHTML = `<p><b>${shot.name}</b> ${shot.value || ""} 分${shot.made ? "命中" : shot.made === false ? "不中" : "出手"}</p>

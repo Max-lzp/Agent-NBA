@@ -162,6 +162,20 @@
             "xfg": 0.504,
             "video_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/666/734c2a04-b3a2-e414-6430-a04326a4559a_1280x720.mp4",
             "thumbnail": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/666/734c2a04-b3a2-e414-6430-a04326a4559a_1280x720.jpg",
+            "season_margin": {
+              "season": "2025-26",
+              "team": "DAL",
+              "margin": -4,
+              "bucket": "close5",
+              "bucket_zh": "分差5分以内",
+              "games": 82,
+              "fga": 525,
+              "efg": 0.4657,
+              "ts": 0.518,
+              "ppp": 0.929,
+              "team_ts": 0.5521,
+              "team_ppp": 0.975
+            },
             "court_half": "right"
           }
         }
@@ -984,7 +998,7 @@
   "meta": {
     "mode": "full",
     "generator": "pipeline/events",
-    "created_at": "2026-10-09T17:51:51.832226+00:00"
+    "created_at": "2026-10-10T02:17:55.899643+00:00"
   },
   "official": {
     "game_id": "0022500701",

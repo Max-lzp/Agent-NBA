@@ -31,6 +31,7 @@ class MarginTest(unittest.TestCase):
         self.assertEqual(got["bucket_zh"], "分差5分以内")
         self.assertAlmostEqual(got["ts"], 0.518, places=3)
         self.assertGreater(got["fga"], 500)
+        self.assertAlmostEqual(got["team_ts"], 0.5521, places=4)
 
     def test_other_teams_are_left_alone(self):
         play = {"kind": "shot", "made": False, "team": "HOU", "person_id": 1,
