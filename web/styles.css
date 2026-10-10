@@ -1458,3 +1458,92 @@ h2 {
 .heat-legend .sw.none { background: rgba(92,81,70,.6); }
 
 .replay-link { color: var(--orange); margin-left: 6px; }
+
+/* 右上角 Read Me 大按钮（首页 + 回放页） */
+.readme-fab {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  border: 2px solid #ffb98a;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+.readme-fab::before { content: "📖"; font-size: 14px; }
+.readme-fab:hover { filter: brightness(1.06); }
+
+/* 观看方式蒙层 */
+.mode-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(8, 6, 4, 0.82);
+  backdrop-filter: blur(6px);
+}
+.mode-modal[hidden] { display: none; }
+.mode-sheet {
+  width: min(880px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px 28px 30px;
+}
+.mode-kicker { margin: 0; color: var(--orange); font-family: "Jersey 15", sans-serif; font-size: 14px; letter-spacing: 0.08em; }
+.mode-sheet h2 { margin: 8px 0 4px; font-family: "得意黑", "Songti SC", serif; font-size: 32px; font-weight: 400; }
+.mode-sub { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+.mode-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.mode-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  padding: 20px 18px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--cream);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.mode-opt:hover { border-color: var(--orange); transform: translateY(-2px); }
+.mode-opt .mode-ic { font-size: 30px; line-height: 1; }
+.mode-opt b { font-size: 20px; font-weight: 700; }
+.mode-opt span:last-child { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+/* 新球迷 / 带新球迷 术语白话 */
+.glossary {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: rgba(95, 191, 169, 0.06);
+  border: 1px solid #2f4a44;
+  border-radius: 10px;
+}
+.glossary[hidden] { display: none; }
+.glossary b { display: block; margin-bottom: 6px; color: var(--teal); font-size: 13px; letter-spacing: 0.06em; }
+.glossary ul { margin: 0; padding-left: 1.1em; }
+.glossary li { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 2px 0; }
+.glossary em { font-style: normal; color: var(--cream); }
+
+.stage-status .sub { color: var(--muted); font-size: 12px; }
+
+@media (max-width: 800px) {
+  .page { padding-top: 58px; }
+  .mode-options { grid-template-columns: 1fr; }
+  .mode-sheet { padding: 22px 18px 24px; }
+  .mode-sheet h2 { font-size: 26px; }
+  .readme-fab { top: 10px; right: 10px; padding: 7px 13px; font-size: 13px; }
+}

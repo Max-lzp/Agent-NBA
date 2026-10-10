@@ -95,7 +95,40 @@ const els = {
 const params = new URLSearchParams(location.search);
 const jobId = params.get("jobId");
 const clips = window.DEEPCOURT_CLIPS || {};
-const clipName = params.get("clip") || window.DEEPCOURT_LEAD || (clips.flagg ? "flagg" : Object.keys(clips)[0] || "");
+const CFG = window.DEEPCOURT_CONFIG || {};
+const EXAM_ONLY = CFG.examOnly !== false;
+const SAMPLE_CLIPS = CFG.sampleClips || ["flagg", "amen", "warm-probe", "rehearsal"];
+const HIDDEN_CLIPS = window.DEEPCOURT_HIDDEN || CFG.hiddenClips || [];
+const MODES = ["laofan", "xinfan", "daikan"];
+
+// 训练片/样片：显式名单或片子 dataset 标注
+function isSampleClip(name) {
+  if (!name) return false;
+  if (SAMPLE_CLIPS.indexOf(name) >= 0) return true;
+  return Boolean(clips[name] && clips[name].dataset === "训练数据");
+}
+
+// 从切换列表里去掉的片子：显式 DEEPCOURT_HIDDEN、片子 hidden:true，或 examOnly 下的训练片
+function isHiddenClip(name) {
+  if (!name) return false;
+  if (HIDDEN_CLIPS.indexOf(name) >= 0) return true;
+  if (clips[name] && clips[name].hidden) return true;
+  if (EXAM_ONLY && isSampleClip(name)) return true;
+  return false;
+}
+
+function visibleClipNames() {
+  return Object.keys(clips).filter((name) => !isHiddenClip(name));
+}
+
+const requestedClip = params.get("clip");
+// 主片由 DEEPCOURT_LEAD 决定；主片被隐藏或不存在时退回第一支可见片。?clip= 直达任意片（含隐藏片）
+const clipName = (function resolveClip() {
+  if (requestedClip) return requestedClip;
+  const lead = window.DEEPCOURT_LEAD || "";
+  if (lead && clips[lead] && !isHiddenClip(lead)) return lead;
+  return visibleClipNames()[0] || "";
+})();
 
 const state = {
   pack: null,
@@ -106,11 +139,17 @@ const state = {
   layers: { resident: true, event: true, expand: true },
   freeze: null,
   replayed: new Set(),
-  watch: params.get("watch") === "date" ? "date" : "commentary",
+  watch: initialMode(),
+  modePicked: MODES.indexOf(params.get("mode")) >= 0,
   lang: initialLang(),
   switchingTrack: null,
   currentSrc: "",
 };
+
+function initialMode() {
+  const q = params.get("mode");
+  return MODES.indexOf(q) >= 0 ? q : "laofan";
+}
 
 init();
 
@@ -216,15 +255,37 @@ function init() {
       render();
     });
   });
+  setupModeModal();
   if (clipName && clips[clipName]) loadPack(clips[clipName]);
   else if (jobId) pollJob();
+  else if (EXAM_ONLY) showExamPending();
   else els.subhead.textContent = "还没有成片。先在仓库里运行 python3 -m pipeline.present --all";
+}
+
+function setupModeModal() {
+  const modal = document.querySelector("#mode-modal");
+  if (!modal) { syncWatch(); return; }
+  modal.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-mode]");
+    if (!button) return;
+    modal.hidden = true;
+    state.modePicked = true;
+    setWatch(button.dataset.mode);
+  });
+  syncWatch();
+  if (!state.modePicked) modal.hidden = false;
+}
+
+function showExamPending() {
+  if (els.subhead) els.subhead.textContent = "Team 04 · 考试片生成中";
+  setStageStatus("pending");
 }
 
 function loadPack(pack) {
   endFreeze(false);
   state.replayed.clear();
   state.pack = pack;
+  if (pack.clip && !isSampleClip(pack.clip)) window.DEEPCOURT_JOB_ID = pack.clip;
   state.events = pack.events || [];
   state.clipDuration = pack.duration || 1;
   state.active = nearestEventIndex(pack.anchor || 0);
@@ -253,15 +314,15 @@ function loadPack(pack) {
 
 function renderSwitcher() {
   if (!els.switcher) return;
-  const names = Object.keys(clips);
+  const names = visibleClipNames();
   const section = document.querySelector("#more-clips");
   if (section) section.hidden = names.length <= 1;
   els.switcher.innerHTML = names.map((name) => {
     const on = name === clipName ? " on" : "";
     const label = `${clips[name].title || name}`;
-    const watch = state.watch === "date" ? "&watch=date" : "";
+    const mode = `&mode=${state.watch}`;
     const lang = state.lang === "en" ? "&lang=en" : "&lang=zh";
-    return `<a class="clip${on}" href="game.html?clip=${encodeURIComponent(name)}${watch}${lang}">${label}</a>`;
+    return `<a class="clip${on}" href="game.html?clip=${encodeURIComponent(name)}${mode}${lang}">${label}</a>`;
   }).join("");
 }
 
@@ -276,9 +337,13 @@ function setStageStatus(mode) {
   if (!box) return;
   if (!mode) { box.hidden = true; box.innerHTML = ""; return; }
   box.hidden = false;
-  box.innerHTML = mode === "loading"
-    ? `<span class="spin" aria-hidden="true"></span><p>视频加载中…</p>`
-    : `<p>视频加载失败</p><button type="button" id="stage-retry">重试</button>`;
+  if (mode === "loading") {
+    box.innerHTML = `<span class="spin" aria-hidden="true"></span><p>视频加载中…</p>`;
+  } else if (mode === "pending") {
+    box.innerHTML = `<span class="spin" aria-hidden="true"></span><p>考试片生成中</p><p class="sub">考试片一发布，这里会自动开始播放</p>`;
+  } else {
+    box.innerHTML = `<p>视频加载失败</p><button type="button" id="stage-retry">重试</button>`;
+  }
 }
 
 function retryVideo() {
@@ -533,23 +598,25 @@ function seasonProfileHtml(shot) {
 }
 
 function setWatch(next) {
-  if (next !== "commentary" && next !== "date") return;
+  if (MODES.indexOf(next) < 0) return;
   state.watch = next;
   const url = new URL(location.href);
-  if (next === "date") url.searchParams.set("watch", "date");
-  else url.searchParams.delete("watch");
+  url.searchParams.set("mode", next);
   history.replaceState(null, "", url);
   syncWatch();
   renderSwitcher();
   const box = document.querySelector("#floor");
   if (box) delete box.dataset.signature;
   renderFloor();
+  render();
 }
 
 function syncWatch() {
   document.querySelectorAll("[data-watch]").forEach((button) => {
     button.classList.toggle("on", button.dataset.watch === state.watch);
   });
+  const glossary = document.querySelector("#glossary");
+  if (glossary) glossary.hidden = state.watch === "laofan";
 }
 
 function initialLang() {
@@ -619,7 +686,7 @@ function renderFloor() {
   if (box.dataset.signature === signature) return;
   box.dataset.signature = signature;
   box.hidden = false;
-  box.classList.toggle("date", state.watch === "date");
+  box.classList.toggle("date", state.watch === "daikan");
   fillSide(document.querySelector("#floor-home"), "主队", home, court[home] || []);
   fillSide(document.querySelector("#floor-away"), "客队", away, court[away] || []);
 }
@@ -632,7 +699,7 @@ function fillSide(node, role, team, players) {
   if (!node) return;
   const color = TEAM_COLOR[team] || "#F3EDE2";
   const mark = TEAM_MARK[team] || {};
-  const dating = state.watch === "date";
+  const dating = state.watch === "daikan";
   const list = players.map((player) => {
     const en = player.full || player.name || "";
     const zh = player.name && player.name !== en ? player.name : "";
