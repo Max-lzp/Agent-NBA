@@ -364,6 +364,8 @@ h2 {
 
 .player-title { font-size: 44px; margin-top: 18px; }
 
+.tagline { margin: 10px 0 6px; max-width: 48rem; color: var(--cream); font-size: 15px; line-height: 1.55; }
+
 .subhead { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
 .subhead .dataset {
   display: inline-block;

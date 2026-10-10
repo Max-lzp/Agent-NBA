@@ -611,7 +611,7 @@ function fillSide(node, role, team, players) {
     return `<li>${face}<b>#${escapeHtml(player.jersey)}</b><span class="who"><strong>${escapeHtml(en)}</strong>${zh ? `<em>${escapeHtml(zh)}</em>` : ""}${honors}</span><i>${escapeHtml(pos)}</i></li>`;
   }).join("");
   const logo = mark.logo
-    ? `<img class="team-logo" alt="" src="${mark.logo}" width="28" height="28" referrerpolicy="no-referrer">`
+    ? `<img class="team-logo" alt="" src="${mark.logo}" width="28" height="28" loading="lazy" decoding="async" referrerpolicy="no-referrer">`
     : "";
   const jersey = mark.jersey
     ? `<i class="jersey-swatch ${mark.swatch}" title="${escapeHtml(mark.jersey)}"></i>`
@@ -630,7 +630,7 @@ function faceHtml(team, jersey, name) {
   const id = HEADSHOTS[`${team}:${jersey}`];
   if (!id) return `<span class="face-frame missing" aria-hidden="true"></span>`;
   const src = `headshots/${team.toLowerCase()}/${id}.png`;
-  return `<span class="face-frame"><img alt="${escapeHtml(name)} 头部特写" src="${src}" referrerpolicy="no-referrer" onerror="this.parentElement.classList.add('missing');this.remove()"></span>`;
+  return `<span class="face-frame"><img alt="${escapeHtml(name)} 头部特写" src="${src}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.classList.add('missing');this.remove()"></span>`;
 }
 
 function companionHtml(team) {
