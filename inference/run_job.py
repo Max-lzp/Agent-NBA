@@ -15,6 +15,7 @@ import track
 REGION = os.environ.get("AWS_REGION", "us-east-1")
 NAMES = {"DAL": "独行侠", "HOU": "火箭"}
 PERIODS = {"1ST": "第一节", "2ND": "第二节", "3RD": "第三节", "4TH": "第四节"}
+TEAM_RGB = {"HOU": (206, 17, 65), "DAL": (0, 100, 177)}
 FONT_CANDIDATES = (
     "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
@@ -49,6 +50,18 @@ def main() -> None:
     board = _scoreboard(local_video)
     linked = _link(job_id, local_video, frames, board, bucket_name)
     if os.environ.get("SKIP_PUBLISH") == "1":
+        still = Path("/tmp/t1.jpg")
+        _still(local_video, linked.get("tags") or [], still, 1.0)
+        still_key = ""
+        if bucket_name and still.is_file():
+            still_key = f"identity/{job_id}-t1.jpg"
+            try:
+                boto3.client("s3", region_name=REGION).upload_file(
+                    str(still), bucket_name, still_key, ExtraArgs={"ContentType": "image/jpeg"},
+                )
+            except ClientError as exc:
+                print(f"第 1 秒截图没写上：{exc}")
+                still_key = ""
         print(json.dumps({
             "jobId": job_id,
             "frames": len(frames),
@@ -57,6 +70,8 @@ def main() -> None:
             "bedrockCalls": linked.get("bedrockCalls"),
             "identitySeconds": linked.get("identitySeconds"),
             "firstSecond": linked.get("firstSecond"),
+            "firstSecondDetecting": linked.get("firstSecondDetecting"),
+            "still": still_key,
         }, ensure_ascii=False))
         return
     film = Path("/tmp/broadcast.mp4")
@@ -66,6 +81,7 @@ def main() -> None:
         film,
         board.get("away") or os.environ.get("AWAY", "DAL"),
         board.get("home") or os.environ.get("HOME_TEAM", "HOU"),
+        linked.get("tags") or [],
     )
     if not bucket_name:
         raise RuntimeError("缺少 MEDIA_BUCKET，解说无法把原声送去转写")
@@ -97,9 +113,9 @@ def _scoreboard(video: Path) -> dict:
         return {"reads": [], "ticks": [], "away": os.environ.get("AWAY", ""), "home": os.environ.get("HOME_TEAM", "")}
 
 
-def _render(video: Path, reads: list, dest: Path, away: str, home: str) -> None:
+def _render(video: Path, reads: list, dest: Path, away: str, home: str, tags: list | None = None) -> None:
     import cv2
-    from PIL import Image, ImageDraw, ImageFont
+    from PIL import Image, ImageDraw
 
     cap = cv2.VideoCapture(str(video))
     if not cap.isOpened():
@@ -107,6 +123,7 @@ def _render(video: Path, reads: list, dest: Path, away: str, home: str) -> None:
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     width, height = 1280, 720
     font = _font(36)
+    tag_font = _font(22)
     err = open("/tmp/ffmpeg.log", "w", encoding="utf-8")
     proc = subprocess.Popen(
         [
@@ -131,12 +148,15 @@ def _render(video: Path, reads: list, dest: Path, away: str, home: str) -> None:
             break
         frame = cv2.resize(frame, (width, height))
         label = _label_at(timed, index / fps, away, home)
-        if label and font is not None:
+        players = _players_at(tags or [], index / fps)
+        if (label or players) and (font is not None or tag_font is not None):
             image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             draw = ImageDraw.Draw(image)
-            box = int(getattr(font, "getlength", lambda _text: 28 * len(label))(label)) + 28
-            draw.rectangle((24, 18, 36 + box, 70), fill=(0, 0, 0))
-            draw.text((36, 24), label, fill=(255, 255, 255), font=font)
+            if label and font is not None:
+                box = int(getattr(font, "getlength", lambda _text: 28 * len(label))(label)) + 28
+                draw.rectangle((24, 18, 36 + box, 70), fill=(0, 0, 0))
+                draw.text((36, 24), label, fill=(255, 255, 255), font=font)
+            _draw_player_tags(draw, tag_font or font, players)
             frame = cv2.cvtColor(__import__("numpy").asarray(image), cv2.COLOR_RGB2BGR)
         proc.stdin.write(frame.tobytes())
         index += 1
@@ -147,6 +167,82 @@ def _render(video: Path, reads: list, dest: Path, away: str, home: str) -> None:
     if code != 0 or not dest.is_file():
         log = Path("/tmp/ffmpeg.log").read_text(encoding="utf-8", errors="replace")[-800:]
         raise RuntimeError(f"ffmpeg 退出 {code}：{log}")
+
+
+def _still(video: Path, tags: list, dest: Path, second: float) -> None:
+    import cv2
+    from PIL import Image, ImageDraw
+
+    cap = cv2.VideoCapture(str(video))
+    cap.set(cv2.CAP_PROP_POS_MSEC, second * 1000)
+    ok, frame = cap.read()
+    cap.release()
+    if not ok:
+        return
+    frame = cv2.resize(frame, (1280, 720))
+    image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    draw = ImageDraw.Draw(image)
+    font = _font(22)
+    _draw_player_tags(draw, font, _players_at(tags, second))
+    image.save(dest, quality=90)
+
+
+def _players_at(tags: list, t: float) -> list:
+    found = None
+    for frame in tags:
+        if float(frame.get("t") or 0) <= t + 0.08:
+            found = frame
+        else:
+            break
+    players = [player for player in ((found or {}).get("players") or []) if float(player.get("h") or 0) >= 48]
+    players.sort(key=lambda player: player.get("label") == "Agent detecting")
+    return players
+
+
+def _draw_player_tags(draw, font, players: list) -> None:
+    placed = []
+    for player in players:
+        rect = _tag_slot(draw, font, player, placed)
+        if rect is None:
+            continue
+        placed.append(rect)
+        _paint_tag(draw, font, player, rect)
+
+
+def _tag_slot(draw, font, player: dict, placed: list):
+    text = player.get("label") or player.get("name") or ""
+    if not text or font is None:
+        return None
+    box = draw.textbbox((0, 0), text, font=font)
+    tw, th = box[2] - box[0], box[3] - box[1]
+    width = tw + 16
+    height = th + 8
+    x = float(player.get("x") or 0)
+    y = float(player.get("y") or 0)
+    w = float(player.get("w") or 0)
+    left = x + (w - width) / 2
+    for step in range(4):
+        top = y - height - 6 - step * (height + 4)
+        if top < 4:
+            break
+        rect = (left, top, left + width, top + height)
+        if not any(_overlap(rect, other) for other in placed):
+            return rect
+    return None
+
+
+def _overlap(a: tuple, b: tuple) -> bool:
+    return a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]
+
+
+def _paint_tag(draw, font, player: dict, rect: tuple) -> None:
+    text = player.get("label") or player.get("name") or ""
+    edge = TEAM_RGB.get(player.get("team") or "", (241, 104, 30))
+    left, top, right, bottom = rect
+    box = draw.textbbox((0, 0), text, font=font)
+    draw.rectangle(rect, fill=(20, 17, 14))
+    draw.rectangle((left, top, left + 4, bottom), fill=edge)
+    draw.text((left + 8, top + 3 - box[1]), text, font=font, fill=(243, 237, 226))
 
 
 def _font(size: int):
@@ -314,7 +410,7 @@ def _pack(job_id: str, video_key: str, board: dict, spoken: dict | None = None, 
         "away": away,
         "home": home,
         "scorebug": scorebug,
-        "tags": [],
+        "tags": (linked or {}).get("tags") or [],
         "events": events,
         "shots": [row for row in events if row.get("eventType") == "shot"],
         "anchor": anchor,
