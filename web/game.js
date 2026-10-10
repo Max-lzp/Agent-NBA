@@ -221,7 +221,7 @@ function loadPack(pack) {
   state.events = pack.events || [];
   state.clipDuration = pack.duration || 1;
   state.active = nearestEventIndex(pack.anchor || 0);
-  els.subhead.innerHTML = `${pack.dataset ? `<span class="dataset">${pack.dataset}</span>` : ""}Team 04 · ${pack.title || pack.clip}${pack.gameId ? " · 官方 " + pack.gameId : ""}`;
+  els.subhead.innerHTML = `Team 04 · ${pack.title || pack.clip}${pack.gameId ? " · 官方 " + pack.gameId : ""}`;
   const start = Number(pack.anchor) || 0;
   const tracked = pack.tracks && pack.tracks[state.lang];
   els.reel.src = tracked || (start > 0 ? `${pack.video}#t=${start}` : pack.video);
@@ -249,7 +249,7 @@ function renderSwitcher() {
   const names = Object.keys(clips);
   els.switcher.innerHTML = names.map((name) => {
     const on = name === clipName ? " on" : "";
-    const label = `${clips[name].dataset ? clips[name].dataset + " · " : ""}${clips[name].title || name}`;
+    const label = `${clips[name].title || name}`;
     const watch = state.watch === "date" ? "&watch=date" : "";
     const lang = state.lang === "en" ? "&lang=en" : "&lang=zh";
     return `<a class="clip${on}" href="game.html?clip=${encodeURIComponent(name)}${watch}${lang}">${label}</a>`;
