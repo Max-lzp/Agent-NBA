@@ -14,8 +14,8 @@
 
 - Newton：HOU 主名单字段为 13，部分 inactive 字段为 00；当前 profile 已是 SAC 00。不能把 inactive 的 00 当作 HOU 换号日期。
 - Crawford：首场 inactive 为 24，随后主名单为 27；不能仅凭这一差异断言正式赛季换号。
-- Tyler Smith：HOU 21；DAL 主名单为 23，部分 inactive/赛季快照仍为 21。必须区分球队，不能复用快照号码。
-- Poulakidas：历史页面部分号码为空；DAL 主名单与官方球员页面有 1，可用于号码交叉核验，但空值不代表换号。
+- Tyler Smith：HOU 21；DAL 主名单字段为 21，部分 inactive 为 23，赛季快照为 21。必须区分球队，不能复用快照号码。
+- Poulakidas：历史页面部分号码为空；DAL inactive 字段与官方球员页面有 1，可用于号码交叉核验，但空值不代表换号。
 - Robinson-Earl：DAL 五场主名单元数据写 25，同场 Washington 也写 25。保留冲突，未任意选另一个号码。官方交易记录确认 2026-01-15 签 10-Day Contract；合约约定、是否续约和最终日期需要单独核实，不能用最后出场日推断。
 - current profile 的球队/号码可能已经更新到下赛季，旧赛季 commonteamroster 也可能是季末快照。`to: null` 要求到抓取日仍在该队，不能因为交易列表没找到离队记录便认定仍在队。
 
