@@ -221,7 +221,6 @@
 <li>比分条跟着记分牌走：节次、比赛钟、客队和主队比分。出手后约三秒弹出这一球的预期命中率、区域和距离。</li>
 <li>这一回合场上 10 个人先对上身体：号码、持球和领防是钉子，剩下的人只在同队还空着的坑里排除。成片前 3 秒标出已经对上的人，之后只标持球人、传球双方和领防人。两个差不多高、又没有号码的坑先空着。这是训练片在本机上的做法。考试片改由云上认人，规则在第 5 步。</li>
 <li>暂停后展开官方逐回合原文、助攻和当时场上的十个人。半场图上的点用官方坐标。</li>
-<li>播放器可以选英文原声或中文解说。中文是整段英文解说的译文，用 Amazon Polly 的知语说出来，不再只写两句，原解说也不留在这条音轨里。</li>
 </ol>
 <h2 id="watch">三种观看方式，页面只留考试片</h2>
 <p>打开回放会先问一句「你想怎么看这段比赛」。三种方式写在 <code>web/game.js</code> 的 <code>MODES</code>，按钮在 <code>web/game.html</code>。地址带 <code>?mode=</code> 就直接进入，例如 <code>/game.html?mode=daikan</code>。</p>
@@ -232,10 +231,10 @@
 </ul>
 <p>队内排名画成星：第 1 名五颗星，每往后一名少半颗，最少半颗。算法在 <code>pipeline/enrich/defense.py</code> 的 <code>stars</code>，定格卡用 <code>web/replay-freeze.js</code> 画出来。</p>
 <p><code>web/config.js</code> 里 <code>examOnly: true</code>。回放页只展示考试片。训练片和样片 <code>flagg</code>、<code>amen</code>、<code>warm-probe</code>、<code>rehearsal</code> 从切换列表里拿掉，数据文件仍留着。<code>?clip=</code> 仍可直达某一支。考试片还没发布时，页面写「考试片生成中」，不白屏。</p>
-<p>同一份 <code>web/config.js</code> 把 <code>hiddenTracks</code> 设为 <code>zh</code>，中文解说先不展示，新版成片确认后再放回。<code>webNames: false</code> 时网页不再叠画名签，只用成片里烧进去的一层，避免重影。</p>
+<p><code>webNames: false</code> 时网页不再叠画名签，只用成片里烧进去的一层，避免重影。</p>
 <p class="note">代码已就绪，待部署。CloudFront 上现在的播放器仍是较早的两档（解说向、陪女友观看），还不会读 <code>mode=daikan</code>，也还不会按 <code>examOnly</code> 隐藏样片。</p>
 <h2 id="flow">整条管道</h2>
-<p>下面按处理顺序串起环节和对应的亚马逊云服务。橙色节点是 Amazon Bedrock 和 Amazon Bedrock AgentCore。状态和仓库 <code>docs/pipeline-map.md</code> 一致，日期 2026-10-10。图上收成八个环节。后面十四张卡片把全景里的步骤拆开，服务总表用卡片上的步骤号。</p>
+<p>下面按处理顺序串起环节和对应的亚马逊云服务。橙色节点是 Amazon Bedrock 和 Amazon Bedrock AgentCore。状态和仓库 <code>docs/pipeline-map.md</code> 一致，日期 2026-10-10。图上收成八个环节。后面十三张卡片把全景里的步骤拆开，服务总表用卡片上的步骤号。</p>
 <p class="status-line">主路径、已接通、部署中、本地。</p>
 <p class="note">部署中表示代码已在仓库里，考试片发布后再部署。</p>
 <ol class="flow">
@@ -297,10 +296,10 @@
 </li>
 <li>
 
-<h3>回放、音轨、成片、网页<span class="status">主路径</span></h3>
+<h3>回放、成片、网页<span class="status">主路径</span></h3>
  
-<p>成片只烧记分牌。英文留原声，中文是译文合成。播放器在 CloudFront 上。</p>
-<p>Amazon API Gateway · Amazon Transcribe · Amazon Translate · Amazon Polly · Amazon CloudFront · Amazon S3</p>
+<p>成片只烧记分牌。英文留原声。播放器在 CloudFront 上。</p>
+<p>Amazon API Gateway · Amazon CloudFront · Amazon S3</p>
 
 </li>
 </ol>
@@ -332,15 +331,11 @@
 <h3>解说：Claude Sonnet 4.6<span class="status">已接通</span></h3>
 
 <p>分析师推理用的是上面的 <code>global.anthropic.claude-sonnet-4-6</code>。跨区域推理配置和底层模型的调用权限都写在 AgentCore 运行时角色上，动作包括 <code>bedrock:Converse</code>。温度是 0。它只根据工具返回的内容写回合解说、定格卡和三条亮点。</p>
-<p>栈里另有一条 <code>POST /commentary</code>。它用同一个模型写两句短解说，再用 Amazon Polly 合成，失败不影响分析任务。播放器上的中文音轨不走这条接口。</p>
 
-<h3>认人和语音旁边的托管服务<span class="status">已接通</span></h3>
+<h3>认人旁边的托管服务<span class="status">已接通</span></h3>
 
 <p>Amazon Rekognition <code>DetectText</code> 是号码的第二票，和 Qwen 的读数放进同一次多数票。Amazon Textract <code>DetectDocumentText</code> 只在 Qwen 调用失败时读号码。记分牌上的 Textract 只做过探测，不在主路径；CDK 里的 <code>OcrScoreboard</code> 函数主路径不调用。记分牌主路径是同一台机器上的 RapidOCR，检测边长限制 640。</p>
-<p>中文音轨在成片之后、同一容器里做。Amazon Transcribe 转写英文原声。常见的人名听错先改掉，再交给 Amazon Translate 译成中文。Amazon Polly 用 Neural 引擎、语音知语（<code>Zhiyu</code>）、语言 <code>cmn-CN</code>，按原句时间合成。普通话在 Polly 里这条神经语音是知语。现场声和原解说叠在一起，声道又几乎是单声道，分不开，所以中文音轨只有合成人声，原解说不留在里面。英文音轨就是成片里的原声。</p>
-<p>仓库里有篮球术语表 <code>data/terminology/basketball-en-zh.csv</code>。CDK 用 <code>AwsCustomResource</code>（<code>cdk/lib/terminology.ts</code> 的 <code>BasketballTerminology</code>）调用 Amazon Translate 的 <code>ImportTerminology</code>，名称是 <code>deepcourt-basketball</code>，方向 <code>UNI</code>，更新时 <code>MergeStrategy</code> 为 <code>OVERWRITE</code>。作业定义的环境变量 <code>TRANSLATE_TERMINOLOGY</code> 写成这个名字。音轨代码（<code>pipeline/present/tracks.py</code>）只有在这个变量有值时才把术语表放进翻译请求。这份模板还没有 <code>cdk deploy</code>，线上作业定义还没有这个变量，探测片的翻译请求不带术语表。状态：代码已就绪，待部署。术语表不存在或没有权限时，同一句去掉术语表再译一次，音轨不会因此中断。</p>
 <p>球员、球队和场馆的中文译名以 <code>data/names/zh-names.json</code> 为准（<code>name_zh</code> / <code>alias_zh</code>）。精彩回放直接读这份文件。分析师的运行时包带不走 <code>data/names/</code>，<code>agent/season_data.py</code> 里的名单与这份文件对齐，单测会核对。</p>
-<p>探测片 <code>warm-probe</code> 的中文音轨已经在播放器里。训练片弗拉格、阿门的两条音轨是本机做的，已经放在网页桶。</p>
 
 <h2 id="steps">逐步说明</h2>
 <p>每张卡片对应全景里的一步：业务流程、对观众和解说的意义、用到的亚马逊云服务、现在的状态。</p>
@@ -461,21 +456,9 @@
 <li>AWS Lambda get_job</li>
 <li>AWS Lambda list_events</li>
 </ul>
-<p class="note">站点本身在第 13 步。没有任务号时，画面上的示例回合用来对齐设计稿；带上任务号之后，时间线换成表里的事件。</p>
+<p class="note">站点本身在第 12 步。没有任务号时，画面上的示例回合用来对齐设计稿；带上任务号之后，时间线换成表里的事件。</p>
 
-<h3 id="step-11">11. 解说音轨<span class="status">已接通</span></h3>
-
-<p><b>业务流程。</b>成片出来之后，在同一容器里做两条音轨。英文是成片里的原声，不另处理。中文把这条原声交给 Amazon Transcribe，再由 Amazon Translate 译成中文，按原句时间用 Amazon Polly Neural 知语合成。脚本从 S3 <code>bootstrap/track/</code> 拉取。CDK 把 <code>inference/run_job.py</code>、<code>inference/chain.py</code>、<code>inference/dub.py</code> 和 <code>pipeline/present/tracks.py</code>（桶里的名字是 <code>commentary.py</code>）传到这个前缀。转写中间结果在 S3 <code>commentary/asr/</code>。任务角色是 <code>TrackJobRole</code>。</p>
-<p><b>业务意义。</b>播放器上可以换成中文听。中文是英文解说的译文，不是模型看图另写的一段。原解说不留在中文音轨里。</p>
-<ul>
-<li>Amazon Transcribe</li>
-<li>Amazon Translate</li>
-<li>Amazon Polly Neural Zhiyu</li>
-<li>Amazon S3</li>
-</ul>
-<p class="note"><code>warm-probe</code> 的中文音轨已在播放器里。训练片的两条音轨是本机做的。CDK 里的作业定义会带上 <code>TRANSLATE_TERMINOLOGY=deepcourt-basketball</code>，术语表由 <code>AwsCustomResource</code> 导入。这份模板还没部署，线上作业没有这个变量。术语表：代码已就绪，待部署。</p>
-
-<h3 id="step-12">12. 成片<span class="status">已接通</span></h3>
+<h3 id="step-11">11. 成片<span class="status">已接通</span></h3>
 
 <p><b>业务流程。</b>考试片在同一台 <code>c7i.48xlarge</code> 上用 ffmpeg，只把记分牌烧进 <code>assets/{jobId}-broadcast.mp4</code>。原声留在里面，不烧人名。训练片在本机另烧人名，并出带回放定格的片子。AWS Elemental MediaConvert 模板 <code>deepcourt-render-template</code> 已在栈里，用来把叠加层合成 1080p，写到 <code>rendered/</code>。还没有向它提交转码作业。</p>
 <p><b>业务意义。</b>评委看到的画面带着转播记分牌，声音仍是原声。人名由播放器叠上去，成片文件本身不把名字烙死。</p>
@@ -499,9 +482,9 @@
 </ul>
 <p class="note">代码已就绪，待部署。还没有接进 Batch 作业，也还没有部署。</p>
 
-<h3 id="step-13">13. 网页呈现<span class="status">主路径</span></h3>
+<h3 id="step-12">12. 网页呈现<span class="status">主路径</span></h3>
 
-<p><b>业务流程。</b>Amazon CloudFront 分配 <code>Site</code>（<code>d2vzd2batw1eqe.cloudfront.net</code>）是评委打开的地址。默认根对象是 <code>game.html</code>：成片、时间线、音轨选择。CloudFront Function <code>ReadmePath</code> 把 <code>/readme</code> 指到 <code>readme.html</code>。<code>/index.html</code> 只给自己上传。网页桶不公开，只经 CloudFront 源访问控制（OAC）读取。<code>/api/*</code> 转到 API Gateway，函数 <code>StripApiPrefix</code> 去掉 <code>/api</code> 前缀。CDK 的 <code>DeployWeb</code> 把 <code>web/</code> 部署到网页桶。</p>
+<p><b>业务流程。</b>Amazon CloudFront 分配 <code>Site</code>（<code>d2vzd2batw1eqe.cloudfront.net</code>）是评委打开的地址。默认根对象是 <code>game.html</code>：成片、时间线。CloudFront Function <code>ReadmePath</code> 把 <code>/readme</code> 指到 <code>readme.html</code>。<code>/index.html</code> 只给自己上传。网页桶不公开，只经 CloudFront 源访问控制（OAC）读取。<code>/api/*</code> 转到 API Gateway，函数 <code>StripApiPrefix</code> 去掉 <code>/api</code> 前缀。CDK 的 <code>DeployWeb</code> 把 <code>web/</code> 部署到网页桶。</p>
 <p><b>业务意义。</b>提交链接打开就能看回放，页面上有 Team 04。作品说明和播放器在同一个域名下。</p>
 <ul>
 <li>Amazon CloudFront</li>
@@ -510,7 +493,7 @@
 </ul>
 <p class="note"><code>/</code> 和 <code>/readme</code> 已能打开。</p>
 
-<h3 id="step-14">14. 观测和密钥<span class="status">已接通</span></h3>
+<h3 id="step-13">13. 观测和密钥<span class="status">已接通</span></h3>
 
 <p><b>业务流程。</b>Amazon CloudWatch 仪表盘 <code>deepcourt-overview</code> 看分析吞吐、延迟和 Bedrock 限流。告警 <code>deepcourt-bedrock-throttles</code> 在每分钟限流超过 10 次时触发，还没有接通知。AWS X-Ray 开在 API 阶段和 Lambda 上，处理段带 jobId。AWS Secrets Manager 里有 <code>deepcourt/feishu-webhook</code>、<code>deepcourt/github-token</code>、<code>deepcourt/kuaishou</code>。AWS Cost Explorer 按 <code>project</code> 标签看花费，脚本是 <code>scripts/cost-report.sh</code>。编排部署之后，同一张仪表盘加上状态机的成功、失败和耗时。</p>
 <p><b>业务意义。</b>限流和失败可以在控制台里看到，不用进机器翻。密钥不写进仓库，也不写进前端。</p>
@@ -532,12 +515,12 @@
 <tbody>
 <tr>
 <td data-label="服务">Amazon CloudFront</td>
-<td data-label="用在哪一步">1 收片，2 编排，13 网页</td>
+<td data-label="用在哪一步">1 收片，2 编排，12 网页</td>
 <td data-label="为什么用托管版">赛题要求用 CloudFront 发布。网页桶不公开，只允许源访问控制读取。<code>/readme</code> 和 <code>/api</code> 用函数改写路径。</td>
 </tr>
 <tr>
 <td data-label="服务">Amazon S3</td>
-<td data-label="用在哪一步">1、6、7、8、11、12、13</td>
+<td data-label="用在哪一步">1、6、7、8、11、12</td>
 <td data-label="为什么用托管版">原始视频、清单、官方数据、认人结果、解说和成片都是对象。浏览器拿预签名地址直传，不经过应用服务器。</td>
 </tr>
 <tr>
@@ -567,12 +550,12 @@
 </tr>
 <tr>
 <td data-label="服务">AWS Batch</td>
-<td data-label="用在哪一步">3 追踪，以及同一作业里的 4、5、11、12</td>
+<td data-label="用在哪一步">3 追踪，以及同一作业里的 4、5、11</td>
 <td data-label="为什么用托管版">追踪要一台固定的大机器。托管计算环境把 <code>c7i.48xlarge</code> 保持在 192 vCPU，队列负责投递。作业容器信任 <code>ecs-tasks.amazonaws.com</code>。</td>
 </tr>
 <tr>
 <td data-label="服务">Amazon EC2</td>
-<td data-label="用在哪一步">3、4、5、12</td>
+<td data-label="用在哪一步">3、4、5、11</td>
 <td data-label="为什么用托管版">G 和 VT 配额为 0，跟踪用标准配额里的 <code>c7i.48xlarge</code>。检测、记分牌、认人抽帧和 ffmpeg 都在这台机器上。</td>
 </tr>
 <tr>
@@ -611,43 +594,28 @@
 <td data-label="为什么用托管版"><code>DetectDocumentText</code> 只在 Qwen 调用失败时读号码。记分牌上的探测不在主路径。</td>
 </tr>
 <tr>
-<td data-label="服务">Amazon Transcribe</td>
-<td data-label="用在哪一步">11 解说音轨</td>
-<td data-label="为什么用托管版">把成片里的英文原声转写成文字，再交给翻译。中文音轨不由模型看图重写。</td>
-</tr>
-<tr>
-<td data-label="服务">Amazon Translate</td>
-<td data-label="用在哪一步">11 解说音轨</td>
-<td data-label="为什么用托管版">把转写译成中文。自定义术语表 <code>deepcourt-basketball</code> 由 CDK 的 <code>AwsCustomResource</code>（<code>cdk/lib/terminology.ts</code>）导入 <code>data/terminology/basketball-en-zh.csv</code>，作业定义默认写入 <code>TRANSLATE_TERMINOLOGY</code>。译名统一用 <code>data/names/zh-names.json</code>。这份模板还没部署，线上请求仍不带表。代码已就绪，待部署。术语表缺失时，同一句会去掉术语表再译一次。</td>
-</tr>
-<tr>
-<td data-label="服务">Amazon Polly</td>
-<td data-label="用在哪一步">11 解说音轨</td>
-<td data-label="为什么用托管版">Neural 知语按原句时间合成普通话。现场声和原解说分不开，中文音轨只留合成人声。</td>
-</tr>
-<tr>
 <td data-label="服务">AWS Elemental MediaConvert</td>
-<td data-label="用在哪一步">12 成片</td>
+<td data-label="用在哪一步">11 成片</td>
 <td data-label="为什么用托管版">模板 <code>deepcourt-render-template</code> 声明了 1080p 合成。当前成片由作业里的 ffmpeg 完成，还没有提交 MediaConvert 作业。</td>
 </tr>
 <tr>
 <td data-label="服务">Amazon CloudWatch</td>
-<td data-label="用在哪一步">14 观测，以及各 Lambda 日志</td>
+<td data-label="用在哪一步">13 观测，以及各 Lambda 日志</td>
 <td data-label="为什么用托管版">仪表盘、限流告警和 7 天日志都在托管监控里。告警还没有接通知。</td>
 </tr>
 <tr>
 <td data-label="服务">AWS X-Ray</td>
-<td data-label="用在哪一步">14 观测</td>
+<td data-label="用在哪一步">13 观测</td>
 <td data-label="为什么用托管版">API 阶段和 Lambda 打开追踪，片段上带 jobId。已经写过一条追踪。</td>
 </tr>
 <tr>
 <td data-label="服务">AWS Secrets Manager</td>
-<td data-label="用在哪一步">14 密钥</td>
+<td data-label="用在哪一步">13 密钥</td>
 <td data-label="为什么用托管版">飞书 webhook、GitHub token 和快手应用信息不进仓库、不进浏览器。三个密钥仍是空占位。</td>
 </tr>
 <tr>
 <td data-label="服务">AWS Cost Explorer</td>
-<td data-label="用在哪一步">14 观测</td>
+<td data-label="用在哪一步">13 观测</td>
 <td data-label="为什么用托管版">按 <code>project</code> 标签看花费。成本分配标签激活被拒绝，所以这条还看不全。</td>
 </tr>
 <tr>
@@ -666,7 +634,7 @@
 <p class="note">不在这条管道里：Amazon Cognito 不建，回放和上传不登录。快手 OAuth 代码在 <code>lambdas/kuaishou</code>，没有 app_id 时接口只返回敬请期待。预置桶 <code>nba-hackathon-382918437747-team04</code> 只放过探测对象，不是媒体桶，也不是网页桶。</p>
 <h2 id="iac">基础设施即代码</h2>
 <p>栈名 <code>Team04DeepCourt</code>，代码在 <code>cdk/</code>。账号 <code>382918437747</code>，profile <code>nba</code>，区域只有 <code>us-east-1</code>。标签是 <code>team=04</code>、<code>stage=prod</code>、<code>project=deepcourt</code>。部署身份代入 <code>NBAHackathonParticipantRole</code>。参赛角色不能脱离权限边界新建 IAM 角色。<code>cdk/bin/app.ts</code> 给这个账号上 CDK 创建的角色加上权限边界 <code>NBAHackathonParticipantBoundary</code>。</p>
-<p>权限按调用方拆开。建任务只能写 Jobs 表和 <code>raw/*</code>。读任务只能读 Jobs 和 <code>raw/*</code>。读事件只能读 Events。分析 Lambda 读 <code>structured/*</code>、写 Events、调用 AgentCore。问分析师的 Lambda 读 <code>analysis/*</code> 并调用 AgentCore。分析师角色读 <code>structured/*</code>、<code>official/*</code>、<code>identity/*</code>，写 <code>analysis/*</code>，并可对 Claude Sonnet 4.6 的推理配置和底层模型调用 Converse。追踪作业读原始视频、启动脚本和官方数据，写轨迹、认人结果、清单、成片和片单，并可调用 Qwen、Rekognition、Transcribe、Translate、Polly 和 Textract。</p>
+<p>权限按调用方拆开。建任务只能写 Jobs 表和 <code>raw/*</code>。读任务只能读 Jobs 和 <code>raw/*</code>。读事件只能读 Events。分析 Lambda 读 <code>structured/*</code>、写 Events、调用 AgentCore。问分析师的 Lambda 读 <code>analysis/*</code> 并调用 AgentCore。分析师角色读 <code>structured/*</code>、<code>official/*</code>、<code>identity/*</code>，写 <code>analysis/*</code>，并可对 Claude Sonnet 4.6 的推理配置和底层模型调用 Converse。追踪作业读原始视频、启动脚本和官方数据，写轨迹、认人结果、清单、成片和片单，并可调用 Qwen、Rekognition 和 Textract。</p>
 <p>一条部署命令，在仓库根目录执行：</p>
 <pre><code>cd cdk &amp;&amp; npm ci &amp;&amp; npx cdk deploy Team04DeepCourt --profile nba --require-approval never</code></pre>
 <p>先看模板、不连账号：</p>
@@ -674,7 +642,7 @@
 <p>默认开着编排、Batch 和 P2。只有显式加上 <code>-c enableOrchestration=false</code> 才不建状态机。<code>-c enableP1=false</code> 时不建 Batch，也不建状态机。<code>buildTrackerImage</code> 默认关，已部署的栈不要打开，作业镜像仍是 ECR <code>deepcourt-tracker:ready</code>。<code>-c enableP2=false</code> 时不建短解说 Lambda、密钥和 X-Ray。</p>
 <p class="note">本页只记下命令。考试片仍走已经部署的作业定义。这次栈更新等成片出来之后再部署，不在这里执行。</p>
 <h2 id="trust">可信度</h2>
-<p>事件来自结构化清单。模型不看图编事件。页面中文音轨是英文解说的译文，不是模型看图写的。</p>
+<p>事件来自结构化清单。模型不看图编事件。</p>
 <p>记分牌读出节次、比赛钟和比分。追踪给出人和框。官方逐回合补上投篮人、助攻和预期命中率（xFG）。AgentCore 取回并校验这份清单；叫不醒时由 <code>analyze_job</code> 直接读同一份文件。</p>
 <p>认人只在官方逐回合推出的场上 10 人里匹配，而且号码必须落在球衣颜色那一队这一刻的 5 人中。对不上名字、但分得出队，标签写 Agent detecting，颜色用队色。分不出队就不挂。裁判不挂标签。解说里的每一句中文和英文都要对上工具返回的数字和人名，查不到就不写。</p>
 <p>决策反差是二次加工，不是另一套数据：预期命中率低于四成却进了，标成英雄球；高于六成却没进，标成可惜。其余出手只显示预期命中率本身。</p>
@@ -683,9 +651,9 @@
 <h2 id="quality">工程质量</h2>
 <ul>
 <li>GitHub Actions：<code>.github/workflows/ci.yml</code>。push 和 pull request 都会跑 <code>agent/</code>、<code>lambdas/</code> 的单元测试，检查 <code>inference/</code> 和 <code>pipeline/</code> 的语法，并执行 <code>cdk synth</code>。不连 AWS 账号。</li>
-<li>成片自动自检：<code>scripts/qa/check_output.py</code>。检查 CloudFront 根路径和作品页、成片与中英文音轨、事件清单、任务表、认人是否在场、记分牌。某一项失败只写进报告，不中途退出。默认把 Markdown 和 JSON 写到 <code>scripts/qa/out/</code>。加上 <code>--publish</code> 才把 HTML 报告传到网页桶 <code>qa/{jobId}.html</code>。</li>
+<li>成片自动自检：<code>scripts/qa/check_output.py</code>。检查 CloudFront 根路径和作品页、成片与英文音轨、事件清单、任务表、认人是否在场、记分牌。某一项失败只写进报告，不中途退出。默认把 Markdown 和 JSON 写到 <code>scripts/qa/out/</code>。加上 <code>--publish</code> 才把 HTML 报告传到网页桶 <code>qa/{jobId}.html</code>。</li>
 <li>考试应急预案：<code>docs/exam-fallback.md</code>。考试片发布之后，按时间在云上重交、改走本机成片、或只交烧了记分牌的成片，20:00 前交到 CloudFront 根路径。</li>
-<li>标准答案只用于验收。<code>docs/exam/answer-key.md</code> 对照考试片 <code>double.mp4</code>、官方数据和 <code>data/names/zh-names.json</code>。<code>docs/exam/audit-1910.md</code> 是 19:10 的只读纠错清单：不改识别代码，也不把标准答案写进页面或解说合成稿。</li>
+<li>标准答案只用于验收。<code>docs/exam/answer-key.md</code> 对照考试片 <code>double.mp4</code>、官方数据和 <code>data/names/zh-names.json</code>。<code>docs/exam/audit-1910.md</code> 是 19:10 的只读纠错清单：不改识别代码，也不把标准答案写进页面。</li>
 <li>分析师问答评测在 <code>agent/eval/</code>。<code>run_eval.py</code> 用 <code>questions.json</code> 里的参考答案打分，参考数字不进提示词和工具。<code>report.md</code> 记下模拟模式修后 20/20。线上 <code>POST /api/agent/ask</code> 评的是已经部署的分析师，通过 0/20，这次没有重新部署。工具和接地的修改：代码已就绪，待部署。</li>
 </ul>
 <h2 id="pages">页面</h2>
