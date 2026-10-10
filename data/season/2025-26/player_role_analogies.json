@@ -1,0 +1,513 @@
+{
+  "official": false,
+  "role_codes": {
+    "floor_general": "控场大脑/指挥官",
+    "primary_scorer": "王牌得分手/关键先生",
+    "interior_anchor": "高塔门神/内线核心",
+    "versatile_wing": "万能锋线/瑞士军刀",
+    "floor_spacer": "狙击手/空间射手",
+    "defense_specialist": "防守工兵/保安队长",
+    "bench_scorer": "替补微波炉/第六人",
+    "veteran_mentor": "老将导师/定海神针",
+    "developmental": "新秀潜力/双向待命"
+  },
+  "players": [
+    {
+      "scope": "HOU",
+      "player_id": 201142,
+      "player_name": "Kevin Durant",
+      "primary_role_code": "primary_scorer",
+      "secondary_role_codes": [
+        "veteran_mentor"
+      ],
+      "idol_position": "C位 + ACE + 舞台王者 + 大哥/大姐",
+      "idol_cue": "副歌永远站中间，结尾绝杀特写只给他，得分solo全场最多",
+      "idol_analogy": "球队里的C位大主唱，也是更衣室的老大哥",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1630578,
+      "player_name": "Alperen Sengun",
+      "primary_role_code": "interior_anchor",
+      "secondary_role_codes": [
+        "floor_general"
+      ],
+      "idol_position": "门面 + 力量担当 + 大哥/大姐 + 队长",
+      "idol_cue": "进攻全从他手里发起，全队最高最壮，合照站后排中间",
+      "idol_analogy": "球队里的内线发牌手兼力量担当",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1641708,
+      "player_name": "Amen Thompson",
+      "primary_role_code": "floor_general",
+      "secondary_role_codes": [
+        "defense_specialist"
+      ],
+      "idol_position": "队长 + 主MC + 创作担当 + 主舞",
+      "idol_cue": "团综里喊开始控流程的是他，防守端领舞锁死对方核心",
+      "idol_analogy": "球队里的队长+主MC，攻防一肩挑",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1631095,
+      "player_name": "Jabari Smith Jr.",
+      "primary_role_code": "floor_spacer",
+      "secondary_role_codes": [
+        "defense_specialist"
+      ],
+      "idol_position": "主唱 + 高音担当 + 主舞",
+      "idol_cue": "平时站边线拉开空间，高炮台三分一出手镜头就给特写",
+      "idol_analogy": "球队里的高音担当大个射手",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1642263,
+      "player_name": "Reed Sheppard",
+      "primary_role_code": "bench_scorer",
+      "secondary_role_codes": [
+        "floor_spacer"
+      ],
+      "idol_position": "领唱 + 副C + 气氛担当 + 高音担当",
+      "idol_cue": "替补登场一记三分点燃全场，队友全站起来",
+      "idol_analogy": "球队里的第六人气氛担当",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1631106,
+      "player_name": "Tari Eason",
+      "primary_role_code": "defense_specialist",
+      "secondary_role_codes": [
+        "versatile_wing"
+      ],
+      "idol_position": "主舞 + 领舞 + 全能ACE",
+      "idol_cue": "最累的防守和篮板他都包了，抢断后一条龙最有镜头",
+      "idol_analogy": "球队里的领舞，靠拼劲抢镜头",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 203500,
+      "player_name": "Steven Adams",
+      "primary_role_code": "interior_anchor",
+      "secondary_role_codes": [
+        "veteran_mentor"
+      ],
+      "idol_position": "门面 + 力量担当 + 大哥/大姐",
+      "idol_cue": "全队最高最壮，掩护挡人稳如磐石",
+      "idol_analogy": "球队里的力量担当老大哥",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1629006,
+      "player_name": "Josh Okogie",
+      "primary_role_code": "defense_specialist",
+      "secondary_role_codes": [],
+      "idol_position": "主舞 + 领舞",
+      "idol_cue": "一上场就贴防对方箭头人物，进攻端不抢戏",
+      "idol_analogy": "球队里的专职防守主舞",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1627827,
+      "player_name": "Dorian Finney-Smith",
+      "primary_role_code": "defense_specialist",
+      "secondary_role_codes": [
+        "floor_spacer"
+      ],
+      "idol_position": "主舞 + 领舞 + 高音担当",
+      "idol_cue": "底角一站等三分，防守端万能补位",
+      "idol_analogy": "球队里的3D补位副主舞",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1628988,
+      "player_name": "Aaron Holiday",
+      "primary_role_code": "bench_scorer",
+      "secondary_role_codes": [
+        "floor_spacer"
+      ],
+      "idol_position": "领唱 + 副C + 气氛担当",
+      "idol_cue": "替补上场连续三分命中，替补席瞬间起立",
+      "idol_analogy": "球队替补席的得分气氛组",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 203991,
+      "player_name": "Clint Capela",
+      "primary_role_code": "interior_anchor",
+      "secondary_role_codes": [
+        "defense_specialist"
+      ],
+      "idol_position": "门面 + 力量担当",
+      "idol_cue": "篮下吃饼护框，挡拆顺下就是一道墙",
+      "idol_analogy": "球队里的篮下吃饼门神",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1641803,
+      "player_name": "Tristen Newton",
+      "primary_role_code": "developmental",
+      "secondary_role_codes": [],
+      "idol_position": "忙内 + 练习生 + 未来C位",
+      "idol_cue": "只上场1场但打得亮眼，双向合同在养",
+      "idol_analogy": "球队里镜头最少的练习生",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1630256,
+      "player_name": "Jae'Sean Tate",
+      "primary_role_code": "defense_specialist",
+      "secondary_role_codes": [
+        "versatile_wing"
+      ],
+      "idol_position": "主舞 + 领舞 + 全能ACE",
+      "idol_cue": "从后卫防到内线，上场就玩命",
+      "idol_analogy": "球队里的万金油防守主舞",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1631120,
+      "player_name": "JD Davison",
+      "primary_role_code": "developmental",
+      "secondary_role_codes": [
+        "floor_general"
+      ],
+      "idol_position": "忙内 + 练习生",
+      "idol_cue": "垃圾时间上场组织串联攒经验",
+      "idol_analogy": "球队里的组织型练习生",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1642384,
+      "player_name": "Isaiah Crawford",
+      "primary_role_code": "developmental",
+      "secondary_role_codes": [],
+      "idol_position": "忙内 + 练习生",
+      "idol_cue": "双向合同小将偶得上场，机会不多",
+      "idol_analogy": "球队里排队等出道的练习生",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "HOU",
+      "player_id": 201145,
+      "player_name": "Jeff Green",
+      "primary_role_code": "veteran_mentor",
+      "secondary_role_codes": [],
+      "idol_position": "队长 + 大哥/大姐 + 团魂",
+      "idol_cue": "39岁全队最年长，更衣室稳定军心",
+      "idol_analogy": "球队里的团魂老大哥",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1642843,
+      "player_name": "Cooper Flagg",
+      "primary_role_code": "primary_scorer",
+      "secondary_role_codes": [
+        "developmental"
+      ],
+      "idol_position": "C位 + ACE + 舞台王者 + 忙内 + 未来C位",
+      "idol_cue": "新秀赛季就carry全场、得分队内第一，公司力捧的未来门面",
+      "idol_analogy": "出道即C位的怪物新人",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 203076,
+      "player_name": "Anthony Davis",
+      "primary_role_code": "interior_anchor",
+      "secondary_role_codes": [
+        "primary_scorer"
+      ],
+      "idol_position": "门面 + 力量担当 + 大哥/大姐 + C位",
+      "idol_cue": "内线攻防一体，出场就统治禁区",
+      "idol_analogy": "球队里的内线巨塔门面",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1629023,
+      "player_name": "P.J. Washington",
+      "primary_role_code": "versatile_wing",
+      "secondary_role_codes": [
+        "defense_specialist"
+      ],
+      "idol_position": "全能ACE + 副队长",
+      "idol_cue": "锋线哪里缺人顶哪里，能投能抢能盖",
+      "idol_analogy": "球队里的瑞士军刀锋线",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1630230,
+      "player_name": "Naji Marshall",
+      "primary_role_code": "versatile_wing",
+      "secondary_role_codes": [
+        "defense_specialist"
+      ],
+      "idol_position": "全能ACE + 副队长",
+      "idol_cue": "攻防两端全能补位，硬朗终结是他的招牌",
+      "idol_analogy": "球队里的硬核全能锋线",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1631108,
+      "player_name": "Max Christie",
+      "primary_role_code": "floor_spacer",
+      "secondary_role_codes": [
+        "defense_specialist"
+      ],
+      "idol_position": "主唱 + 高音担当 + 主舞",
+      "idol_cue": "三分线外一站就是威胁，高命中率不抢戏",
+      "idol_analogy": "球队里的高音担当射手",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1630314,
+      "player_name": "Brandon Williams",
+      "primary_role_code": "bench_scorer",
+      "secondary_role_codes": [
+        "floor_general"
+      ],
+      "idol_position": "领唱 + 副C + 气氛担当",
+      "idol_cue": "替补登场就持球冲击篮筐，节奏带得飞起",
+      "idol_analogy": "球队替补席的得分尖刀",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 202691,
+      "player_name": "Klay Thompson",
+      "primary_role_code": "floor_spacer",
+      "secondary_role_codes": [
+        "veteran_mentor"
+      ],
+      "idol_position": "主唱 + 高音担当 + 大哥/大姐",
+      "idol_cue": "弱侧一站接球就投，三分雨一来全场沸腾",
+      "idol_analogy": "球队里的传奇高音老将",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1629655,
+      "player_name": "Daniel Gafford",
+      "primary_role_code": "interior_anchor",
+      "secondary_role_codes": [
+        "defense_specialist"
+      ],
+      "idol_position": "门面 + 力量担当 + 主舞",
+      "idol_cue": "篮下吃饼暴扣+护框大帽，跳起来遮天蔽日",
+      "idol_analogy": "球队里的篮下吃饼门神",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1628963,
+      "player_name": "Marvin Bagley III",
+      "primary_role_code": "bench_scorer",
+      "secondary_role_codes": [
+        "interior_anchor"
+      ],
+      "idol_position": "领唱 + 副C + 力量担当",
+      "idol_cue": "替补登场就在内线翻江倒海，得分效率拉满",
+      "idol_analogy": "球队替补席的内线得分手",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 203114,
+      "player_name": "Khris Middleton",
+      "primary_role_code": "veteran_mentor",
+      "secondary_role_codes": [
+        "floor_spacer"
+      ],
+      "idol_position": "队长 + 大哥/大姐 + 团魂 + 高音担当",
+      "idol_cue": "关键时刻中距离冷血出手，老将压阵",
+      "idol_analogy": "球队里的老将关键先生",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1642948,
+      "player_name": "Ryan Nembhard",
+      "primary_role_code": "floor_general",
+      "secondary_role_codes": [
+        "developmental"
+      ],
+      "idol_position": "队长 + 主MC + 创作担当 + 忙内",
+      "idol_cue": "一上场就指挥跑位、传球喂饼，助攻刷得飞快",
+      "idol_analogy": "球队里的新秀组织大师",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1642967,
+      "player_name": "John Poulakidas",
+      "primary_role_code": "floor_spacer",
+      "secondary_role_codes": [
+        "developmental"
+      ],
+      "idol_position": "主唱 + 高音担当 + 忙内",
+      "idol_cue": "上场就是拉开空间的三分炮台，一投一个准",
+      "idol_analogy": "球队里的射手练习生",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1626156,
+      "player_name": "D'Angelo Russell",
+      "primary_role_code": "floor_general",
+      "secondary_role_codes": [
+        "primary_scorer"
+      ],
+      "idol_position": "队长 + 主MC + 创作担当 + C位",
+      "idol_cue": "球在手上节奏全由他掌控，华丽传球加高难度投篮",
+      "idol_analogy": "球队里的持球指挥家",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1626145,
+      "player_name": "Tyus Jones",
+      "primary_role_code": "floor_general",
+      "secondary_role_codes": [
+        "veteran_mentor"
+      ],
+      "idol_position": "队长 + 主MC + 创作担当 + 团魂",
+      "idol_cue": "上场就稳住节奏、极少失误，教科书式组织",
+      "idol_analogy": "球队里的稳健型老控卫",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1641726,
+      "player_name": "Dereck Lively II",
+      "primary_role_code": "interior_anchor",
+      "secondary_role_codes": [
+        "defense_specialist"
+      ],
+      "idol_position": "门面 + 力量担当",
+      "idol_cue": "7尺长人护框吃饼，一回归就送大帽",
+      "idol_analogy": "球队里的禁区守护神",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1628997,
+      "player_name": "Caleb Martin",
+      "primary_role_code": "defense_specialist",
+      "secondary_role_codes": [
+        "versatile_wing"
+      ],
+      "idol_position": "主舞 + 领舞",
+      "idol_cue": "上场就是撕咬防守的拼图，脏活累活全包",
+      "idol_analogy": "球队里的防守拼图主舞",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 203939,
+      "player_name": "Dwight Powell",
+      "primary_role_code": "interior_anchor",
+      "secondary_role_codes": [
+        "veteran_mentor"
+      ],
+      "idol_position": "门面 + 力量担当 + 大哥/大姐",
+      "idol_cue": "挡拆吃饼的老臣，全队资历最深之一",
+      "idol_analogy": "球队里的老臣内线",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1630619,
+      "player_name": "Moussa Cisse",
+      "primary_role_code": "interior_anchor",
+      "secondary_role_codes": [
+        "developmental"
+      ],
+      "idol_position": "门面 + 力量担当 + 忙内",
+      "idol_cue": "超长臂展篮板怪，前场板抢得对手头疼",
+      "idol_analogy": "球队里的长臂篮板练习生",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1641890,
+      "player_name": "Tyler Smith",
+      "primary_role_code": "developmental",
+      "secondary_role_codes": [
+        "floor_spacer"
+      ],
+      "idol_position": "忙内 + 练习生 + 未来C位 + 高音担当",
+      "idol_cue": "双向合同大前锋，上场就拉出去投三分",
+      "idol_analogy": "球队里的高炮台练习生",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1630702,
+      "player_name": "Jaden Hardy",
+      "primary_role_code": "bench_scorer",
+      "secondary_role_codes": [
+        "floor_spacer"
+      ],
+      "idol_position": "领唱 + 副C + 气氛担当",
+      "idol_cue": "替补登场就是单打得分火力，手感一来挡不住",
+      "idol_analogy": "球队替补席的乱战得分手",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1630526,
+      "player_name": "Jeremiah Robinson-Earl",
+      "primary_role_code": "bench_scorer",
+      "secondary_role_codes": [
+        "defense_specialist"
+      ],
+      "idol_position": "领唱 + 副C + 气氛担当 + 主舞",
+      "idol_cue": "10天短合同救火上场，上去就拼",
+      "idol_analogy": "球队里的临时救火队员",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1642358,
+      "player_name": "AJ Johnson",
+      "primary_role_code": "developmental",
+      "secondary_role_codes": [],
+      "idol_position": "忙内 + 练习生 + 未来C位",
+      "idol_cue": "年轻臂展出众、技术还没定型，球队在养",
+      "idol_analogy": "球队里的待开发练习生",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1642939,
+      "player_name": "Miles Kelly",
+      "primary_role_code": "developmental",
+      "secondary_role_codes": [
+        "floor_spacer"
+      ],
+      "idol_position": "忙内 + 练习生 + 高音担当",
+      "idol_cue": "双向合同射手，上场就找三分机会",
+      "idol_analogy": "球队里的射手练习生",
+      "classification_status": "user_supplied_subjective_analogy_not_official_statistic"
+    }
+  ]
+}

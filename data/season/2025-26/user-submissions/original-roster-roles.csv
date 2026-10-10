@@ -1,0 +1,40 @@
+team,player_name,jersey_number,draft_year,draft_round,draft_pick,height_m,height_ft_in,wingspan_m,wingspan_ft_in,position,player_id,player_id_source,primary_role,secondary_role,idol_position,idol_cue,idol_analogy
+Houston Rockets,Kevin Durant,7,2007,1,2,2.11,6-11,2.25,7-4.75,SF,201142,https://nba.com/player/201142,王牌得分手/关键先生,老将导师/定海神针,C位 + ACE + 舞台王者 + 大哥/大姐,副歌永远站中间，结尾绝杀特写只给他，得分solo全场最多,球队里的C位大主唱，也是更衣室的老大哥
+Houston Rockets,Alperen Sengun,28,2021,1,16,2.11,6-11,2.15,7-0.5,C,1630578,https://nba.com/player/1630578,高塔门神/内线核心,控场大脑/指挥官,门面 + 力量担当 + 大哥/大姐 + 队长,进攻全从他手里发起，全队最高最壮，合照站后排中间,球队里的内线发牌手兼力量担当
+Houston Rockets,Amen Thompson,1,2023,1,4,2.01,6-7,2.13,7-0,PG,1641708,https://nba.com/player/1641708,控场大脑/指挥官,防守工兵/保安队长,队长 + 主MC + 创作担当 + 主舞,团综里喊开始控流程的是他，防守端领舞锁死对方核心,球队里的队长+主MC，攻防一肩挑
+Houston Rockets,Jabari Smith Jr.,10,2022,1,3,2.11,6-11,2.16,7-1,PF,1631095,https://nba.com/player/1631095,狙击手/空间射手,防守工兵/保安队长,主唱 + 高音担当 + 主舞,平时站边线拉开空间，高炮台三分一出手镜头就给特写,球队里的高音担当大个射手
+Houston Rockets,Reed Sheppard,15,2024,1,3,1.88,6-2,1.91,6-3.25,SG,1642263,https://nba.com/player/1642263,替补微波炉/第六人,狙击手/空间射手,领唱 + 副C + 气氛担当 + 高音担当,替补登场一记三分点燃全场，队友全站起来,球队里的第六人气氛担当
+Houston Rockets,Tari Eason,17,2022,1,17,2.03,6-8,2.18,7-2,PF,1631106,https://nba.com/player/1631106,防守工兵/保安队长,万能锋线/瑞士军刀,主舞 + 领舞 + 全能ACE,最累的防守和篮板他都包了，抢断后一条龙最有镜头,球队里的领舞，靠拼劲抢镜头
+Houston Rockets,Steven Adams,12,2013,1,12,2.11,6-11,2.25,7-4.5,C,203500,https://nba.com/player/203500,高塔门神/内线核心,老将导师/定海神针,门面 + 力量担当 + 大哥/大姐,全队最高最壮，掩护挡人稳如磐石,球队里的力量担当老大哥
+Houston Rockets,Josh Okogie,20,2018,1,20,1.93,6-4,2.13,7-0,SG,1629006,https://nba.com/player/1629006,防守工兵/保安队长,,主舞 + 领舞,一上场就贴防对方箭头人物，进攻端不抢戏,球队里的专职防守主舞
+Houston Rockets,Dorian Finney-Smith,2,Undrafted,Undrafted,Undrafted,2.01,6-7,2.13,6-11.75,PF,1627827,https://nba.com/player/1627827,防守工兵/保安队长,狙击手/空间射手,主舞 + 领舞 + 高音担当,底角一站等三分，防守端万能补位,球队里的3D补位副主舞
+Houston Rockets,Aaron Holiday,0,2018,1,23,1.83,6-0,2.02,6-7.5,PG,1628988,https://nba.com/player/1628988,替补微波炉/第六人,狙击手/空间射手,领唱 + 副C + 气氛担当,替补上场连续三分命中，替补席瞬间起立,球队替补席的得分气氛组
+Houston Rockets,Clint Capela,30,2014,1,25,2.08,6-10,2.25,7-4.5,C,203991,https://nba.com/player/203991,高塔门神/内线核心,防守工兵/保安队长,门面 + 力量担当,篮下吃饼护框，挡拆顺下就是一道墙,球队里的篮下吃饼门神
+Houston Rockets,Tristen Newton,00,2024,2,49,1.96,6-5,2.00,6-6.75,SG,1641803,https://nba.com/player/1641803,新秀潜力/双向待命,,忙内 + 练习生 + 未来C位,只上场1场但打得亮眼，双向合同在养,球队里镜头最少的练习生
+Houston Rockets,Jae'Sean Tate,8,Undrafted,Undrafted,Undrafted,1.93,6-4,2.03,6-8,SF,1630256,https://nba.com/player/1630256,防守工兵/保安队长,万能锋线/瑞士军刀,主舞 + 领舞 + 全能ACE,从后卫防到内线，上场就玩命,球队里的万金油防守主舞
+Houston Rockets,JD Davison,4,2022,2,53,1.85,6-1,1.99,6-6.5,PG,1631120,https://nba.com/player/1631120,新秀潜力/双向待命,控场大脑/指挥官,忙内 + 练习生,垃圾时间上场组织串联攒经验,球队里的组织型练习生
+Houston Rockets,Isaiah Crawford,27,Undrafted,Undrafted,Undrafted,1.98,6-6,2.15,7-0.5,SF,1642384,https://nba.com/player/1642384,新秀潜力/双向待命,,忙内 + 练习生,双向合同小将偶得上场，机会不多,球队里排队等出道的练习生
+Houston Rockets,Jeff Green,32,2007,1,5,2.03,6-8,2.17,7-1.25,PF,201145,https://nba.com/player/201145,老将导师/定海神针,,队长 + 大哥/大姐 + 团魂,39岁全队最年长，更衣室稳定军心,球队里的团魂老大哥
+Dallas Mavericks,Cooper Flagg,32,2025,1,1,2.06,6-9,2.13,7-0,SF,1642843,https://nba.com/player/1642843,王牌得分手/关键先生,新秀潜力/双向待命,C位 + ACE + 舞台王者 + 忙内 + 未来C位,新秀赛季就carry全场、得分队内第一，公司力捧的未来门面,出道即C位的怪物新人
+Dallas Mavericks,Anthony Davis,3,2012,1,1,2.08,6-10,2.27,7-5.5,PF,203076,https://nba.com/player/203076,高塔门神/内线核心,王牌得分手/关键先生,门面 + 力量担当 + 大哥/大姐 + C位,内线攻防一体，出场就统治禁区,球队里的内线巨塔门面
+Dallas Mavericks,P.J. Washington,25,2019,1,12,2.01,6-7,2.20,7-2.5,PF,1629023,https://nba.com/player/1629023,万能锋线/瑞士军刀,防守工兵/保安队长,全能ACE + 副队长,锋线哪里缺人顶哪里，能投能抢能盖,球队里的瑞士军刀锋线
+Dallas Mavericks,Naji Marshall,13,Undrafted,Undrafted,Undrafted,1.98,6-6,2.15,7-0.75,SF,1630230,https://nba.com/player/1630230,万能锋线/瑞士军刀,防守工兵/保安队长,全能ACE + 副队长,攻防两端全能补位，硬朗终结是他的招牌,球队里的硬核全能锋线
+Dallas Mavericks,Max Christie,00,2022,2,35,1.96,6-5,2.05,6-8.75,SG,1631108,https://nba.com/player/1631108,狙击手/空间射手,防守工兵/保安队长,主唱 + 高音担当 + 主舞,三分线外一站就是威胁，高命中率不抢戏,球队里的高音担当射手
+Dallas Mavericks,Brandon Williams,10,Undrafted,Undrafted,Undrafted,1.85,6-1,,NA,PG,1630314,https://nba.com/player/1630314,替补微波炉/第六人,控场大脑/指挥官,领唱 + 副C + 气氛担当,替补登场就持球冲击篮筐，节奏带得飞起,球队替补席的得分尖刀
+Dallas Mavericks,Klay Thompson,31,2011,1,11,1.96,6-5,2.06,6-9,SF,202691,https://nba.com/player/202691,狙击手/空间射手,老将导师/定海神针,主唱 + 高音担当 + 大哥/大姐,弱侧一站接球就投，三分雨一来全场沸腾,球队里的传奇高音老将
+Dallas Mavericks,Daniel Gafford,21,2019,2,38,2.08,6-10,2.20,7-2.5,C,1629655,https://nba.com/player/1629655,高塔门神/内线核心,防守工兵/保安队长,门面 + 力量担当 + 主舞,篮下吃饼暴扣+护框大帽，跳起来遮天蔽日,球队里的篮下吃饼门神
+Dallas Mavericks,Marvin Bagley III,35,2018,1,2,2.08,6-10,2.13,7-0,PF,1628963,https://nba.com/player/1628963,替补微波炉/第六人,高塔门神/内线核心,领唱 + 副C + 力量担当,替补登场就在内线翻江倒海，得分效率拉满,球队替补席的内线得分手
+Dallas Mavericks,Khris Middleton,20,2012,2,39,2.01,6-7,2.10,6-10.75,SF,203114,https://nba.com/player/203114,老将导师/定海神针,狙击手/空间射手,队长 + 大哥/大姐 + 团魂 + 高音担当,关键时刻中距离冷血出手，老将压阵,球队里的老将关键先生
+Dallas Mavericks,Ryan Nembhard,9,Undrafted,Undrafted,Undrafted,1.80,5-11,1.89,6-2.25,PG,1642948,https://nba.com/player/1642948,控场大脑/指挥官,新秀潜力/双向待命,队长 + 主MC + 创作担当 + 忙内,一上场就指挥跑位、传球喂饼，助攻刷得飞快,球队里的新秀组织大师
+Dallas Mavericks,John Poulakidas,1,Undrafted,Undrafted,Undrafted,1.98,6-6,2.08,6-10,SG,1642967,https://nba.com/player/1642967,狙击手/空间射手,新秀潜力/双向待命,主唱 + 高音担当 + 忙内,上场就是拉开空间的三分炮台，一投一个准,球队里的射手练习生
+Dallas Mavericks,D'Angelo Russell,5,2015,1,2,1.91,6-3,2.08,6-9.75,PG,1626156,https://nba.com/player/1626156,控场大脑/指挥官,王牌得分手/关键先生,队长 + 主MC + 创作担当 + C位,球在手上节奏全由他掌控，华丽传球加高难度投篮,球队里的持球指挥家
+Dallas Mavericks,Tyus Jones,1,2015,1,24,1.83,6-0,1.96,6-5,PG,1626145,https://nba.com/player/1626145,控场大脑/指挥官,老将导师/定海神针,队长 + 主MC + 创作担当 + 团魂,上场就稳住节奏、极少失误，教科书式组织,球队里的稳健型老控卫
+Dallas Mavericks,Dereck Lively II,2,2023,1,12,2.16,7-1,2.31,7-7,C,1641726,https://nba.com/player/1641726,高塔门神/内线核心,防守工兵/保安队长,门面 + 力量担当,7尺长人护框吃饼，一回归就送大帽,球队里的禁区守护神
+Dallas Mavericks,Caleb Martin,16,Undrafted,Undrafted,Undrafted,1.96,6-5,2.09,6-10.25,SF,1628997,https://nba.com/player/1628997,防守工兵/保安队长,万能锋线/瑞士军刀,主舞 + 领舞,上场就是撕咬防守的拼图，脏活累活全包,球队里的防守拼图主舞
+Dallas Mavericks,Dwight Powell,7,2014,2,45,2.08,6-10,2.15,7-0.5,C,203939,https://nba.com/player/203939,高塔门神/内线核心,老将导师/定海神针,门面 + 力量担当 + 大哥/大姐,挡拆吃饼的老臣，全队资历最深之一,球队里的老臣内线
+Dallas Mavericks,Moussa Cisse,30,Undrafted,Undrafted,Undrafted,2.11,6-11,2.27,7-5.5,C,1630619,https://nba.com/player/1630619,高塔门神/内线核心,新秀潜力/双向待命,门面 + 力量担当 + 忙内,超长臂展篮板怪，前场板抢得对手头疼,球队里的长臂篮板练习生
+Dallas Mavericks,Tyler Smith,23,2024,2,33,2.06,6-9,2.16,7-1,PF,1641890,https://nba.com/player/1641890,新秀潜力/双向待命,狙击手/空间射手,忙内 + 练习生 + 未来C位 + 高音担当,双向合同大前锋，上场就拉出去投三分,球队里的高炮台练习生
+Dallas Mavericks,Jaden Hardy,1,2022,2,37,1.91,6-3,2.06,6-9,SG,1630702,https://nba.com/player/1630702,替补微波炉/第六人,狙击手/空间射手,领唱 + 副C + 气氛担当,替补登场就是单打得分火力，手感一来挡不住,球队替补席的乱战得分手
+Dallas Mavericks,Jeremiah Robinson-Earl,23,2021,2,32,2.06,6-9,2.08,6-9.75,PF,1630526,https://nba.com/player/1630526,替补微波炉/第六人,防守工兵/保安队长,领唱 + 副C + 气氛担当 + 主舞,10天短合同救火上场，上去就拼,球队里的临时救火队员
+Dallas Mavericks,AJ Johnson,8,2024,1,23,1.96,6-5,2.04,6-8.5,SG,1642358,https://nba.com/player/1642358,新秀潜力/双向待命,,忙内 + 练习生 + 未来C位,年轻臂展出众、技术还没定型，球队在养,球队里的待开发练习生
+Dallas Mavericks,Miles Kelly,14,Undrafted,Undrafted,Undrafted,1.93,6-4,2.04,6-8.25,PG,1642939,https://nba.com/player/1642939,新秀潜力/双向待命,狙击手/空间射手,忙内 + 练习生 + 高音担当,双向合同射手，上场就找三分机会,球队里的射手练习生

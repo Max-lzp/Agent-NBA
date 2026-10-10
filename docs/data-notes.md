@@ -233,3 +233,15 @@ HSV 规则是高明度、低饱和度算白，明度低于 110 算深色。抽�
 ## 2026-10-10 历史名单补查
 
 基础统计扩充到 HOU 19 / DAL 25（44 条球员—球队记录），真实 ID/GP/GS/MIN 在 `pipeline/vision/rosters/sources/2025-26-verified-totals.csv`。已收集两队 160 场去重常规赛的名单与 inactive 观察，并保留官方交易和位置响应。观察日期不能替代登记日期，当前 profile 不能替代历史号码；正式名单仍受号码冲突和完整登记区间核验阻塞。复现与逐项说明见 [roster-history-notes.md](roster-history-notes.md)。模型扩展依用户指示暂停。
+
+## 2026-10-10 全联盟投篮三段、效率、选秀与身体资料
+
+新增 `data/season/2025-26/`，NBA 官方接口 582 名常规赛出场球员，两队球队过滤统计 HOU 16 / DAL 23，逐人核对上传 39 人表无遗漏。三段可视化使用“三分／其余两分／Restricted Area 近框”，同时保留完整两分与纯中距离命中率、FGM/FGA、七个原始区域与在场 OFF/DEF/NET Rating。两队真实逐次出手坐标与完整赛季出手数已核对。
+
+身高、选秀、位置来自官方资料快照；26 年官方试训能核验 363 人臂展，219 人缺失留空。原上传号码和五位置、团内担当类比均单独标明未核验/主观，不移入正式名单。Caleb Martin 臂展修订采用官方测量，审核结果在 user_submission_audit.json。
+
+已有 5 张自绘 PNG、离线交互页面及 6 张 NBA 官方图表参考截图，原始接口/URL/UTC 抓取时间/SHA-256 一并保留。详细字段、公式、缺失值与展示建议见 `data/season/2025-26/README.md`。七类几何战术候选 demo 在 `pipeline/vision/tactics_demo/`，只读旁路，合成示例与真实比赛数据分开，尚未验证真实视频识别准确率。
+
+### 防守三段补充
+
+已取得全联盟及两队 leaguedashptdefend 六种官方分类，派生“≥6ft 其余两分”。全联盟 582 人全部保留，580 人有 Overall 追踪；HOU 16 / DAL 23 的六种分类均找到记录。定义、样本和方向见 `data/season/2025-26/DEFENSE-NOTES.md`。防守近框 <6ft 不等于 Restricted Area；额外提供完整联盟按距离分段的进攻数据，不混用不同定义。全联盟逐球 API 有 102400 行上限，改为赛季月份 1–7 采集并逐人核对 FGM/FGA，不能把静默截断当完整赛季。
