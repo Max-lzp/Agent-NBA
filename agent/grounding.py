@@ -68,6 +68,20 @@ STOP_PHRASES = (
     "打铁",
     "进了",
     "没进",
+    "盖帽",
+    "犯规",
+    "比分",
+    "近框",
+    "三区",
+    "距离",
+    "年薪",
+    "工资",
+    "薪水",
+    "下一场",
+    "防守人",
+    "客场",
+    "主场",
+    "被盖",
     "工具",
     "足够",
     "回答",
@@ -317,11 +331,21 @@ def _names_ok(text: str, blob: str, people: list[dict]) -> bool:
     return True
 
 
+def _rate_numbers(text: str) -> list[str]:
+    """只核对紧挨着命中率的那个数字。同一句里的出手数不算命中率。"""
+    found = []
+    for match in RATE_WORD.finditer(text):
+        after = text[match.end():match.end() + 16]
+        before = text[max(0, match.start() - 8):match.start()]
+        tokens = NUMBER.findall(after) or NUMBER.findall(before)
+        if tokens:
+            found.append(tokens[0])
+    return found
+
+
 def _rate_ok(text: str, evidence: list[dict]) -> bool:
     """命中率旁边的数字必须来自百分数字段。出手数里的 0 不能拿来当命中率。"""
-    if not RATE_WORD.search(text):
-        return True
-    numbers = NUMBER.findall(text)
+    numbers = _rate_numbers(text)
     if not numbers:
         return True
     pct_values: set[str] = set()

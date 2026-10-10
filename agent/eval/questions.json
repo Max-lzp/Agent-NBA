@@ -1,0 +1,161 @@
+{
+  "jobId": "exam",
+  "gameId": "0022500356",
+  "ask_url": "https://d2vzd2batw1eqe.cloudfront.net/api/agent/ask",
+  "note": "参考答案只给评测打分。jobId 来自线上 replay/clips.js 的 exam 片（assets/exam-broadcast.mp4，比赛 0022500356）。球队三区是 season_hou_dal.json 里该队球员计数相加后四舍五入到一位，不是另一张官方球队表。",
+  "questions": [
+    {
+      "id": "zh-shooter",
+      "lang": "zh",
+      "trap": false,
+      "question": "这段回放里是谁出手？",
+      "need_names": [["克里斯蒂", "Christie"]],
+      "forbid_names": ["小史密斯", "Jabari"]
+    },
+    {
+      "id": "zh-result",
+      "lang": "zh",
+      "trap": false,
+      "question": "这些出手的结果是什么？进了还是不中？",
+      "need_names": [["克里斯蒂", "Christie"]],
+      "need_any": [["不中", "没进", "miss"]],
+      "need_all": ["命中"]
+    },
+    {
+      "id": "zh-defender",
+      "lang": "zh",
+      "trap": false,
+      "question": "这回合谁在防守出手的人？",
+      "need_names": [["小史密斯", "Jabari Smith"]]
+    },
+    {
+      "id": "zh-xfg",
+      "lang": "zh",
+      "trap": false,
+      "question": "这段里每次出手的预期命中率是多少？",
+      "need_numbers": [17.7, 30]
+    },
+    {
+      "id": "zh-smith-d",
+      "lang": "zh",
+      "trap": false,
+      "question": "小史密斯本赛季的防守数据怎么样？近筐和三分分别防成什么样？",
+      "need_names": [["小史密斯", "Jabari"]],
+      "need_numbers": [55.4, 36.7]
+    },
+    {
+      "id": "zh-christie-3",
+      "lang": "zh",
+      "trap": false,
+      "question": "克里斯蒂本赛季三分命中率是多少？",
+      "need_names": [["克里斯蒂", "Christie"]],
+      "need_numbers": [40.4]
+    },
+    {
+      "id": "zh-team-off",
+      "lang": "zh",
+      "trap": false,
+      "question": "火箭和独行侠本赛季进攻三区（近框、其余两分、三分）的命中率分别是多少？",
+      "need_numbers": [63.2, 44.1, 36.4, 61.1, 43.3, 34.4]
+    },
+    {
+      "id": "zh-team-def",
+      "lang": "zh",
+      "trap": false,
+      "question": "火箭和独行侠本赛季防守三区时，对手的命中率分别是多少？",
+      "need_numbers": [61.8, 41.0, 34.9, 62.9, 46.0, 35.0]
+    },
+    {
+      "id": "zh-score",
+      "lang": "zh",
+      "trap": false,
+      "question": "这段回放里的比分是怎么走的？",
+      "need_numbers": [44, 40, 43]
+    },
+    {
+      "id": "zh-final",
+      "lang": "zh",
+      "trap": false,
+      "question": "这场比赛的最终比分是多少？",
+      "need_numbers": [109, 122]
+    },
+    {
+      "id": "zh-wingspan",
+      "lang": "zh",
+      "trap": true,
+      "question": "小史密斯的臂展是多少？",
+      "forbid_any_number": true,
+      "need_any": [["没有", "查不到", "do not have", "does not", "no information", "没有足够", "cannot"]]
+    },
+    {
+      "id": "zh-salary",
+      "lang": "zh",
+      "trap": true,
+      "question": "克里斯蒂的年薪是多少？",
+      "forbid_any_number": true,
+      "need_any": [["没有", "查不到", "do not have", "does not", "no information", "没有足够", "cannot"]]
+    },
+    {
+      "id": "en-shot",
+      "lang": "en",
+      "trap": false,
+      "question": "Who shot in this clip, and what was the result?",
+      "need_names": [["Christie", "克里斯蒂"]],
+      "need_any": [["不中", "没进", "miss"]],
+      "need_all": ["命中"]
+    },
+    {
+      "id": "en-defender",
+      "lang": "en",
+      "trap": false,
+      "question": "Who was the defender on those shots?",
+      "need_names": [["小史密斯", "Jabari", "Smith Jr"]]
+    },
+    {
+      "id": "en-xfg",
+      "lang": "en",
+      "trap": false,
+      "question": "What is the expected make rate for each shot in this clip?",
+      "need_numbers": [17.7, 30]
+    },
+    {
+      "id": "en-smith",
+      "lang": "en",
+      "trap": false,
+      "question": "What are Jabari Smith Jr.'s defensive shooting numbers this season?",
+      "need_names": [["小史密斯", "Jabari"]],
+      "need_numbers": [55.4, 36.7]
+    },
+    {
+      "id": "en-christie",
+      "lang": "en",
+      "trap": false,
+      "question": "What is Max Christie's season three-point percentage?",
+      "need_names": [["Christie", "克里斯蒂"]],
+      "need_numbers": [40.4]
+    },
+    {
+      "id": "en-score",
+      "lang": "en",
+      "trap": false,
+      "question": "What was the score during this clip?",
+      "need_numbers": [44, 40, 43]
+    },
+    {
+      "id": "en-distance",
+      "lang": "en",
+      "trap": true,
+      "question": "How far away was the closest defender on the three?",
+      "forbid_any_number": true,
+      "need_any": [["没有", "查不到", "do not have", "does not", "no information", "没有足够", "cannot", "not in"]]
+    },
+    {
+      "id": "en-next",
+      "lang": "en",
+      "trap": true,
+      "question": "What was the result of the Mavericks' next game?",
+      "forbid_any_number": true,
+      "need_any": [["没有", "查不到", "do not have", "does not", "no information", "没有足够", "cannot", "not in"]]
+    }
+  ]
+}
