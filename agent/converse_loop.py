@@ -6,7 +6,7 @@ import json
 import os
 import re
 
-from grounding import FILLER, NO_ANSWER, ground_text, sources_for
+from grounding import FILLER, NO_ANSWER, fill_pair, sources_for
 from manifest import check
 from tools import TOOL_SPECS, Ctx, dispatch
 
@@ -19,9 +19,13 @@ SYSTEM = """你是 Deep Court 分析师。你只能根据工具返回的内容�
 规则：
 - 先调用工具，再写结论。事件清单、官方逐回合、赛季攻防三区、认人结果，没查到的不要用。
 - 数字和人名必须原样来自工具。不要估算，不要把 null 当成 0，出手数为 0 时不要说命中率是 0%。
-- 工具里的百分数已经是 0 到 100。
-- 不要把一名球员的赛季数据安到另一名球员身上。中文名只用工具里出现过的中文名。
-- 每个回合、每次出手写一两句口语解说。定格卡只写一句话。全片正好三条亮点。
+- 工具里的百分数已经是 0 到 100。命中率单独写，null 就说没有这项数据。
+- 问题问到的字段如果工具结果里没有，或者在 missing 里，就明确说「数据里没有」。不要拿别的数字顶上，也不要把空值说成 0。
+- 同一段回放里有几次出手就说几次：谁投的、进没进、预期命中率用 xfg_pct。盖帽和犯规只点工具里写出的人。比分用 score_away、score_home 或 final，并带上 HOU/DAL。
+- 不要把一名球员的赛季数据安到另一名球员身上。中文名只用工具里的 alias_zh 或 name_zh。纳吉·马绍尔写作马绍尔，不要写成马歇尔。
+- 问到火箭或独行侠整队的攻防三区时，用 read_season 查队名。那是队内球员计数相加，不要另编一组百分比。
+- 每个回合、每次出手写一两句口语解说。定格卡只写一句话。亮点最多三条，必须是不同的句子。没有更多数据就少写，不要用同一句凑满三条。
+- 中文和英文都要写。观众用中文提问时，answer.zh 不能空。
 - 每句话的 sources 用工具结果里的 source 字段。
 - 最后只输出一个 JSON 对象，不要 Markdown。
 
@@ -74,14 +78,44 @@ def _field(item: dict, *names: str) -> str:
     return ""
 
 
-def _line(item: dict, evidence: list, zh_keys, en_keys) -> tuple[str, str, list]:
-    zh = ground_text(_field(item, *zh_keys), evidence)
-    en = ground_text(_field(item, *en_keys), evidence)
+def _line(item: dict, evidence: list, zh_keys, en_keys, *, question: str = "", require_zh: bool = False) -> tuple[str, str, list]:
+    zh, en = fill_pair(
+        _field(item, *zh_keys),
+        _field(item, *en_keys),
+        evidence,
+        question=question,
+        require_zh=require_zh,
+    )
     sources = sources_for(f"{zh} {en}".strip(), item.get("sources"), evidence)
     return zh, en, sources
 
 
-def normalize(raw: dict, evidence: list, *, mode: str, job_id: str) -> dict:
+def _highlight_key(text: str) -> str:
+    folded = re.sub(r"\s+", "", text or "").lower()
+    return folded.strip("。！？!?，、；;：:")
+
+
+def _dedupe_highlights(highlights: list[dict]) -> list[dict]:
+    """同一句中文或同一句英文只留一条。没有中文时才按英文去重。"""
+    kept = []
+    seen = set()
+    for item in highlights:
+        zh = _highlight_key(item.get("zh") or "")
+        en = _highlight_key(item.get("en") or "")
+        if zh:
+            key = ("zh", zh)
+        elif en:
+            key = ("en", en)
+        else:
+            continue
+        if key in seen:
+            continue
+        seen.add(key)
+        kept.append(item)
+    return kept
+
+
+def normalize(raw: dict, evidence: list, *, mode: str, job_id: str, question: str = "") -> dict:
     possessions = []
     for item in raw.get("possessions") or []:
         if not isinstance(item, dict):
@@ -123,9 +157,8 @@ def normalize(raw: dict, evidence: list, *, mode: str, job_id: str) -> dict:
         if not zh and not en:
             continue
         highlights.append({"zh": zh, "en": en, "sources": sources})
-        if len(highlights) == 3:
-            break
-    while mode == "pipeline" and len(highlights) < 3:
+    highlights = _dedupe_highlights(highlights)[:3]
+    if mode == "pipeline" and not highlights:
         highlights.append({"zh": FILLER["zh"], "en": FILLER["en"], "sources": []})
     analysis = {
         "version": "1",
@@ -134,15 +167,21 @@ def normalize(raw: dict, evidence: list, *, mode: str, job_id: str) -> dict:
         "model": MODEL_ID,
         "possessions": possessions,
         "shots": shots,
-        "highlights": highlights[:3] if mode == "pipeline" else highlights,
+        "highlights": highlights,
     }
     if mode == "qa":
         answer = raw.get("answer") if isinstance(raw.get("answer"), dict) else {}
         if isinstance(raw.get("answer"), str):
             answer = {"zh": raw["answer"]}
-        zh, en, sources = _line(answer, evidence, ("zh", "commentary_zh"), ("en", "commentary_en"))
+        needs_zh = bool(re.search(r"[\u4e00-\u9fff]", question or ""))
+        zh, en, sources = _line(
+            answer, evidence, ("zh", "commentary_zh"), ("en", "commentary_en"),
+            question=question, require_zh=needs_zh,
+        )
         if not zh and not en:
             zh, en, sources = NO_ANSWER["zh"], NO_ANSWER["en"], []
+        elif needs_zh and not zh:
+            zh = NO_ANSWER["zh"]
         analysis["answer"] = {"zh": zh, "en": en, "sources": sources}
     return analysis
 
@@ -180,7 +219,13 @@ def run_loop(payload: dict, ctx: Ctx, converse, mode: str) -> dict:
             continue
         draft = extract_json(_text_of(message))
         break
-    return normalize(draft, ctx.evidence, mode=mode, job_id=ctx.job_id)
+    return normalize(
+        draft,
+        ctx.evidence,
+        mode=mode,
+        job_id=ctx.job_id,
+        question=str(payload.get("question") or ""),
+    )
 
 
 def bedrock_converse(messages, *, tool_choice):

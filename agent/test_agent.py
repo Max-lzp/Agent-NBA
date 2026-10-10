@@ -182,6 +182,64 @@ class ManifestAndOfficialTest(unittest.TestCase):
         )
         self.assertNotIn("xfg_pct", bare)
 
+    def test_description_window_stops_before_the_previous_make(self):
+        game = "official/2025-26/games/0022500701"
+        store = {
+            f"{game}_playbyplay.json": {"game": {
+                "awayTeam": {"teamTricode": "HOU", "score": 100},
+                "homeTeam": {"teamTricode": "DAL", "score": 90},
+                "actions": [
+                    {
+                        "actionType": "2pt", "period": 4, "clock": "PT03M20.00S", "teamTricode": "DAL",
+                        "shotResult": "Made", "description": "Earlier make", "playerNameI": "C. Flagg",
+                        "scoreAway": "10", "scoreHome": "8",
+                    },
+                    {
+                        "actionType": "2pt", "period": 4, "clock": "PT03M10.00S", "teamTricode": "DAL",
+                        "shotResult": "Missed", "description": "Flagg misses", "playerNameI": "C. Flagg",
+                        "scoreAway": "10", "scoreHome": "8", "shotDistance": 8,
+                    },
+                    {
+                        "actionType": "block", "period": 4, "clock": "PT03M10.00S", "teamTricode": "HOU",
+                        "description": "N. Marshall BLOCK", "playerNameI": "N. Marshall",
+                        "scoreAway": "10", "scoreHome": "8",
+                    },
+                    {
+                        "actionType": "3pt", "period": 4, "clock": "PT03M00.00S", "teamTricode": "DAL",
+                        "shotResult": "Made", "description": "Flagg 26' 3PT", "playerNameI": "C. Flagg",
+                        "scoreAway": "10", "scoreHome": "11",
+                    },
+                ],
+            }},
+            f"{game}_shotquality.json": {"shots": [
+                {"period": 4, "gameClock": "PT03M10.00S", "teamAbbreviation": "DAL", "shotQuality": 0.25, "playerName": "Cooper Flagg"},
+                {"period": 4, "gameClock": "PT03M00.00S", "teamAbbreviation": "DAL", "shotQuality": 0.5, "playerName": "Cooper Flagg"},
+            ]},
+        }
+        ctx = ctx_for(store, job_id="clip")
+        ctx.manifest = {
+            "version": "0.1",
+            "gameId": "0022500701",
+            "possessions": [{
+                "possession_id": "p0",
+                "offense_team": "DAL",
+                "events": [{
+                    "type": "shot",
+                    "actor": {"name": "弗拉格", "team": "DAL"},
+                    "official": {"description": "Flagg 26' 3PT", "made": True, "xfg": 0.5},
+                }],
+            }],
+        }
+        found = tools.read_official(ctx, {"game_id": "0022500701"})
+        shots = [play for play in found["plays"] if play["kind"] == "shot"]
+        self.assertEqual([play["clock_s"] for play in shots], [190, 180])
+        self.assertEqual(shots[0]["xfg_pct"], 25.0)
+        self.assertEqual(shots[0]["blocked_by_zh"], "马绍尔")
+        self.assertEqual(shots[0]["score_away"], 10)
+        self.assertEqual(shots[1]["score_home"], 11)
+        self.assertEqual(found["final"], {"away": "HOU", "away_score": 100, "home": "DAL", "home_score": 90})
+        self.assertNotIn("Earlier make", [play["description"] for play in found["plays"]])
+
 
 class GroundingTest(unittest.TestCase):
     def test_filler_has_no_invented_facts(self):
@@ -197,6 +255,20 @@ class GroundingTest(unittest.TestCase):
         kept = grounding.ground_text("Adams 三分出手 0 次。", evidence)
         self.assertIn("0", kept)
         self.assertIn("Adams", kept)
+
+    def test_attempts_can_sit_beside_a_real_rate(self):
+        evidence = [{
+            "source": "s",
+            "data": {
+                "player_name": "Cooper Flagg",
+                "name_zh": "弗拉格",
+                "offense": {"three_point": {"fgm": 1, "fga": 2, "fg_pct": 29.5}},
+            },
+        }]
+        kept = grounding.ground_text("弗拉格三分 1 中 2，命中率 29.5%。", evidence)
+        self.assertIn("29.5", kept)
+        self.assertIn("1", kept)
+        self.assertEqual(grounding.ground_text("弗拉格命中率是 0%。", evidence), "")
 
 
 class LoopTest(unittest.TestCase):
@@ -361,7 +433,11 @@ class LoopTest(unittest.TestCase):
         blob = json.dumps(result["analysis"], ensure_ascii=False)
         for banned in ("41.2", "杜兰特", "Durant", "62", "神秘球员"):
             self.assertNotIn(banned, blob)
-        self.assertEqual(len(result["analysis"]["highlights"]), 3)
+        self.assertEqual(result["analysis"]["highlights"], [{
+            "zh": grounding.FILLER["zh"],
+            "en": grounding.FILLER["en"],
+            "sources": [],
+        }])
         self.assertEqual(result["analysis"]["shots"], [])
         written = json.loads(store.puts[0]["Body"].decode())
         self.assertNotIn("41.2", json.dumps(written, ensure_ascii=False))
@@ -390,8 +466,99 @@ class LoopTest(unittest.TestCase):
         )
         self.assertEqual(result["mode"], "qa")
         self.assertIn("50.4", result["answer"]["zh"])
+        self.assertTrue(result["answer"]["en"])
         self.assertTrue(result["answer"]["sources"])
         self.assertEqual(store.puts, [])
+
+    def warm_manifest(self):
+        return {
+            "version": "0.1",
+            "jobId": "warm-probe",
+            "possessions": [{
+                "possession_id": "p0",
+                "offense_team": "DAL",
+                "events": [{
+                    "t": 3.0,
+                    "type": "receive",
+                    "actor": {"team": "DAL", "number": "13", "name": "N. Marshall"},
+                }],
+            }],
+        }
+
+    def test_chinese_question_fills_zh_with_canonical_name(self):
+        def converse(messages, *, tool_choice):
+            del tool_choice
+            if not any(item["role"] == "assistant" for item in messages):
+                return tool_message([("read_manifest", {})])
+            return text_message({
+                "answer": {
+                    "zh": "",
+                    "en": "He is involved in this clip.",
+                    "sources": ["structured/warm-probe.json"],
+                },
+            })
+
+        store = FakeS3({"structured/warm-probe.json": self.warm_manifest()})
+        result = agent.invoke(
+            {"bucket": "media", "jobId": "warm-probe", "question": "这段里马歇尔做了什么？"},
+            s3=store,
+            converse=converse,
+        )
+        answer = result["answer"]
+        self.assertIn("马绍尔", answer["zh"])
+        self.assertIn("接到球", answer["zh"])
+        self.assertNotIn("马歇尔", answer["zh"])
+        self.assertNotIn("歇", answer["zh"])
+        self.assertEqual(answer["en"], "He is involved in this clip.")
+        self.assertEqual(answer["sources"], ["structured/warm-probe.json"])
+        self.assertEqual(store.puts, [])
+
+    def test_wrong_marshall_spelling_is_kept_in_chinese(self):
+        def converse(messages, *, tool_choice):
+            del tool_choice
+            if not any(item["role"] == "assistant" for item in messages):
+                return tool_message([("read_manifest", {})])
+            return text_message({
+                "answer": {
+                    "zh": "马歇尔把球传了出去。",
+                    "en": "Marshall passes the ball.",
+                },
+            })
+
+        store = FakeS3({"structured/warm-probe.json": self.warm_manifest()})
+        result = agent.invoke(
+            {"bucket": "media", "jobId": "warm-probe", "question": "这段里马歇尔做了什么？"},
+            s3=store,
+            converse=converse,
+        )
+        answer = result["answer"]
+        self.assertIn("马绍尔", answer["zh"])
+        self.assertIn("传了出去", answer["zh"])
+        self.assertNotIn("马歇尔", answer["zh"])
+        self.assertIn("Marshall", answer["en"])
+
+    def test_pipeline_keeps_one_copy_of_the_same_highlight(self):
+        def converse(messages, *, tool_choice):
+            del messages, tool_choice
+            return text_message({
+                "highlights": [
+                    {"zh": "没有更多看点", "en": "No further highlight."},
+                    {"zh": "没有更多看点。", "en": "No further highlight"},
+                    {"zh": "没有更多看点。", "en": "No further highlight."},
+                ],
+            })
+
+        store = FakeS3({"structured/warm-probe.json": self.warm_manifest()})
+        result = agent.invoke(
+            {"bucket": "media", "jobId": "warm-probe", "key": "structured/warm-probe.json"},
+            s3=store,
+            converse=converse,
+        )
+        self.assertTrue(result["ok"])
+        self.assertEqual(len(result["analysis"]["highlights"]), 1)
+        kept = result["analysis"]["highlights"][0]
+        self.assertIn("没有更多看点", kept["zh"])
+        self.assertEqual(kept["en"], "No further highlight.")
 
     def test_bad_manifest_skips_the_model(self):
         def converse(messages, *, tool_choice):
@@ -406,6 +573,88 @@ class LoopTest(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertEqual(result["reason"], "invalid_manifest")
         self.assertIsNone(result["stream"])
+
+
+class NamesTest(unittest.TestCase):
+    def test_roster_matches_zh_names_file(self):
+        doc = json.loads((ROOT / "data" / "names" / "zh-names.json").read_text(encoding="utf-8"))
+        expected = tuple(
+            (item["team"], item["name_en"], item["name_zh"], item["alias_zh"])
+            for item in doc["players"]
+        )
+        self.assertEqual(season_data.ROSTER, expected)
+
+    def test_marshall_alias_and_ambiguous_surnames(self):
+        def alias(name):
+            person = season_data.match_name(name)
+            return None if person is None else person["alias_zh"]
+
+        self.assertEqual(alias("马歇尔"), "马绍尔")
+        self.assertEqual(alias("马绍尔"), "马绍尔")
+        self.assertEqual(alias("Marshall"), "马绍尔")
+        self.assertEqual(alias("N. Marshall"), "马绍尔")
+        self.assertEqual(alias("Naji Marshall"), "马绍尔")
+        self.assertIsNone(alias("Thompson"))
+        self.assertIsNone(alias("Smith"))
+        self.assertEqual(alias("Amen Thompson"), "阿门")
+        self.assertEqual(alias("K. Thompson"), "汤普森")
+        self.assertEqual(alias("Klay Thompson"), "汤普森")
+        self.assertEqual(alias("Jabari Smith"), "小史密斯")
+        self.assertEqual(alias("T. Smith"), "史密斯")
+        self.assertEqual(alias("Finney-Smith"), "芬尼-史密斯")
+        self.assertEqual(alias("Dorian Finney-Smith"), "芬尼-史密斯")
+
+    def test_tools_use_canonical_zh_name(self):
+        ctx = ctx_for({
+            "structured/warm-probe.json": {
+                "version": "0.1",
+                "possessions": [{
+                    "possession_id": "p0",
+                    "offense_team": "DAL",
+                    "events": [{
+                        "t": 1.2,
+                        "type": "receive",
+                        "actor": {"team": "DAL", "number": "13", "name": "马歇尔"},
+                    }],
+                }],
+            },
+        }, job_id="warm-probe", key="structured/warm-probe.json")
+        actor = tools.read_manifest(ctx, {})["possessions"][0]["events"][0]["actor"]
+        self.assertEqual(actor["name"], "马绍尔")
+        self.assertEqual(actor["name_zh"], "马绍尔")
+        self.assertEqual(actor["name_en"], "Naji Marshall")
+        season = tools.read_season(ctx_for({}), {"name": "N. Marshall", "team": "DAL"})
+        self.assertEqual(season["player_name"], "Naji Marshall")
+        self.assertEqual(season["name_zh"], "马绍尔")
+        smith = tools.read_season(ctx_for({}), {"name": "小史密斯"})
+        self.assertIn("wingspan_cm", smith["missing"])
+        self.assertIsNone(smith["profile"]["wingspan_cm"])
+        rockets = tools.read_season(ctx_for({}), {"name": "火箭"})
+        self.assertEqual(rockets["team"], "HOU")
+        self.assertNotIn("player_name", rockets)
+        three = rockets["offense"]["three_point"]
+        made = attempts = 0
+        for player in season_data.load_slice()["players"]:
+            if player["team"] != "HOU":
+                continue
+            block = player["offense"]["three_point"]
+            made += block["fgm"]
+            attempts += block["fga"]
+        self.assertEqual(three["fgm"], made)
+        self.assertEqual(three["fg_pct"], round(100 * made / attempts, 1))
+
+    def test_near_name_is_rewritten_and_other_names_stay_out(self):
+        evidence = [{"source": "s", "data": {"player": "N. Marshall", "type": "receive"}}]
+        text = grounding.ground_text("马歇尔在这段里接到球。", evidence)
+        self.assertIn("马绍尔", text)
+        self.assertNotIn("马歇尔", text)
+        self.assertEqual(grounding.ground_text("杜兰特在这段里接到球。", evidence), "")
+        klay = [{"source": "s", "data": {"player_name": "Klay Thompson"}}]
+        self.assertIn("汤普森", grounding.ground_text("汤普森出手。", klay))
+        self.assertEqual(grounding.ground_text("阿门出手。", klay), "")
+        finney = [{"source": "s", "data": {"player_name": "Dorian Finney-Smith"}}]
+        self.assertIn("芬尼-史密斯", grounding.ground_text("芬尼-史密斯出手。", finney))
+        self.assertEqual(grounding.ground_text("史密斯出手。", finney), "")
 
 
 class ColdStartTest(unittest.TestCase):

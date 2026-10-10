@@ -14,6 +14,7 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as mediaconvert from 'aws-cdk-lib/aws-mediaconvert';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { buildTrackerImageEnabled } from './orchestration';
+import { BASKETBALL_TERMINOLOGY_NAME, basketballTerminologyArn, importBasketballTerminology } from './terminology';
 
 const TRACK_BOOTSTRAP = [
   'import os, boto3, runpy',
@@ -151,6 +152,14 @@ export function addP1(
     ],
     resources: ['*'],
   }));
+  // 服务授权参考里 TranslateText 的资源类型是可选的 terminology / parallel-data，不是必填。
+  // 不带术语表的回退请求没有术语表这条资源，Resource 仍要按 * 保留在上面的语句里。
+  // 带上术语表时另要 GetTerminology。这一条限定到本表 ARN（官方格式带 /LATEST）。
+  // TranslateText 再授一次同一 ARN，带表的授权请求能对上这条资源。
+  jobRole.addToPolicy(new iam.PolicyStatement({
+    actions: ['translate:GetTerminology', 'translate:TranslateText'],
+    resources: [basketballTerminologyArn(stack)],
+  }));
   jobRole.addToPolicy(new iam.PolicyStatement({
     actions: ['cloudfront:CreateInvalidation'],
     resources: [`arn:aws:cloudfront::${stack.account}:distribution/${props.distribution.distributionId}`],
@@ -167,6 +176,7 @@ export function addP1(
   // 默认仍指向已经烤好的 :ready，TrackJob / GpuCompute / TrackQueue 的逻辑 ID 不动。
   // 干净账号没有这个标签时：-c buildTrackerImage=true，从仓库根目录的 inference/Dockerfile 构建。
   const image = trackerImage(stack, repo, executionRole);
+  const terminology = importBasketballTerminology(stack);
   const jobDef = new batch.EcsJobDefinition(stack, 'TrackJob', {
     jobDefinitionName: 'deepcourt-track',
     container: new batch.EcsEc2ContainerDefinition(stack, 'TrackContainer', {
@@ -182,10 +192,12 @@ export function addP1(
         DISTRIBUTION_ID: props.distribution.distributionId,
         OMP_NUM_THREADS: '180',
         MKL_NUM_THREADS: '180',
+        TRANSLATE_TERMINOLOGY: BASKETBALL_TERMINOLOGY_NAME,
       },
     }),
     retryAttempts: 1,
   });
+  jobDef.node.addDependency(terminology);
 
   // 没有事件源。自动提交只在 orchestration.ts 的状态机里。留下这个函数，避免改掉已经部署的逻辑 ID。
   const submitFn = new lambda.Function(stack, 'SubmitTrack', {

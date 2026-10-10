@@ -1,0 +1,173 @@
+{
+  "structured/exam.json": {
+    "version": "0.1",
+    "jobId": "exam",
+    "gameId": "0022500356",
+    "possessions": [
+      {
+        "possession_id": "p0",
+        "offense_team": "DAL",
+        "events": [
+          {
+            "t": 0.0,
+            "type": "receive",
+            "actor": {"team": "DAL", "number": "00", "name": "克里斯蒂"}
+          },
+          {
+            "t": 19.686,
+            "type": "shot",
+            "actor": {"team": "DAL", "number": "00", "name": "克里斯蒂"},
+            "source": "official",
+            "official": {
+              "made": true,
+              "value": 3,
+              "description": "M. Christie 24' 3PT step back bank (3 PTS)",
+              "xfg": 0.3
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "identity/exam.json": {
+    "pinned": [
+      {"team": "DAL", "number": "00", "nameZh": "克里斯蒂", "role": "scorer"},
+      {"team": "HOU", "number": "10", "nameZh": "小史密斯", "role": "defender"}
+    ],
+    "firstSecond": ["克里斯蒂"],
+    "matches": [
+      {"t": 19.686, "team": "DAL", "number": "00", "name": "克里斯蒂"}
+    ]
+  },
+  "official/2025-26/games/0022500356_playbyplay.json": {
+    "game": {
+      "gameId": "0022500356",
+      "awayTeam": {"teamTricode": "HOU", "score": 109},
+      "homeTeam": {"teamTricode": "DAL", "score": 122},
+      "actions": [
+        {
+          "actionNumber": 268,
+          "period": 2,
+          "clock": "PT05M28.00S",
+          "teamTricode": "HOU",
+          "actionType": "2pt",
+          "shotResult": "Made",
+          "description": "J. Smith Jr. 9' driving floating Jump Shot (6 PTS)",
+          "playerNameI": "J. Smith Jr.",
+          "playerName": "Jabari Smith Jr.",
+          "scoreAway": "44",
+          "scoreHome": "40",
+          "shotDistance": 9.0
+        },
+        {
+          "actionNumber": 270,
+          "period": 2,
+          "clock": "PT05M06.00S",
+          "teamTricode": "DAL",
+          "actionType": "2pt",
+          "shotResult": "Missed",
+          "description": "MISS M. Christie 8' driving floating Shot - blocked",
+          "playerNameI": "M. Christie",
+          "playerName": "Max Christie",
+          "scoreAway": "44",
+          "scoreHome": "40",
+          "shotDistance": 8.95
+        },
+        {
+          "actionNumber": 271,
+          "period": 2,
+          "clock": "PT05M06.00S",
+          "teamTricode": "HOU",
+          "actionType": "block",
+          "description": "J. Smith Jr. BLOCK (1 BLK)",
+          "playerNameI": "J. Smith Jr.",
+          "playerName": "Jabari Smith Jr.",
+          "scoreAway": "44",
+          "scoreHome": "40"
+        },
+        {
+          "actionNumber": 272,
+          "period": 2,
+          "clock": "PT05M03.00S",
+          "teamTricode": "DAL",
+          "actionType": "rebound",
+          "description": "D. Powell REBOUND (Off:1 Def:0)",
+          "playerNameI": "D. Powell",
+          "playerName": "Dwight Powell",
+          "scoreAway": "44",
+          "scoreHome": "40"
+        },
+        {
+          "actionNumber": 273,
+          "period": 2,
+          "clock": "PT04M58.00S",
+          "teamTricode": "DAL",
+          "actionType": "3pt",
+          "shotResult": "Made",
+          "description": "M. Christie 24' 3PT step back bank (3 PTS)",
+          "playerNameI": "M. Christie",
+          "playerName": "Max Christie",
+          "scoreAway": "44",
+          "scoreHome": "43",
+          "shotDistance": 24.85
+        },
+        {
+          "actionNumber": 274,
+          "period": 2,
+          "clock": "PT04M58.00S",
+          "teamTricode": "HOU",
+          "actionType": "foul",
+          "description": "J. Smith Jr. shooting personal FOUL (2 PF) (Christie 1 FT)",
+          "playerNameI": "J. Smith Jr.",
+          "playerName": "Jabari Smith Jr.",
+          "scoreAway": "44",
+          "scoreHome": "43"
+        },
+        {
+          "actionNumber": 276,
+          "period": 2,
+          "clock": "PT04M58.00S",
+          "teamTricode": "DAL",
+          "actionType": "freethrow",
+          "shotResult": "Made",
+          "description": "M. Christie Free Throw 1 of 1 (4 PTS)",
+          "playerNameI": "M. Christie",
+          "playerName": "Max Christie",
+          "scoreAway": "44",
+          "scoreHome": "44"
+        },
+        {
+          "actionNumber": 277,
+          "period": 2,
+          "clock": "PT04M42.00S",
+          "teamTricode": "HOU",
+          "actionType": "3pt",
+          "shotResult": "Missed",
+          "description": "MISS J. Smith Jr. 3PT",
+          "playerNameI": "J. Smith Jr.",
+          "playerName": "Jabari Smith Jr.",
+          "scoreAway": "44",
+          "scoreHome": "44"
+        }
+      ]
+    }
+  },
+  "official/2025-26/games/0022500356_shotquality.json": {
+    "shots": [
+      {
+        "period": 2,
+        "gameClock": "PT05M06.00S",
+        "teamAbbreviation": "DAL",
+        "shotQuality": 0.177,
+        "playerName": "Max Christie"
+      },
+      {
+        "period": 2,
+        "gameClock": "PT04M58.00S",
+        "teamAbbreviation": "DAL",
+        "shotQuality": 0.3,
+        "playerName": "Max Christie"
+      }
+    ]
+  }
+}
