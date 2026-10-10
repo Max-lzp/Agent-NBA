@@ -9,6 +9,7 @@ const els = {
   names: document.querySelector("#names"),
   court: document.querySelector("#court"),
   detail: document.querySelector("#detail"),
+  events: document.querySelector("#events"),
   fill: document.querySelector("#fill"),
   ticks: document.querySelector("#ticks"),
   scrub: document.querySelector("#scrub"),
@@ -56,6 +57,11 @@ function init() {
   window.addEventListener("resize", resizeCanvas);
   els.scrub.addEventListener("click", onScrub);
   els.pause.addEventListener("click", () => { pause(!state.paused); render(); });
+  els.events.addEventListener("click", (event) => {
+    const button = event.target.closest(".event");
+    if (!button) return;
+    seekEvent(Number(button.dataset.index));
+  });
   const shareRow = document.querySelector(".share-row");
   if (shareRow) shareRow.addEventListener("click", (event) => {
     const button = event.target.closest("[data-share]");
@@ -94,8 +100,8 @@ function loadPack(pack) {
   els.reel.src = start > 0 ? `${pack.video}#t=${start}` : pack.video;
   if (els.foot) {
     els.foot.textContent = pack.gameId
-      ? `官方比赛 ${pack.gameId}。画面上的数字来自记分牌和官方逐回合。`
-      : "画面上的数字来自记分牌和官方逐回合。";
+      ? `官方比赛 ${pack.gameId}。${pack.voice || ""}`
+      : (pack.voice || "画面上的数字来自记分牌和官方逐回合。");
     if (pack.replayVideo) {
       const link = document.createElement("a");
       link.href = pack.replayVideo;
@@ -266,6 +272,10 @@ function render() {
     : '<path d="M2 0 L12 7 L2 14 Z" fill="#14110E"/>';
   els.names.classList.toggle("hidden", !state.layers.resident);
   renderFloor();
+  els.events.innerHTML = state.events.map((item, index) => {
+    const on = index === state.active ? " on" : "";
+    return `<button class="event${on}" type="button" data-index="${index}"><span class="t">${item.timecode || "--:--"}</span><span class="l">${item.label}</span></button>`;
+  }).join("");
   document.querySelectorAll(".layer").forEach((button) => {
     button.classList.toggle("on", state.layers[button.dataset.layer]);
   });

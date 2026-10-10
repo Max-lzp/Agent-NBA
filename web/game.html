@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DEEP COURT 播放器</title>
-  <link rel="stylesheet" href="styles.css?v=25">
+  <link rel="stylesheet" href="styles.css?v=21">
 </head>
 <body>
   <div class="court court-tr"></div>
@@ -77,8 +77,11 @@
       </button>
       <div>
         <div class="clock" id="clock">00:00</div>
+        <div class="aside"><span class="teal">◆</span> 解说由程序根据官方事件生成，已混入成片<br><span class="brand">TEAM 04 · DEEP COURT</span></div>
       </div>
     </div>
+
+    <div class="events" id="events"></div>
 
     <section class="spec">
       <hr class="rule">
@@ -86,7 +89,7 @@
       <button class="layer on" type="button" data-layer="resident"><b>常驻层</b><span>比分条烧进成片。人名只标票数够的轨迹，跟着框走。</span></button>
       <button class="layer on" type="button" data-layer="event"><b>事件层</b><span>出手后三秒弹出预期命中率、区域和距离。点时间线跳到那一球。</span></button>
       <button class="layer on" type="button" data-layer="expand"><b>展开层</b><span>暂停后写出官方描述和助攻。决策反差只在预期和结果打架时出现。</span></button>
-      <p class="baseline">引力和关键度是赛季汇总，暂停后出现在右侧，不写成这一球的胜率变化。接球、传球和解说在成片里，不在这页再列一遍。</p>
+      <p class="baseline">画面上的数字都能在事件清单里对上。引力和关键度是赛季汇总，暂停后出现，不写成这一球的胜率变化。</p>
     </section>
 
     <footer class="foot">
@@ -113,8 +116,8 @@
     </form>
   </div>
   <script src="config.js"></script>
-  <script src="replay/clips.js?v=4"></script>
-  <script src="replay-freeze.js?v=5"></script>
-  <script src="game.js?v=21"></script>
+  <script src="replay/clips.js?v=3"></script>
+  <script src="replay-freeze.js?v=4"></script>
+  <script src="game.js?v=18"></script>
 </body>
 </html>
