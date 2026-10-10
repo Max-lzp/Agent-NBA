@@ -361,7 +361,11 @@ class LoopTest(unittest.TestCase):
         blob = json.dumps(result["analysis"], ensure_ascii=False)
         for banned in ("41.2", "杜兰特", "Durant", "62", "神秘球员"):
             self.assertNotIn(banned, blob)
-        self.assertEqual(len(result["analysis"]["highlights"]), 3)
+        self.assertEqual(result["analysis"]["highlights"], [{
+            "zh": grounding.FILLER["zh"],
+            "en": grounding.FILLER["en"],
+            "sources": [],
+        }])
         self.assertEqual(result["analysis"]["shots"], [])
         written = json.loads(store.puts[0]["Body"].decode())
         self.assertNotIn("41.2", json.dumps(written, ensure_ascii=False))
@@ -390,8 +394,99 @@ class LoopTest(unittest.TestCase):
         )
         self.assertEqual(result["mode"], "qa")
         self.assertIn("50.4", result["answer"]["zh"])
+        self.assertTrue(result["answer"]["en"])
         self.assertTrue(result["answer"]["sources"])
         self.assertEqual(store.puts, [])
+
+    def warm_manifest(self):
+        return {
+            "version": "0.1",
+            "jobId": "warm-probe",
+            "possessions": [{
+                "possession_id": "p0",
+                "offense_team": "DAL",
+                "events": [{
+                    "t": 3.0,
+                    "type": "receive",
+                    "actor": {"team": "DAL", "number": "13", "name": "N. Marshall"},
+                }],
+            }],
+        }
+
+    def test_chinese_question_fills_zh_with_canonical_name(self):
+        def converse(messages, *, tool_choice):
+            del tool_choice
+            if not any(item["role"] == "assistant" for item in messages):
+                return tool_message([("read_manifest", {})])
+            return text_message({
+                "answer": {
+                    "zh": "",
+                    "en": "He is involved in this clip.",
+                    "sources": ["structured/warm-probe.json"],
+                },
+            })
+
+        store = FakeS3({"structured/warm-probe.json": self.warm_manifest()})
+        result = agent.invoke(
+            {"bucket": "media", "jobId": "warm-probe", "question": "这段里马歇尔做了什么？"},
+            s3=store,
+            converse=converse,
+        )
+        answer = result["answer"]
+        self.assertIn("马绍尔", answer["zh"])
+        self.assertIn("接到球", answer["zh"])
+        self.assertNotIn("马歇尔", answer["zh"])
+        self.assertNotIn("歇", answer["zh"])
+        self.assertEqual(answer["en"], "He is involved in this clip.")
+        self.assertEqual(answer["sources"], ["structured/warm-probe.json"])
+        self.assertEqual(store.puts, [])
+
+    def test_wrong_marshall_spelling_is_kept_in_chinese(self):
+        def converse(messages, *, tool_choice):
+            del tool_choice
+            if not any(item["role"] == "assistant" for item in messages):
+                return tool_message([("read_manifest", {})])
+            return text_message({
+                "answer": {
+                    "zh": "马歇尔把球传了出去。",
+                    "en": "Marshall passes the ball.",
+                },
+            })
+
+        store = FakeS3({"structured/warm-probe.json": self.warm_manifest()})
+        result = agent.invoke(
+            {"bucket": "media", "jobId": "warm-probe", "question": "这段里马歇尔做了什么？"},
+            s3=store,
+            converse=converse,
+        )
+        answer = result["answer"]
+        self.assertIn("马绍尔", answer["zh"])
+        self.assertIn("传了出去", answer["zh"])
+        self.assertNotIn("马歇尔", answer["zh"])
+        self.assertIn("Marshall", answer["en"])
+
+    def test_pipeline_keeps_one_copy_of_the_same_highlight(self):
+        def converse(messages, *, tool_choice):
+            del messages, tool_choice
+            return text_message({
+                "highlights": [
+                    {"zh": "没有更多看点", "en": "No further highlight."},
+                    {"zh": "没有更多看点。", "en": "No further highlight"},
+                    {"zh": "没有更多看点。", "en": "No further highlight."},
+                ],
+            })
+
+        store = FakeS3({"structured/warm-probe.json": self.warm_manifest()})
+        result = agent.invoke(
+            {"bucket": "media", "jobId": "warm-probe", "key": "structured/warm-probe.json"},
+            s3=store,
+            converse=converse,
+        )
+        self.assertTrue(result["ok"])
+        self.assertEqual(len(result["analysis"]["highlights"]), 1)
+        kept = result["analysis"]["highlights"][0]
+        self.assertIn("没有更多看点", kept["zh"])
+        self.assertEqual(kept["en"], "No further highlight.")
 
     def test_bad_manifest_skips_the_model(self):
         def converse(messages, *, tool_choice):
@@ -406,6 +501,72 @@ class LoopTest(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertEqual(result["reason"], "invalid_manifest")
         self.assertIsNone(result["stream"])
+
+
+class NamesTest(unittest.TestCase):
+    def test_roster_matches_zh_names_file(self):
+        doc = json.loads((ROOT / "data" / "names" / "zh-names.json").read_text(encoding="utf-8"))
+        expected = tuple(
+            (item["team"], item["name_en"], item["name_zh"], item["alias_zh"])
+            for item in doc["players"]
+        )
+        self.assertEqual(season_data.ROSTER, expected)
+
+    def test_marshall_alias_and_ambiguous_surnames(self):
+        def alias(name):
+            person = season_data.match_name(name)
+            return None if person is None else person["alias_zh"]
+
+        self.assertEqual(alias("马歇尔"), "马绍尔")
+        self.assertEqual(alias("马绍尔"), "马绍尔")
+        self.assertEqual(alias("Marshall"), "马绍尔")
+        self.assertEqual(alias("N. Marshall"), "马绍尔")
+        self.assertEqual(alias("Naji Marshall"), "马绍尔")
+        self.assertIsNone(alias("Thompson"))
+        self.assertIsNone(alias("Smith"))
+        self.assertEqual(alias("Amen Thompson"), "阿门")
+        self.assertEqual(alias("K. Thompson"), "汤普森")
+        self.assertEqual(alias("Klay Thompson"), "汤普森")
+        self.assertEqual(alias("Jabari Smith"), "小史密斯")
+        self.assertEqual(alias("T. Smith"), "史密斯")
+        self.assertEqual(alias("Finney-Smith"), "芬尼-史密斯")
+        self.assertEqual(alias("Dorian Finney-Smith"), "芬尼-史密斯")
+
+    def test_tools_use_canonical_zh_name(self):
+        ctx = ctx_for({
+            "structured/warm-probe.json": {
+                "version": "0.1",
+                "possessions": [{
+                    "possession_id": "p0",
+                    "offense_team": "DAL",
+                    "events": [{
+                        "t": 1.2,
+                        "type": "receive",
+                        "actor": {"team": "DAL", "number": "13", "name": "马歇尔"},
+                    }],
+                }],
+            },
+        }, job_id="warm-probe", key="structured/warm-probe.json")
+        actor = tools.read_manifest(ctx, {})["possessions"][0]["events"][0]["actor"]
+        self.assertEqual(actor["name"], "马绍尔")
+        self.assertEqual(actor["name_zh"], "马绍尔")
+        self.assertEqual(actor["name_en"], "Naji Marshall")
+        season = tools.read_season(ctx_for({}), {"name": "N. Marshall", "team": "DAL"})
+        self.assertEqual(season["player_name"], "Naji Marshall")
+        self.assertEqual(season["name_zh"], "马绍尔")
+
+    def test_near_name_is_rewritten_and_other_names_stay_out(self):
+        evidence = [{"source": "s", "data": {"player": "N. Marshall", "type": "receive"}}]
+        text = grounding.ground_text("马歇尔在这段里接到球。", evidence)
+        self.assertIn("马绍尔", text)
+        self.assertNotIn("马歇尔", text)
+        self.assertEqual(grounding.ground_text("杜兰特在这段里接到球。", evidence), "")
+        klay = [{"source": "s", "data": {"player_name": "Klay Thompson"}}]
+        self.assertIn("汤普森", grounding.ground_text("汤普森出手。", klay))
+        self.assertEqual(grounding.ground_text("阿门出手。", klay), "")
+        finney = [{"source": "s", "data": {"player_name": "Dorian Finney-Smith"}}]
+        self.assertIn("芬尼-史密斯", grounding.ground_text("芬尼-史密斯出手。", finney))
+        self.assertEqual(grounding.ground_text("史密斯出手。", finney), "")
 
 
 class ColdStartTest(unittest.TestCase):
