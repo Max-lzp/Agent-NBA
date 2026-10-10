@@ -99,7 +99,7 @@ python3 -m pipeline.run_clip --clip exam --skip-vision --upload --bucket <桶名
 python3 -m pipeline.present --clip exam
 ```
 
-浏览器打开 `web/game.html?clip=exam`。比分条和出手卡烧进 `web/assets/exam-broadcast.mp4`，人名在页面上跟着框走。云账号可用时在仓库根目录跑 `sh scripts/publish.sh`，提交 CloudFront 根路径。
+浏览器打开 `web/game.html?clip=exam`，用系统控件播放成片。有 `exam-replay.mp4` 就播定格回放，否则播 `exam-broadcast.mp4`。云账号可用时在仓库根目录跑 `sh scripts/publish.sh`，提交 CloudFront 根路径。
 
 ## 7. 出问题时
 

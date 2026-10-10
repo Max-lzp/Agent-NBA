@@ -20,7 +20,7 @@
   → 清单上传到 S3 structured/{jobId}.json，再次触发 analyze_job
   → analyze_job 调用 Bedrock AgentCore Runtime（DeepCourtAnalyst），Agent 取回并校验清单
   → 清单转成页面事件写入 DynamoDB EventsTable，状态 ANALYZING → DONE / FAILED
-  → game.html?jobId= 轮询 GET /jobs/{id} 与 GET /jobs/{id}/events，时间线可点，暂停展开防守压力盒
+  → game.html?jobId= 轮询 GET /jobs/{id}，拿到成片地址后用系统控件播放
 ```
 
 **事件只来自结构化清单，不让任何模型看图生成事件。**旧路（抽 3 帧问 Qwen3 VL「发生了什么」）准确率低，10.9 起停用。识别细节见 `docs/recognition.md`，清单格式见 `pipeline/events/event_stream.schema.json`。
@@ -47,7 +47,7 @@ URL 模式不经过 S3：create_job 只把任务标成 TRACKING，等本地追�
 
 ## 和后续阶段的边界
 
-播放器里的数字解说开关标着即将推出，对应 Polly。画面上的示例回合（弗拉格 / 申京）只在没有 `jobId` 时出现，用来对齐设计稿；带 `jobId` 之后时间线换成表里的事件。
+回放页在没有 `jobId` 时播放仓库里的示例成片（弗拉格 / 阿门）。带 `jobId` 时播放该任务的成片地址。解说声音仍等 Polly，词已经混进成片。
 
 ## P1（代码在同一栈。有没有建出来以 pipeline-map.md 为准）
 

@@ -3,121 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DEEP COURT 播放器</title>
-  <link rel="stylesheet" href="styles.css?v=21">
+  <title>DEEP COURT 回放</title>
+  <link rel="stylesheet" href="styles.css?v=24">
 </head>
 <body>
   <div class="court court-tr"></div>
   <main class="page">
-    <p class="kicker"><span class="mark">NBA × AWS BROADCAST CODE 12</span>　·　Team 04　·　DEEP COURT 播放器</p>
-    <h1 class="player-title">DEEP COURT <span class="accent">播放器</span></h1>
-    <p class="subhead" id="subhead">Team 04 · 打开即看。比分和出手卡来自记分牌与官方逐回合，人名来自球衣号码。</p>
+    <p class="kicker"><span class="mark">NBA × AWS BROADCAST CODE 12</span>　·　Team 04　·　DEEP COURT 回放</p>
+    <h1 class="player-title">DEEP COURT <span class="accent">回放</span></h1>
+    <p class="subhead" id="subhead">Team 04 · 打开即看。播放、暂停和进度用系统控件。解说和出手定格做在片子里。</p>
     <nav class="clip-switch" id="clip-switch" aria-label="选择片段"></nav>
-    <hr class="rule">
-
-    <div class="replay">
-      <div class="player-col">
-        <section class="stage" id="stage">
-          <video id="reel" playsinline preload="metadata"></video>
-          <canvas id="names" aria-hidden="true"></canvas>
-        </section>
-        <div class="scrub" id="scrub">
-          <div class="track"></div>
-          <div class="fill" id="fill"></div>
-          <div class="ticks" id="ticks"></div>
-        </div>
-        <section class="floor" id="floor" hidden aria-label="场上球员">
-          <div id="floor-offense"></div>
-          <div id="floor-defense"></div>
-        </section>
-        <section class="share" aria-labelledby="share-title">
-          <div class="share-head">
-            <h2 id="share-title">分享</h2>
-            <p>NBA 中国官方合作平台</p>
-          </div>
-          <div class="share-row">
-            <button class="share-btn" type="button" data-share="kuaishou">
-              <img src="brands/kuaishou.svg" alt="" width="28" height="28">
-              <span>快手</span>
-              <em>官方短视频平台</em>
-            </button>
-            <button class="share-btn" type="button" data-share="bilibili">
-              <img src="brands/bilibili.svg" alt="" width="28" height="28">
-              <span>哔哩哔哩</span>
-              <em>官方优质内容社区</em>
-            </button>
-            <button class="share-btn" type="button" data-share="wechat">
-              <img src="brands/wechat.svg" alt="" width="28" height="28">
-              <span>视频号</span>
-              <em>官方内容账号</em>
-            </button>
-            <button class="share-btn" type="button" data-share="weibo">
-              <img src="brands/weibo.svg" alt="" width="28" height="28">
-              <span>微博</span>
-              <em>官方社交媒体平台</em>
-            </button>
-            <button class="share-btn" type="button" data-share="douyin">
-              <img src="brands/douyin.svg" alt="" width="28" height="28">
-              <span>抖音</span>
-              <em>内容智能分发平台</em>
-            </button>
-          </div>
-        </section>
-      </div>
-      <aside class="rail" aria-label="这一球">
-        <p class="rail-kicker">半场落点 · 官方坐标</p>
-        <div id="court"></div>
-        <div id="detail"></div>
-      </aside>
-    </div>
-
-    <div class="transport">
-      <button class="pause" id="pause" type="button" aria-label="暂停或播放">
-        <svg id="pause-icon" width="12" height="14" viewBox="0 0 12 14" aria-hidden="true"><rect x="1" y="0" width="3.2" height="14" fill="#14110E"/><rect x="7.6" y="0" width="3.2" height="14" fill="#14110E"/></svg>
-      </button>
-      <div>
-        <div class="clock" id="clock">00:00</div>
-        <div class="aside"><span class="teal">◆</span> 解说由程序根据官方事件生成，已混入成片<br><span class="brand">TEAM 04 · DEEP COURT</span></div>
-      </div>
-    </div>
-
-    <div class="events" id="events"></div>
-
-    <section class="spec">
-      <hr class="rule">
-      <h2>三层信息</h2>
-      <button class="layer on" type="button" data-layer="resident"><b>常驻层</b><span>比分条烧进成片。人名只标票数够的轨迹，跟着框走。</span></button>
-      <button class="layer on" type="button" data-layer="event"><b>事件层</b><span>出手后三秒弹出预期命中率、区域和距离。点时间线跳到那一球。</span></button>
-      <button class="layer on" type="button" data-layer="expand"><b>展开层</b><span>暂停后写出官方描述和助攻。决策反差只在预期和结果打架时出现。</span></button>
-      <p class="baseline">画面上的数字都能在事件清单里对上。引力和关键度是赛季汇总，暂停后出现，不写成这一球的胜率变化。</p>
-    </section>
-
+    <video class="film" id="reel" controls playsinline preload="metadata"></video>
     <footer class="foot">
-      <span id="foot-note">训练片来自组委会发放的火箭、独行侠录像。官方比赛号写在右侧说明里。</span>
+      <span id="foot-note">训练片来自组委会发放的火箭、独行侠录像。官方比赛号写在成片说明里。</span>
       <b>TEAM 04 · 2026.10.09</b>
     </footer>
   </main>
-  <div class="ks-window" id="share-post" hidden>
-    <form class="ks-sheet" role="dialog" aria-modal="true" aria-labelledby="ks-title">
-      <header class="ks-bar">
-        <button class="ks-close" id="ks-close" type="button">取消</button>
-        <h3 id="ks-title">发布作品</h3>
-        <button class="ks-send" id="ks-send" type="submit">发布</button>
-      </header>
-      <div class="ks-main">
-        <div class="ks-cover">
-          <img id="share-cover" alt="">
-          <span class="ks-play" aria-hidden="true"></span>
-        </div>
-        <textarea id="share-caption" aria-label="作品描述" placeholder="添加作品描述…"></textarea>
-      </div>
-      <p class="ks-meta" id="share-meta">公开可见</p>
-      <p class="ks-status" id="share-status"></p>
-    </form>
-  </div>
   <script src="config.js"></script>
-  <script src="replay/clips.js?v=3"></script>
-  <script src="replay-freeze.js?v=4"></script>
-  <script src="game.js?v=18"></script>
+  <script src="replay/clips.js?v=4"></script>
+  <script src="game.js?v=20"></script>
 </body>
 </html>
