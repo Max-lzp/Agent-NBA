@@ -1,8 +1,8 @@
 """出手帧、防守人、球员赛季数据、分区 xFG → 清单里的出手事件。
 
-出手帧和最近防守人来自 pipeline/vision/release.py（results/local/{clip}.release.json）。
-画面读出防守人号码并对上名单时用画面；读不出时，用本场对位表（boxscorematchupsv3）里
-防这名投篮人时间最长、且片段里在场的人兜底，source 写明是对位表，不当成这一投的防守人。
+出手帧、持球进攻人和领防人来自 pipeline/vision/release.py（results/local/{clip}.release.json）。
+领防人是进球那次出手前几秒最常贴着投篮人的对方球员。号码只在当时在场名单里认，票数不够就不写名字，
+只报号码没读出；不拿本场对位表顶替。对位表只用来给已经认出的领防人补本场对位数据。
 分区 xFG 用 data/ 下所有同时有逐回合和投篮质量日志的比赛，按 7 个出手区域汇总。
 """
 from __future__ import annotations
@@ -134,6 +134,10 @@ def _on_court_ids(stream: dict, game: dict) -> set[int]:
     return {pid for pid, p in game["players"].items() if p.get("full_name") in names or p.get("name") in names}
 
 
+def _person(game: dict, team: str, number: str) -> Optional[int]:
+    return next((i for i, p in game["players"].items() if p["team"] == team and p["jersey"] == number), None)
+
+
 def _cv_defender(release: dict, game: dict) -> Optional[dict]:
     d = release.get("defender") or {}
     if not d:
@@ -142,10 +146,27 @@ def _cv_defender(release: dict, game: dict) -> Optional[dict]:
            "foot_gap_px": d.get("foot_gap_px")}
     if d.get("name"):
         out["name"] = d["name"]
-        pid = next((i for i, p in game["players"].items() if p["team"] == out["team"] and p["jersey"] == out["number"]), None)
+        pid = _person(game, out["team"], out["number"])
         if pid:
             out["person_id"] = pid
             out["full_name"] = game["players"][pid].get("full_name")
+    return out
+
+
+def _lead_defender(release: dict, game: dict) -> Optional[dict]:
+    d = (release.get("lead") or {}).get("defender") or {}
+    if not d or d.get("status") == "none_close":
+        return None
+    out = {"team": d.get("team") or "", "source": "cv_lead", "guard_seconds": d.get("guard_seconds"),
+           "ocr": {k: d.get(k) for k in ("votes", "reads", "share", "conf", "candidate")}}
+    if d.get("status") == "ok" and d.get("number") and d.get("name"):
+        out.update({"number": d["number"], "name": d["name"]})
+        pid = _person(game, out["team"], d.get("jersey") or d["number"])
+        if pid:
+            out["person_id"] = pid
+            out["full_name"] = game["players"][pid].get("full_name")
+    else:
+        out.update({"number": "", "status": "number_unread" if d.get("status") == "ok" else "short_guard"})
     return out
 
 
@@ -165,25 +186,31 @@ def attach(stream: dict, clip_id: str, game: dict, game_id: str) -> dict:
                                  "ball_box": rel.get("ball_box"), "t_official": rel.get("t_official")}
             shooter = official.get("person_id")
             nearest = _cv_defender(rel, game)
+            lead = _lead_defender(rel, game)
             guards = [g for g in table.get(shooter, []) if not court or g["person_id"] in court]
-            main = guards[0] if guards else None
             defense = {}
             if nearest:
                 defense["nearest"] = nearest
                 if rel.get("defender", {}).get("box"):
                     defense["nearest_box"] = rel["defender"]["box"]
-            if main:
-                defense["matchup"] = {**main, "source": "boxscorematchupsv3"}
-            chosen = nearest if nearest and nearest.get("name") else (
-                {**{k: main[k] for k in ("team", "number", "name", "full_name", "person_id")}, "source": "matchup"} if main else None)
-            if chosen:
-                official["defender"] = chosen
-                pid = chosen.get("person_id")
-                vs = next((g for g in table.get(shooter, []) if g["person_id"] == pid), None)
+            if lead:
+                defense["lead_box"] = ((rel.get("lead") or {}).get("defender") or {}).get("box_at_release")
+            if guards:
+                defense["matchup"] = {**guards[0], "source": "boxscorematchupsv3"}
+            sh = (rel.get("lead") or {}).get("shooter")
+            if sh:
+                official["shooter_check"] = {k: sh.get(k) for k in (
+                    "number", "official_number", "votes", "reads", "seconds", "hold_seconds")}
+            if lead:
+                official["defender"] = lead
+                pid = lead.get("person_id")
+                vs = next((g for g in table.get(shooter, []) if pid and g["person_id"] == pid), None)
                 if vs:
                     official["defender"]["vs_shooter"] = {k: vs[k] for k in ("seconds", "possessions", "fgm", "fga", "points", "blocks")}
                 if pid in season:
                     official["defender"]["season"] = season[pid]
+            else:
+                official.pop("defender", None)
             if defense:
                 ev["defense"] = defense
             if shooter in season:

@@ -48,6 +48,19 @@ STEP_PX = 45             # 原帧率下相邻两帧球心最多移动多少像�
 AFTER_OFFICIAL_S = 0.2   # 出手帧不会晚于官方对时太多
 LOOKBACK_S = 0.8        # 防守人颜色和号码只看出手前这么久；出手后贴身的两条轨迹会接成一个人
 MAX_CROPS = 8
+LEAD_S = 5.0            # 领防人：进球那次出手往前看这么久
+LEAD_STEP = 2           # 隔一帧检测，约 30 帧/秒
+TRACK_GAP = 8
+MATCH_BASE = 0.12      # 脚下位移不超过框高的这么多倍（每多断一帧再放宽一点）
+MATCH_PER_FRAME = 0.06
+STITCH_GAP = 12
+GUARD_RADIUS = 0.9      # 脚下距离不超过投篮人框高的这么多倍，算贴着防
+MIN_GUARD_S = 1.0       # 至少贴防这么久才叫领防人
+OCR_CROPS = 40
+CLEAN_IOU = 0.1        # 截号码的帧，和别人的框重叠不超过这么多
+MIN_VOTES = 3
+MIN_SHARE = 0.6
+HOLD_RECENT_S = 1.5    # 出手前这么久里拿球最多的同队轨迹，就是持球进攻人
 
 
 def _iou(a: list[float], b: list[float]) -> float:
@@ -211,6 +224,340 @@ def nearest_defender(reader, frames, rows, times, index: int, shooter: list[floa
     return None
 
 
+def iter_window(video: Path, t0: float, t1: float, step: int, keep: set[int] | None = None):
+    """按 step 隔帧读。keep 给了就只把这些序号的帧交出来，省内存。"""
+    cap = cv2.VideoCapture(str(video))
+    cap.set(cv2.CAP_PROP_POS_MSEC, max(0.0, t0) * 1000)
+    raw, out = 0, 0
+    while True:
+        t = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000
+        ok, frame = cap.read()
+        if not ok or t > t1 + 1e-3:
+            break
+        if raw % step == 0:
+            if keep is None or out in keep:
+                yield out, round(t, 3), frame
+            out += 1
+        raw += 1
+    cap.release()
+
+
+def detect_stream(model, video: Path, t0: float, t1: float, step: int) -> tuple[list[dict], list[float]]:
+    rows, times, batch = [], [], []
+    names = {k: str(v).lower() for k, v in model.names.items()}
+
+    def flush():
+        for res in model.predict([f for _i, _t, f in batch], conf=min(BALL_CONF, PLAYER_CONF), verbose=False, device=DEVICE):
+            balls, players = [], []
+            for box, cls, conf in zip(res.boxes.xyxy.tolist(), res.boxes.cls.tolist(), res.boxes.conf.tolist()):
+                kind = names.get(int(cls))
+                if kind == "ball" and conf >= BALL_CONF:
+                    balls.append([round(v, 1) for v in box])
+                elif kind == "player" and conf >= PLAYER_CONF:
+                    players.append([round(v, 1) for v in box])
+            rows.append({"balls": balls, "players": players})
+        batch.clear()
+
+    for i, t, frame in iter_window(video, t0, t1, step):
+        times.append(t)
+        batch.append((i, t, frame))
+        if len(batch) == 8:
+            flush()
+    if batch:
+        flush()
+    return rows, times
+
+
+def _same_color(a: str | None, b: str | None) -> bool:
+    return a is None or b is None or a == b
+
+
+def _track_color(track: dict[int, list[float]], rows: list[dict]) -> str | None:
+    cs = [rows[i]["colors"][rows[i]["players"].index(b)] for i, b in track.items() if _clean(rows, i, b)]
+    cs = [c for c in cs if c] or [c for i, b in track.items() if (c := rows[i]["colors"][rows[i]["players"].index(b)])]
+    if not cs:
+        return None
+    top = max(set(cs), key=cs.count)
+    return top if cs.count(top) / len(cs) >= 0.7 else None
+
+
+def build_tracks(rows: list[dict]) -> list[dict[int, list[float]]]:
+    """按脚下位移贪心接轨迹，只接同色球衣；断开的同一人按位置和颜色拼回去。贴身防守时两人框会重叠，不看颜色会接错人。"""
+    tracks: list[dict[int, list[float]]] = []
+    tcolor: list[list[str]] = []
+    for i, row in enumerate(rows):
+        live = [k for k, tr in enumerate(tracks) if max(tr) >= i - TRACK_GAP]
+        pairs = []
+        for k in live:
+            end = max(tracks[k])
+            prev = tracks[k][end]
+            px, py = _foot(prev)
+            height = prev[3] - prev[1]
+            limit = height * (MATCH_BASE + MATCH_PER_FRAME * (i - end))
+            for m, p in enumerate(row["players"]):
+                qx, qy = _foot(p)
+                d = ((qx - px) ** 2 + (qy - py) ** 2) ** 0.5
+                if d <= limit:
+                    pairs.append((d / height, k, m))
+        pairs.sort()
+        used_t, used_p = set(), set()
+        for _cost, k, m in pairs:
+            if k in used_t or m in used_p:
+                continue
+            seen = max(set(tcolor[k]), key=tcolor[k].count) if tcolor[k] else None
+            if not _same_color(seen, row["colors"][m]):
+                continue
+            tracks[k][i] = row["players"][m]
+            if row["colors"][m]:
+                tcolor[k].append(row["colors"][m])
+            used_t.add(k)
+            used_p.add(m)
+        for m, p in enumerate(row["players"]):
+            if m not in used_p:
+                tracks.append({i: p})
+                tcolor.append([row["colors"][m]] if row["colors"][m] else [])
+    merged = True
+    while merged:
+        merged = False
+        tracks.sort(key=min)
+        colors = [_track_color(tr, rows) for tr in tracks]
+        for a in range(len(tracks)):
+            end = max(tracks[a])
+            box = tracks[a][end]
+            width = box[2] - box[0]
+            for b in range(len(tracks)):
+                start = min(tracks[b])
+                if b == a or not 0 < start - end <= STITCH_GAP or not _same_color(colors[a], colors[b]):
+                    continue
+                other = tracks[b][start]
+                ax, ay = _foot(box)
+                bx, by = _foot(other)
+                if ((ax - bx) ** 2 + (ay - by) ** 2) ** 0.5 <= width * 0.8:
+                    tracks[a].update(tracks.pop(b))
+                    merged = True
+                    break
+            if merged:
+                break
+    return tracks
+
+
+def _clean(rows: list[dict], i: int, box: list[float]) -> bool:
+    return all(_iou(box, p) < CLEAN_IOU for p in rows[i]["players"] if p != box)
+
+
+def _read_number(reader, crops: list, allowed: set[str]) -> dict:
+    """allowed 是这一队当时在场的号码。只认在场号码，票数和占比都够才给。"""
+    from collections import Counter
+
+    votes: Counter[str] = Counter()
+    confs: dict[str, list[float]] = {}
+    raw = 0
+    for crop in crops:
+        number, conf = reader.read_crop(crop)
+        if not number:
+            continue
+        raw += 1
+        if allowed and number not in allowed:
+            continue
+        votes[number] += 1
+        confs.setdefault(number, []).append(conf)
+    if not votes:
+        return {"number": None, "votes": 0, "reads": raw, "share": 0.0, "conf": 0.0}
+    number, count = votes.most_common(1)[0]
+    share = count / sum(votes.values())
+    conf = sum(confs[number]) / len(confs[number])
+    ok = count >= MIN_VOTES and share >= MIN_SHARE
+    return {"number": number if ok else None, "candidate": number, "votes": count, "reads": raw,
+            "share": round(share, 2), "conf": round(conf, 3)}
+
+
+def _crops(video: Path, t0: float, t1: float, step: int, picks: dict[int, list[float]]) -> list:
+    out = []
+    for i, _t, frame in iter_window(video, t0, t1, step, keep=set(picks)):
+        crop = torso_crop(frame, picks[i])
+        if crop is not None:
+            out.append(crop)
+    return out
+
+
+def _foot_gap(a: list[float], b: list[float]) -> float:
+    ax, ay = _foot(a)
+    bx, by = _foot(b)
+    return ((ax - bx) ** 2 + (ay - by) ** 2) ** 0.5
+
+
+def _chain(rows: list[dict], start: int, box: list[float], stop: int, mine: str | None,
+           anchors: dict[int, list[float]]) -> dict[int, list[float]]:
+    """从 start 往 stop 一帧帧找离上一帧最近的同队框。有拿球框的帧直接用拿球框；
+    两个同队框离得差不多近就跳过这一帧，不猜。"""
+    out: dict[int, list[float]] = {}
+    step = 1 if stop >= start else -1
+    last_i, last = start, box
+    for i in range(start + step, stop + step, step):
+        if i in anchors:
+            out[i] = last = anchors[i]
+            last_i = i
+            continue
+        gap = abs(i - last_i)
+        if gap > TRACK_GAP:
+            break
+        height = last[3] - last[1]
+        limit = height * (MATCH_BASE + MATCH_PER_FRAME * gap)
+        cands = sorted((_foot_gap(p, last), p) for p, c in zip(rows[i]["players"], rows[i]["colors"])
+                       if _same_color(c, mine))
+        if not cands or cands[0][0] > limit:
+            continue
+        if len(cands) > 1 and cands[1][0] <= limit and cands[1][0] < cands[0][0] * 1.6:
+            continue
+        out[i] = last = cands[0][1]
+        last_i = i
+    return out
+
+
+def shooter_frames(rows: list[dict], times: list[float], catch_t: float, mine: str | None,
+                   release_box: list[float] | None = None) -> tuple[dict[int, list[float]], int]:
+    """接球到出手每帧拿球的同队框是投篮人；中间球没检到的帧按位置接上。接球之前沿他往回接。"""
+    anchors: dict[int, list[float]] = {}
+    for i, row in enumerate(rows):
+        if times[i] < catch_t - 0.1:
+            continue
+        h = holder(row)
+        if h is not None and _same_color(row["colors"][row["players"].index(h)], mine):
+            anchors[i] = h
+    last = len(rows) - 1
+    if release_box is not None:
+        # 起跳以后脚离地，按脚下位置会接到底下的队友身上；出手帧以找到的投篮人框为准
+        anchors[last] = max(rows[last]["players"], key=lambda p: _iou(p, release_box), default=release_box)
+    if not anchors:
+        return {}, 0
+    first = min(anchors)
+    boxes = {first: anchors[first]}
+    boxes.update(_chain(rows, first, anchors[first], len(rows) - 1, mine, anchors))
+    boxes.update(_chain(rows, first, anchors[first], 0, mine, {}))
+    return boxes, len(anchors)
+
+
+def lead_pair(model, reader, video: Path, release_t: float, shooter_box: list[float], on_court: dict,
+              color_map: dict, shooter_team: str, catch_t: float | None, cached: list | None) -> tuple[dict, list]:
+    """进球那次出手往前 LEAD_S 秒：先认清持球进攻人，再找这段时间最常贴着他的对方球员，就是领防人。"""
+    t0 = max(0.0, release_t - LEAD_S)
+    if cached:
+        rows, times = [{"balls": r["balls"], "players": r["players"]} for r in cached], [r["t"] for r in cached]
+    else:
+        rows, times = detect_stream(model, video, t0, release_t, LEAD_STEP)
+    if cached and all("colors" in r for r in cached):
+        for r, c in zip(rows, cached):
+            r["colors"] = c["colors"]
+    else:
+        for i, _t, frame in iter_window(video, t0, release_t, LEAD_STEP):
+            if i < len(rows):
+                rows[i]["colors"] = [jersey_color(frame, p) for p in rows[i]["players"]]
+    for r in rows:
+        r.setdefault("colors", [None] * len(r["players"]))
+    debug = [{"t": t, "balls": r["balls"], "players": r["players"], "colors": r["colors"]} for t, r in zip(times, rows)]
+    ball_path(rows)
+    fps = len(rows) / max(1e-6, times[-1] - times[0])
+    tracks = build_tracks(rows)
+    tone = {id(tr): _track_color(tr, rows) for tr in tracks}
+    mine = {v: k for k, v in color_map.items()}.get(shooter_team)
+    rival = next((c for c in color_map if c != mine), None)
+    catch = catch_t if catch_t is not None and catch_t < release_t else release_t - 2.0
+    shooter, held = shooter_frames(rows, times, catch, mine, shooter_box)
+    if not held:
+        return {"status": "shooter_lost", "window_s": [round(times[0], 3), round(times[-1], 3)]}, debug
+
+    near: dict[int, list[int]] = {}
+    for i, box in shooter.items():
+        height = box[3] - box[1]
+        best, gap = None, None
+        for tr in tracks:
+            if i not in tr or tone[id(tr)] != rival:
+                continue
+            d = _foot_gap(tr[i], box)
+            if d <= height * GUARD_RADIUS and (gap is None or d < gap):
+                best, gap = tr, d
+        if best is not None:
+            near.setdefault(id(best), []).append(i)
+    by_id = {id(tr): tr for tr in tracks}
+    defender_team = color_map.get(rival or "")
+    court = lambda team: {p["jersey"].lstrip("0") or "0" for p in on_court.get(team or "", [])}  # noqa: E731
+
+    clean_shooter = {i: b for i, b in shooter.items() if _clean(rows, i, b)}
+    shooter_read = _read_number(reader, _crops(video, t0, release_t, LEAD_STEP, _thin(clean_shooter, OCR_CROPS)),
+                                court(shooter_team))
+    span = sorted(shooter)
+    result = {
+        "status": "ok", "window_s": [round(times[0], 3), round(times[-1], 3)], "fps": round(fps, 1),
+        "catch_t": round(catch, 3),
+        "shooter": {"seconds": round(len(shooter) / fps, 2), "from_t": times[span[0]],
+                    "hold_seconds": round(held / fps, 2), "color": mine, "team": shooter_team, **shooter_read},
+    }
+    if not near:
+        result["defender"] = {"status": "none_close", "team": defender_team}
+        return result, debug
+    lead_id = max(near, key=lambda k: len(near[k]))
+    lead = by_id[lead_id]
+    guard_s = len(near[lead_id]) / fps
+    picks = {i: lead[i] for i in near[lead_id] if _clean(rows, i, lead[i])}
+    read = _read_number(reader, _crops(video, t0, release_t, LEAD_STEP, _thin(picks, OCR_CROPS)), court(defender_team))
+    others = sorted((len(v) / fps for k, v in near.items() if k != lead_id), reverse=True)
+    last = len(rows) - 1
+    result["defender"] = {
+        "status": "ok" if guard_s >= MIN_GUARD_S else "short",
+        "team": defender_team, "color": rival,
+        "guard_seconds": round(guard_s, 2), "next_guard_seconds": round(others[0], 2) if others else 0.0,
+        "guard_from_t": times[min(near[lead_id])], "guard_to_t": times[max(near[lead_id])],
+        "box_at_release": lead.get(last) or next((lead[k] for k in range(last, last - int(0.3 * fps) - 1, -1) if k in lead), None),
+        **read,
+    }
+    return result, debug
+
+
+def _thin(picks: dict[int, list[float]], limit: int) -> dict[int, list[float]]:
+    keys = sorted(picks)
+    if len(keys) > limit:
+        stride = len(keys) / limit
+        keys = [keys[int(k * stride)] for k in range(limit)]
+    return {i: picks[i] for i in keys}
+
+
+def catch_time(stream: dict, shot: dict) -> float | None:
+    """清单里出手前最后一次传给投篮人的传球。"""
+    actor = shot.get("actor") or {}
+    best = None
+    for poss in stream.get("possessions") or []:
+        for ev in poss.get("events") or []:
+            target = ev.get("target") or {}
+            if ev.get("type") != "pass" or ev["t"] >= shot["t"]:
+                continue
+            if (target.get("track_id") is not None and target.get("track_id") == actor.get("track_id")) or (
+                    target.get("number") and target.get("number") == actor.get("number")):
+                best = ev["t"] if best is None else max(best, ev["t"])
+    return best
+
+
+def _name_lead(lead: dict, game_id: str | None, on_court: dict, ev: dict) -> None:
+    """号码只在当时在场名单里对名字。持球人号码和官方记录对不上就标出来。"""
+    def name_of(team: str, number: str | None) -> dict:
+        for p in on_court.get(team) or []:
+            if number and (p["jersey"].lstrip("0") or "0") == number:
+                return {"name": p["name"], "full_name": p.get("full_name"), "jersey": p["jersey"]}
+        return {}
+
+    sh = lead.get("shooter")
+    if sh:
+        official = str((ev.get("actor") or {}).get("number") or "").lstrip("0") or None
+        sh["official_number"] = official
+        if sh.get("number"):
+            sh.update(name_of(sh["team"], sh["number"]))
+            sh["check"] = "，和官方记录一致" if sh["number"] == official else f"，和官方记录 #{official} 不一致"
+        else:
+            sh["check"] = "，画面没确认，用官方记录"
+    de = lead.get("defender")
+    if de and de.get("number") and de.get("status") == "ok":
+        de.update(name_of(de.get("team") or "", de["number"]))
+
+
 def shots_of(clip_id: str) -> tuple[list[dict], str | None]:
     stream = json.loads((OUT / f"{clip_id}.json").read_text(encoding="utf-8"))
     out = []
@@ -257,6 +604,21 @@ def run(clip_id: str, redetect: bool = False) -> Path:
         shooter = holder(rows[index])
         item.update({"t": times[index], "source": "ball_left_hand", "shooter_box": shooter,
                      "ball_box": rows[index]["ball"]})
+        if (ev.get("official") or {}).get("made"):
+            stream = json.loads((OUT / f"{clip_id}.json").read_text(encoding="utf-8"))
+            on_court = (stream.get("official") or {}).get("on_court") or {}
+            lead, lead_rows = lead_pair(model, reader, video, times[index], shooter, on_court, color_map,
+                                        (ev.get("actor") or {}).get("team") or "", catch_time(stream, ev),
+                                        None if redetect else (cached or {}).get("lead_rows"))
+            debug[-1]["lead_rows"] = lead_rows
+            _name_lead(lead, official_id or clip.get("game_id"), on_court, ev)
+            item["lead"] = lead
+            sh, de = lead.get("shooter") or {}, lead.get("defender") or {}
+            print(f"[持球人] 接球 {lead.get('catch_t')}s，跟住 {sh.get('seconds')}s、持球 {sh.get('hold_seconds')}s，号码 {sh.get('number') or '没读出'}"
+                  f"（{sh.get('votes')} 票 / 读到 {sh.get('reads')}，候选 {sh.get('candidate')}）{sh.get('check', '')}")
+            print(f"[领防人] {de.get('team') or '?'} 贴防 {de.get('guard_seconds')}s（次多 {de.get('next_guard_seconds')}s），"
+                  f"号码 {de.get('number') or '没读出'}（{de.get('votes')} 票 / 读到 {de.get('reads')}，候选 {de.get('candidate')}）"
+                  f" {de.get('name') or ''}")
         defender = nearest_defender(reader, frames, rows, times, index, shooter)
         if defender:
             defender["team"] = color_map.get(defender["color"] or "")

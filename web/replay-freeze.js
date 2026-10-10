@@ -73,22 +73,24 @@
   }
 
   function defenseLines(shot) {
-    const lines = [];
-    const near = shot.nearest;
     const d = shot.defender;
-    if (near) {
-      const who = near.display || `${TEAM_ZH[near.team] || near.team || ""}球员${near.number ? " #" + near.number : "，号码没读出"}`;
-      lines.push(`最近防守人：${who}（画面）`);
+    if (!d || !d.name) {
+      const team = d?.team ? `${TEAM_ZH[d.team] || d.team}球员，` : "";
+      return [`领防：${team}号码没读出`];
     }
-    if (d) {
-      const head = d.source === "matchup" ? "本场主防（对位表）" : "防守人";
-      const vs = d.vs_shooter;
-      let line = `${head}：${d.display || d.name} #${d.number}`;
-      if (vs) line += ` · 对位 ${Math.round(vs.seconds / 60)} 分钟，${shot.name} ${vs.fgm}/${vs.fga}`;
-      lines.push(line);
-      if (d.season) lines.push(`赛季场均 抢断 ${d.season.stl} · 盖帽 ${d.season.blk} · 防守篮板 ${d.season.dreb}`);
-    }
+    const who = d.display || d.name;
+    const lines = [`领防：${who} #${d.number}（画面，出手前贴防 ${Number(d.guard_seconds).toFixed(1)} 秒）`];
+    const vs = d.vs_shooter;
+    if (vs) lines.push(`本场对位 ${Math.round(vs.seconds / 60)} 分钟，${shot.name} ${vs.fgm}/${vs.fga}、得 ${vs.points} 分`);
+    if (d.season) lines.push(`赛季场均 抢断 ${d.season.stl} · 盖帽 ${d.season.blk} · 防守篮板 ${d.season.dreb}`);
     return lines;
+  }
+
+  function shooterSource(shot) {
+    const c = shot.shooterCheck;
+    if (c && c.number && c.number === c.official_number) return "画面确认";
+    if (c && c.number && c.number !== c.official_number) return `画面读到 #${c.number}，以官方记录为准`;
+    return "官方记录";
   }
 
   function cardHtml(pack, shot, left) {
@@ -96,8 +98,8 @@
     const defense = defenseLines(shot).map((line) => `<p>${line}</p>`).join("");
     return `<div class="freeze-head"><b>出手瞬间</b><span>定格 ${Math.ceil(left / 1000)} 秒</span></div>
       <p class="freeze-score">${scoreLine(pack, shot)}</p>
-      <h3><i class="dot red"></i>${shot.name} #${shot.number}</h3>${offense}
-      ${defense ? `<h3><i class="dot gold"></i>防守</h3>${defense}` : ""}`;
+      <h3><i class="dot red"></i>${shot.name} #${shot.number}<small>${shooterSource(shot)}</small></h3>${offense}
+      <h3><i class="dot gold"></i>防守</h3>${defense}`;
   }
 
   function ellipse(ctx, box, scale, ratio, color, fill, dashed) {
@@ -130,17 +132,13 @@
   }
 
   function drawMarks(ctx, shot, scale, ratio) {
-    const near = shot.nearest;
-    if (near?.box) {
-      ellipse(ctx, near.box, scale, ratio, "#F5C542", null, true);
-      tag(ctx, "最近防守", ((near.box[0] + near.box[2]) / 2) * scale, near.box[1] * scale, ratio, "#F5C542");
+    const lead = shot.leadBox;
+    if (lead) {
+      ellipse(ctx, lead, scale, ratio, "#F5C542", null, true);
+      const d = shot.defender;
+      tag(ctx, d?.name ? `领防 · ${d.display || d.name} #${d.number}` : "领防", ((lead[0] + lead[2]) / 2) * scale, lead[1] * scale, ratio, "#F5C542");
     }
     const box = shot.release.shooter_box;
-    ctx.save();
-    ctx.lineWidth = 2.5 * ratio;
-    ctx.strokeStyle = "rgba(255,43,43,0.8)";
-    ctx.strokeRect(box[0] * scale, box[1] * scale, (box[2] - box[0]) * scale, (box[3] - box[1]) * scale);
-    ctx.restore();
     ellipse(ctx, box, scale, ratio, RED, "rgba(255,43,43,0.32)", false);
     tag(ctx, `出手 · ${shot.name}`, ((box[0] + box[2]) / 2) * scale, box[1] * scale, ratio, RED);
   }

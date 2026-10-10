@@ -25,6 +25,48 @@
         862.0,
         264.7
       ],
+      "lead": {
+        "status": "ok",
+        "window_s": [
+          11.728,
+          16.733
+        ],
+        "fps": 30.2,
+        "catch_t": 14.831,
+        "shooter": {
+          "seconds": 4.24,
+          "from_t": 11.728,
+          "hold_seconds": 0.76,
+          "color": "dark",
+          "team": "DAL",
+          "number": null,
+          "votes": 0,
+          "reads": 2,
+          "share": 0.0,
+          "conf": 0.0,
+          "official_number": "32",
+          "check": "，画面没确认，用官方记录"
+        },
+        "defender": {
+          "status": "ok",
+          "team": "HOU",
+          "color": "white",
+          "guard_seconds": 1.76,
+          "next_guard_seconds": 0.66,
+          "guard_from_t": 11.795,
+          "guard_to_t": 16.033,
+          "box_at_release": null,
+          "number": "17",
+          "candidate": "17",
+          "votes": 7,
+          "reads": 19,
+          "share": 1.0,
+          "conf": 0.921,
+          "name": "Eason",
+          "full_name": "Tari Eason",
+          "jersey": "17"
+        }
+      },
       "defender": {
         "box": [
           814.6,

@@ -421,10 +421,6 @@ h2 {
 .rail p { margin: 0 0 6px; }
 .rail .muted { color: var(--muted); font-size: 12px; }
 .rail .contrast { color: var(--orange); }
-.rail .lineup { display: grid; gap: 8px; margin-top: 10px; }
-.rail .lineup div { border-top: 2px solid var(--line); padding-top: 6px; }
-.rail .lineup span { display: block; color: var(--muted); font-size: 12px; }
-.script { margin: 12px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
 
 .hud, .callout, .xfg, .dps {
   position: absolute;
@@ -635,8 +631,20 @@ h2 {
 }
 .floor p { margin: 0; font-size: 12px; letter-spacing: 0.08em; }
 .floor ul { list-style: none; margin: 8px 0 0; padding: 0; }
-.floor li { font-size: 13px; line-height: 1.55; }
-.floor li b { font-weight: 500; margin-right: 6px; }
+.floor li {
+  display: grid;
+  grid-template-columns: 2.4em minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: baseline;
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.25;
+}
+.floor li b { font-weight: 500; }
+.floor .who { min-width: 0; }
+.floor .who strong { display: block; font-weight: 500; }
+.floor .who em { display: block; margin-top: 1px; font-style: normal; color: var(--muted); font-size: 11px; }
+.floor li i { font-style: normal; color: var(--muted); font-size: 12px; }
 .share { margin-top: 14px; }
 .share-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0 0 10px; }
 .share h2 { font-family: MiSans, sans-serif; font-size: 15px; letter-spacing: 0.18em; color: var(--muted); font-weight: 400; margin: 0; }
@@ -1127,6 +1135,7 @@ h2 {
 .freeze-head b { color: #ff2b2b; letter-spacing: .12em; font-size: 1.05em; }
 .freeze-head span { color: var(--muted); font-size: .95em; }
 .freeze .freeze-score { color: var(--cream); font-weight: 600; margin: 0 0 6px; }
+.freeze h3 small { font-size: .78em; font-weight: 400; color: var(--muted); margin-left: .4em; }
 .freeze h3 { margin: .4em 0 .1em; font-size: 1.1em; display: flex; align-items: center; gap: 6px; }
 .freeze p { margin: 0; color: var(--muted); }
 .freeze .dot { width: .7em; height: .7em; border-radius: 50%; display: inline-block; }
