@@ -164,10 +164,88 @@
       line-height: 1.5;
     }
     pre code { color: inherit; }
+    .intent-lead { margin-bottom: 0.35rem; }
+    .try {
+      display: inline-block;
+      margin: 0.15rem 0 0.15rem;
+      color: #14110E;
+      background: var(--orange);
+      text-decoration: none;
+      font-weight: 700;
+      padding: 0.55rem 1.05rem;
+      border-radius: 999px;
+    }
+    .try:hover { filter: brightness(1.06); }
+    .try:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
+    .intent-grid { display: grid; gap: 0.75rem; margin: 0.95rem 0 0; }
+    #intent { margin: 2.2rem 0 0.15rem; }
+    #intent > h2 { margin-top: 0; }
+    .intent-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.95rem 1rem 1.05rem;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.35rem 0.9rem;
+      align-items: start;
+    }
+    .intent-ic {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #2a1812;
+      color: var(--orange);
+      border: 1px solid #8a4a28;
+      grid-row: 1 / span 2;
+    }
+    .intent-ic svg { width: 1.35rem; height: 1.35rem; display: block; }
+    .intent-card h3 { font-size: 1.05rem; }
+    .intent-card ul { margin: 0.15rem 0 0; padding-left: 1.15rem; }
+    .intent-card li { margin: 0.4rem 0; }
+    .intent-card a { overflow-wrap: anywhere; }
+    .closing { margin-top: 0.95rem; }
+    #share-social { margin: 2.2rem 0 0.2rem; }
+    #share-social > h2 { margin-top: 0; }
+    .share-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin: 0.75rem 0 0.15rem;
+      padding: 0;
+      list-style: none;
+    }
+    .share-pills li {
+      margin: 0;
+      color: var(--cream);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.32rem 0.8rem;
+      font-size: 0.92rem;
+    }
+    @media (min-width: 1100px) {
+      .intent-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        align-items: start;
+        width: min(68rem, calc(100vw - 4rem));
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .intent-card { grid-template-columns: 1fr; }
+      .intent-ic { grid-row: auto; margin-bottom: 0.45rem; }
+    }
     @media (max-width: 640px) {
       body { font-size: 16px; }
       main { padding: 1.15rem 0.9rem 3rem; }
       h1 { font-size: 1.6rem; }
+      .try { display: block; text-align: center; }
+      .intent-card { grid-template-columns: 1fr; }
+      .intent-ic { grid-row: auto; }
       .table-wrap { overflow: visible; }
       table, thead, tbody, tr, th, td { display: block; min-width: 0; }
       thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -191,13 +269,80 @@
     <h1>Deep Court</h1>
     <p class="lead">Deep Court 读取一段 NBA 比赛视频和官方深度数据，在云上生成带记分牌、人名和数据的回放；分析师跑在 Amazon Bedrock AgentCore 上，观众从 Amazon CloudFront 打开成片。</p>
     <p>让每一次出手被重新讲述一遍。打开这个域名就是成片回放，不用选文件，也不用等分析跑完。</p>
+    <section id="intent">
+    <h2>我们的初心：让更多人看懂 NBA</h2>
+    <p class="intent-lead">篮球很好看，但对第一次看球的人来说，屏幕上满是号码、术语和一闪而过的数据，很难跟上。Deep Court 想做的不只是给老球迷更深的数据，更希望让从来没看过 NBA 的人，也能看懂一场比赛、喜欢上一支球队。</p>
+    <p>所以打开作品时，我们会先问一句「你想怎么看这段比赛」，其中专门留了一个给新观众的选项：带新球迷一起看。不管是陪女朋友、陪家里的孩子，还是带第一次看球的朋友，都可以选它。</p>
+    <p><a class="try" href="/game.html?mode=daikan">选『带新球迷一起看』试试</a></p>
+    <div class="intent-grid">
+      <article class="intent-card">
+        <span class="intent-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M12 2.6l2.7 6.3 6.8.5-5.2 4.4 1.6 6.6L12 16.8 6.1 20.4l1.6-6.6L2.5 9.4l6.8-.5L12 2.6z"></path>
+          </svg>
+        </span>
+        <h3>1. 看得懂：用简单的符号代替术语</h3>
+        <ul>
+          <li>球员有多强，直接画成五颗星：在队里排第一就是五颗星，每往后一名少半颗，不用懂数据也能一眼看出谁是核心。</li>
+          <li>每个术语配一句白话解释，比如「盖帽」就是把对手投出去的球打掉。</li>
+          <li>盖帽、3+1 这样的精彩瞬间，进球之后会再慢放回放至少 10 秒，配上数据卡，告诉你这球到底难在哪：比如这一投的预期命中率只有三成，他还是投进了。</li>
+        </ul>
+      </article>
+      <article class="intent-card">
+        <span class="intent-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+            <path d="M3 10h18M8 3v4M16 3v4"></path>
+            <path d="M8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01" stroke-width="2.4"></path>
+          </svg>
+        </span>
+        <h3>2. 记得住：喜欢上一支球队，就别错过下一场</h3>
+        <ul>
+          <li>看完这段比赛喜欢上哪支球队，可以直接订阅这支球队 2026–27 赛季的全年赛程，下一场什么时候打一目了然。独行侠是 <a href="/schedules/dal-2026-27.ics">schedules/dal-2026-27.ics</a>，火箭是 <a href="/schedules/hou-2026-27.ics">schedules/hou-2026-27.ics</a>。</li>
+        </ul>
+      </article>
+      <article class="intent-card">
+        <span class="intent-ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+            <path fill="currentColor" d="M10 8.1v7.8l7-3.9-7-3.9z"></path>
+          </svg>
+        </span>
+        <h3>3. 跟得上：从看一场，到每一场都不错过</h3>
+        <ul>
+          <li>页面上提供 NBA 官方的 <a href="https://www.nba.com/league-pass-purchase">League Pass</a> 入口，以及国内的 <a href="https://v.qq.com/channel/nba">腾讯视频</a> 订阅入口，看完这场，接下来的每一场都能接着看。</li>
+          <li>还可以直接买到球衣等球队周边，把喜欢变成支持。<a href="https://store.nba.com/dallas-mavericks/t-25921725+z-9808307-1099833793">独行侠周边</a>、<a href="https://store.nba.com/houston-rockets/t-25701720+z-9900621-3740132585">火箭周边</a>。</li>
+        </ul>
+      </article>
+    </div>
+    <p class="closing">我们相信，数据和 AI 不只是让专家看得更深，也能让新观众第一次就看懂、看进去。这就是 Deep Court 的初心。</p>
+    </section>
+
+    <section id="share-social">
+      <h2>和社交媒体联动：一键分享精彩瞬间</h2>
+      <p>系统会自动截取播放器里当前这一帧。用户点击播放器下方的分享区，就能跳转到与 NBA 正式合作的 5 个官方平台的作品发布页，和其他球迷分享比赛的精彩瞬间。</p>
+      <ul class="share-pills" aria-label="分享平台">
+        <li>快手</li>
+        <li>哔哩哔哩</li>
+        <li>视频号</li>
+        <li>微博</li>
+        <li>抖音</li>
+      </ul>
+      <p class="note">五个入口都在 <code>web/game.html</code> 的分享区，用 <code>data-share</code> 区分：<code>kuaishou</code>、<code>bilibili</code>、<code>wechat</code>、<code>weibo</code>、<code>douyin</code>。由于各平台的开发者接口还在申请中，这次先做了分享入口，接口开通后即可直接发布。</p>
+    </section>
+
     <ul class="toc">
+      <li><a href="#intent">初心</a></li>
+      <li><a href="#share-social">分享</a></li>
       <li><a href="#highlights">作品亮点</a></li>
+      <li><a href="#watch">观看方式</a></li>
       <li><a href="#flow">管道</a></li>
       <li><a href="#agent">AI Agent</a></li>
       <li><a href="#bedrock">Bedrock</a></li>
       <li><a href="#steps">逐步说明</a></li>
+      <li><a href="#highlight-replay">精彩回放</a></li>
       <li><a href="#services">服务总表</a></li>
+      <li><a href="#quality">工程质量</a></li>
       <li><a href="#iac">基础设施即代码</a></li>
       <li><a href="#trust">可信度</a></li>
     </ul>
@@ -209,6 +354,18 @@
       <li>暂停后展开官方逐回合原文、助攻和当时场上的十个人。半场图上的点用官方坐标。</li>
       <li>播放器可以选英文原声或中文解说。中文是整段英文解说的译文，用 Amazon Polly 的知语说出来，不再只写两句，原解说也不留在这条音轨里。</li>
     </ol>
+
+    <h2 id="watch">三种观看方式，页面只留考试片</h2>
+    <p>打开回放会先问一句「你想怎么看这段比赛」。三种方式写在 <code>web/game.js</code> 的 <code>MODES</code>，按钮在 <code>web/game.html</code>。地址带 <code>?mode=</code> 就直接进入，例如 <a href="/game.html?mode=daikan"><code>/game.html?mode=daikan</code></a>。</p>
+    <ul>
+      <li><code>laofan</code> 老球迷：数据最密，术语不解释。术语白话这一块会隐藏。</li>
+      <li><code>xinfan</code> 新球迷：只留关键数据。页面上的术语白话（<code>#glossary</code>）会打开，每个术语配一句解释。</li>
+      <li><code>daikan</code> 带新球迷一起看：球员头像，以及关注本队赛程、线上看球和球队周边。赛程文件是 <a href="/schedules/dal-2026-27.ics"><code>schedules/dal-2026-27.ics</code></a>（独行侠）和 <a href="/schedules/hou-2026-27.ics"><code>schedules/hou-2026-27.ics</code></a>（火箭）。League Pass 指向 <a href="https://www.nba.com/league-pass-purchase">nba.com/league-pass-purchase</a>，腾讯视频指向 <a href="https://v.qq.com/channel/nba">v.qq.com/channel/nba</a>。球衣进独行侠、火箭各自的 NBA Store。</li>
+    </ul>
+    <p>队内排名画成星：第 1 名五颗星，每往后一名少半颗，最少半颗。算法在 <code>pipeline/enrich/defense.py</code> 的 <code>stars</code>，定格卡用 <code>web/replay-freeze.js</code> 画出来。</p>
+    <p><code>web/config.js</code> 里 <code>examOnly: true</code>。回放页只展示考试片。训练片和样片 <code>flagg</code>、<code>amen</code>、<code>warm-probe</code>、<code>rehearsal</code> 从切换列表里拿掉，数据文件仍留着。<code>?clip=</code> 仍可直达某一支。考试片还没发布时，页面写「考试片生成中」，不白屏。</p>
+    <p>同一份 <code>web/config.js</code> 把 <code>hiddenTracks</code> 设为 <code>zh</code>，中文解说先不展示，新版成片确认后再放回。<code>webNames: false</code> 时网页不再叠画名签，只用成片里烧进去的一层，避免重影。</p>
+    <p class="note">代码已就绪，待部署。CloudFront 上现在的播放器仍是较早的两档（解说向、陪女友观看），还不会读 <code>mode=daikan</code>，也还不会按 <code>examOnly</code> 隐藏样片。</p>
 
     <h2 id="flow">整条管道</h2>
     <p>下面按处理顺序串起环节和对应的亚马逊云服务。橙色节点是 Amazon Bedrock 和 Amazon Bedrock AgentCore。状态和仓库 <code>docs/pipeline-map.md</code> 一致，日期 2026-10-10。图上收成八个环节。后面十四张卡片把全景里的步骤拆开，服务总表用卡片上的步骤号。</p>
@@ -329,7 +486,8 @@
       </header>
       <p>Amazon Rekognition <code>DetectText</code> 是号码的第二票，和 Qwen 的读数放进同一次多数票。Amazon Textract <code>DetectDocumentText</code> 只在 Qwen 调用失败时读号码。记分牌上的 Textract 只做过探测，不在主路径；CDK 里的 <code>OcrScoreboard</code> 函数主路径不调用。记分牌主路径是同一台机器上的 RapidOCR，检测边长限制 640。</p>
       <p>中文音轨在成片之后、同一容器里做。Amazon Transcribe 转写英文原声。常见的人名听错先改掉，再交给 Amazon Translate 译成中文。Amazon Polly 用 Neural 引擎、语音知语（<code>Zhiyu</code>）、语言 <code>cmn-CN</code>，按原句时间合成。普通话在 Polly 里这条神经语音是知语。现场声和原解说叠在一起，声道又几乎是单声道，分不开，所以中文音轨只有合成人声，原解说不留在里面。英文音轨就是成片里的原声。</p>
-      <p>仓库里有篮球术语表 <code>data/terminology/basketball-en-zh.csv</code>，导入脚本交给 Amazon Translate 时的名称是 <code>deepcourt-basketball</code>。音轨代码只有在环境变量 <code>TRANSLATE_TERMINOLOGY</code> 写了这个名字时才带上术语表。当前 Batch 作业定义没有这个变量，探测片的翻译请求不带术语表。术语表不存在或没有权限时，同一句去掉术语表再译一次，音轨不会因此中断。</p>
+      <p>仓库里有篮球术语表 <code>data/terminology/basketball-en-zh.csv</code>。CDK 用 <code>AwsCustomResource</code>（<code>cdk/lib/terminology.ts</code> 的 <code>BasketballTerminology</code>）调用 Amazon Translate 的 <code>ImportTerminology</code>，名称是 <code>deepcourt-basketball</code>，方向 <code>UNI</code>，更新时 <code>MergeStrategy</code> 为 <code>OVERWRITE</code>。作业定义的环境变量 <code>TRANSLATE_TERMINOLOGY</code> 写成这个名字。音轨代码（<code>pipeline/present/tracks.py</code>）只有在这个变量有值时才把术语表放进翻译请求。这份模板还没有 <code>cdk deploy</code>，线上作业定义还没有这个变量，探测片的翻译请求不带术语表。状态：代码已就绪，待部署。术语表不存在或没有权限时，同一句去掉术语表再译一次，音轨不会因此中断。</p>
+      <p>球员、球队和场馆的中文译名以 <code>data/names/zh-names.json</code> 为准（<code>name_zh</code> / <code>alias_zh</code>）。精彩回放直接读这份文件。分析师的运行时包带不走 <code>data/names/</code>，<code>agent/season_data.py</code> 里的名单与这份文件对齐，单测会核对。</p>
       <p>探测片 <code>warm-probe</code> 的中文音轨已经在播放器里。训练片弗拉格、阿门的两条音轨是本机做的，已经放在网页桶。</p>
     </article>
 
@@ -507,7 +665,7 @@
         <li>Amazon Polly Neural Zhiyu</li>
         <li>Amazon S3</li>
       </ul>
-      <p class="note"><code>warm-probe</code> 的中文音轨已在播放器里。训练片的两条音轨是本机做的。术语表要设 <code>TRANSLATE_TERMINOLOGY</code> 才带上，当前作业没有这个变量。</p>
+      <p class="note"><code>warm-probe</code> 的中文音轨已在播放器里。训练片的两条音轨是本机做的。CDK 里的作业定义会带上 <code>TRANSLATE_TERMINOLOGY=deepcourt-basketball</code>，术语表由 <code>AwsCustomResource</code> 导入。这份模板还没部署，线上作业没有这个变量。术语表：代码已就绪，待部署。</p>
     </article>
 
     <article class="card" id="step-12">
@@ -523,6 +681,23 @@
         <li>AWS Elemental MediaConvert 模板已建</li>
       </ul>
       <p class="note"><code>assets/warm-probe-broadcast.mp4</code> 已在网页桶。</p>
+    </article>
+
+    <article class="card" id="highlight-replay">
+      <header>
+        <h3>精彩瞬间自动识别与回放</h3>
+        <span class="badge wait">代码已就绪，待部署</span>
+      </header>
+      <p><b>业务流程。</b><code>inference/highlights.py</code> 从官方逐回合里自动找出盖帽，以及打进加犯规（三分记为 3+1）。逐回合里有扣篮或抢断时也会收进来。官方时钟先对上记分牌，再靠停表、进攻时间重置把出手放到哨响之前。它不改 <code>inference/run_job.py</code>，成片出来之后再接：慢放，并在关键帧定格，整段至少 10 秒（<code>MIN_REPLAY_S</code>）。</p>
+      <p><b>业务意义。</b>盖帽、3+1 这种球进了之后还会再看一遍，数据卡说明这一球难在哪。卡片上的数字只来自当次传入的官方逐回合、shot quality 和赛季表，每条带着出处，不写死某一场的结果。中文名用 <code>data/names/zh-names.json</code>。队内星级用 <code>pipeline/enrich/defense.py</code> 的 <code>stars</code>。<code>inference/test_highlights.py</code> 用一场合成比赛检查不会把考试片的数字写进程序。</p>
+      <p><code>inference/card_layout.py</code> 的 <code>place_cards</code> 不调用模型。画面切成小格，扣掉球员框、记分牌和边缘，再在空地上放卡。放不下就缩小一档，还不行就退到该侧上角。进攻卡放在远离篮筐的一侧，防守卡放在靠近篮筐的一侧。<code>inference/test_card_layout.py</code> 检查摆卡。</p>
+      <ul class="tags">
+        <li>官方逐回合与 shot quality</li>
+        <li>ffmpeg 慢放和定格</li>
+        <li>card_layout.py 避开球员</li>
+        <li>data/names/zh-names.json</li>
+      </ul>
+      <p class="note">代码已就绪，待部署。还没有接进 Batch 作业，也还没有部署。</p>
     </article>
 
     <article class="card" id="step-13">
@@ -652,7 +827,7 @@
           <tr>
             <td data-label="服务">Amazon Translate</td>
             <td data-label="用在哪一步">11 解说音轨</td>
-            <td data-label="为什么用托管版">把转写译成中文。术语表代码已接上，当前作业未设置术语表名称，请求就不带表。</td>
+            <td data-label="为什么用托管版">把转写译成中文。自定义术语表 <code>deepcourt-basketball</code> 由 CDK 的 <code>AwsCustomResource</code>（<code>cdk/lib/terminology.ts</code>）导入 <code>data/terminology/basketball-en-zh.csv</code>，作业定义默认写入 <code>TRANSLATE_TERMINOLOGY</code>。译名统一用 <code>data/names/zh-names.json</code>。这份模板还没部署，线上请求仍不带表。代码已就绪，待部署。术语表缺失时，同一句会去掉术语表再译一次。</td>
           </tr>
           <tr>
             <td data-label="服务">Amazon Polly</td>
@@ -716,6 +891,15 @@
     <p>决策反差是二次加工，不是另一套数据：预期命中率低于四成却进了，标成英雄球；高于六成却没进，标成可惜。其余出手只显示预期命中率本身。</p>
     <p>引力和关键度来自官方赛季汇总。暂停后写在该球员这一球旁边，标明不是这一球的胜率变化。训练片的分差效率、引力和队内排名仍在本机计算。</p>
     <p class="note">和仓库里的 <code>docs/pipeline-map.md</code> 是同一张图。训练片是组委会发放的火箭、独行侠录像。考试片发布后再按同一条命令重跑，并在这里补上出处。</p>
+
+    <h2 id="quality">工程质量</h2>
+    <ul>
+      <li>GitHub Actions：<code>.github/workflows/ci.yml</code>。push 和 pull request 都会跑 <code>agent/</code>、<code>lambdas/</code> 的单元测试，检查 <code>inference/</code> 和 <code>pipeline/</code> 的语法，并执行 <code>cdk synth</code>。不连 AWS 账号。</li>
+      <li>成片自动自检：<code>scripts/qa/check_output.py</code>。检查 CloudFront 根路径和作品页、成片与中英文音轨、事件清单、任务表、认人是否在场、记分牌。某一项失败只写进报告，不中途退出。默认把 Markdown 和 JSON 写到 <code>scripts/qa/out/</code>。加上 <code>--publish</code> 才把 HTML 报告传到网页桶 <code>qa/{jobId}.html</code>。</li>
+      <li>考试应急预案：<code>docs/exam-fallback.md</code>。考试片发布之后，按时间在云上重交、改走本机成片、或只交烧了记分牌的成片，20:00 前交到 CloudFront 根路径。</li>
+      <li>标准答案只用于验收。<code>docs/exam/answer-key.md</code> 对照考试片 <code>double.mp4</code>、官方数据和 <code>data/names/zh-names.json</code>。<code>docs/exam/audit-1910.md</code> 是 19:10 的只读纠错清单：不改识别代码，也不把标准答案写进页面或解说合成稿。</li>
+      <li>分析师问答评测在 <code>agent/eval/</code>。<code>run_eval.py</code> 用 <code>questions.json</code> 里的参考答案打分，参考数字不进提示词和工具。<code>report.md</code> 记下模拟模式修后 20/20。线上 <code>POST /api/agent/ask</code> 评的是已经部署的分析师，通过 0/20，这次没有重新部署。工具和接地的修改：代码已就绪，待部署。</li>
+    </ul>
 
     <h2>页面</h2>
     <ul>
