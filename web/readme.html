@@ -64,7 +64,7 @@
     main {
       width: min(760px, 100%);
       margin: 0 auto;
-      padding: 1.35rem 1.15rem 4rem;
+      padding: 1.35rem 1.15rem calc(100vh - var(--bar-h));
       min-width: 0;
     }
     h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 0.6rem; }
@@ -148,7 +148,7 @@
     pre code { color: inherit; overflow-wrap: normal; }
     @media (max-width: 640px) {
       body { font-size: 16px; }
-      main { padding: 1.1rem 0.9rem 3rem; }
+      main { padding: 1.1rem 0.9rem calc(100vh - var(--bar-h)); }
       h1 { font-size: 1.6rem; }
       .bar { padding: 0 0.75rem; }
     }
