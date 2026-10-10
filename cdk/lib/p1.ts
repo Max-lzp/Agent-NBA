@@ -166,22 +166,14 @@ export function addP1(
 
   new mediaconvert.CfnJobTemplate(stack, 'RenderTemplate', {
     name: 'deepcourt-render-template',
-    description: 'Overlay a PNG on the source and write a 1080p MP4.',
+    description: '1080p H.264 MP4. 输入和叠加在提交作业时指定。',
     settingsJson: {
       Inputs: [
         {
           TimecodeSource: 'ZEROBASED',
-          FileInput: 's3://placeholder/raw/input.mp4',
           VideoSelector: {},
           AudioSelectors: {
             'Audio Selector 1': { DefaultSelection: 'DEFAULT' },
-          },
-          MotionImageInserter: {
-            Input: 's3://placeholder/overlays/overlay.png',
-            InsertionMode: 'PNG',
-            StartTime: '00:00:00:00',
-            Playback: 'REPEAT',
-            Offset: { ImageX: 0, ImageY: 0 },
           },
         },
       ],

@@ -351,7 +351,6 @@ function scoreAt(t) {
 }
 
 function render() {
-  const t = Number.isFinite(els.reel.currentTime) ? els.reel.currentTime : 0;
   els.names.classList.toggle("hidden", !state.layers.resident);
   renderFloor();
   if (els.events) {
@@ -640,6 +639,12 @@ function format(total) {
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
+function frameLabel() {
+  const t = Number.isFinite(els.reel.currentTime) ? els.reel.currentTime : 0;
+  const bug = scoreAt(t);
+  return bug ? `${bug.period} ${bug.clock}` : format(t);
+}
+
 async function pollJob() {
   els.subhead.textContent = "任务读取中";
   let attempts = 0;
@@ -783,7 +788,7 @@ function downloadDataUrl(url, name) {
 }
 
 function testCaption() {
-  const clock = els.clock.textContent || "00:00";
+  const clock = frameLabel();
   const title = state.pack && state.pack.title ? state.pack.title : "当前回放";
   return `【测试文案】DEEP COURT\n${title}\n画面停在 ${clock}。封面用的是这一帧，正式文案下一步再生成。\n#NBA #DEEPCOURT`;
 }
