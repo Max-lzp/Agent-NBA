@@ -4,75 +4,721 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Team 04 · Deep Court 作品说明</title>
+  <meta name="description" content="Deep Court 用 NBA 比赛视频和官方深度数据生成带回放画面的解说，分析师跑在 Amazon Bedrock AgentCore 上，页面经 Amazon CloudFront 打开。">
   <style>
-    body { margin: 0; background: #14110E; color: #F3EDE2; font: 18px/1.6 sans-serif; }
-    main { max-width: 52rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 0.6rem 0 0; }
-    th, td { text-align: left; vertical-align: top; padding: 0.35rem 0.45rem; border-bottom: 1px solid #3a342c; }
-    th { color: #A3988A; font-weight: 600; }
-    h1 { font-size: 1.8rem; line-height: 1.25; margin: 0 0 0.4rem; }
-    h2 { font-size: 1.15rem; margin: 2rem 0 0.4rem; }
-    p, li { color: #F3EDE2; }
-    .muted { color: #A3988A; }
-    a { color: #F1681E; }
-    code { color: #5FBFA9; }
+    :root {
+      --bg: #14110E;
+      --cream: #F3EDE2;
+      --muted: #A3988A;
+      --orange: #F1681E;
+      --teal: #5FBFA9;
+      --line: #3a342c;
+      --card: #1C1814;
+      --ai-bg: #241812;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--cream);
+      font: 17px/1.65 "Segoe UI", "PingFang SC", "Noto Sans SC", "WenQuanYi Micro Hei", sans-serif;
+    }
+    a { color: var(--orange); }
+    code { color: var(--teal); font-size: 0.92em; word-break: break-all; }
+    .bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem 1rem;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      padding: 0.75rem 1.25rem;
+      background: rgba(20, 17, 14, 0.96);
+      border-bottom: 1px solid var(--line);
+    }
+    .bar p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+    .bar a {
+      margin-left: auto;
+      color: #14110E;
+      background: var(--orange);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .bar a:focus-visible { outline: 2px solid var(--cream); outline-offset: 2px; }
+    main { max-width: 52rem; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+    h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 0.6rem; }
+    h2 { font-size: 1.28rem; line-height: 1.35; margin: 2.4rem 0 0.55rem; }
+    h3 { font-size: 1.05rem; line-height: 1.4; margin: 0; }
+    p, li { color: var(--cream); }
+    .muted, .note { color: var(--muted); }
+    .lead { font-size: 1.08rem; }
+    .toc { display: flex; flex-wrap: wrap; gap: 0.45rem 0.9rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+    .toc a { text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .legend { display: flex; flex-wrap: wrap; gap: 0.4rem 0.75rem; align-items: center; }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      line-height: 1.3;
+      padding: 0.08rem 0.48rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      white-space: nowrap;
+      vertical-align: 0.05em;
+    }
+    .badge.path { color: var(--teal); border-color: #3d6b60; }
+    .badge.ok { color: var(--cream); border-color: #3d6b60; }
+    .badge.wait { color: var(--orange); border-color: #8a4a28; }
+    .badge.local { color: var(--muted); border-color: var(--line); }
+    .flow { list-style: none; margin: 0.8rem 0 0; padding: 0; }
+    .flow > li {
+      display: grid;
+      grid-template-columns: 2.4rem 1fr;
+      gap: 0.75rem;
+      position: relative;
+      padding-bottom: 0.7rem;
+    }
+    .flow > li::before {
+      content: "";
+      position: absolute;
+      left: 1.15rem;
+      top: 2.15rem;
+      bottom: 0;
+      width: 2px;
+      background: var(--line);
+    }
+    .flow > li:last-child::before { display: none; }
+    .idx {
+      width: 2.35rem;
+      height: 2.35rem;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      position: relative;
+      z-index: 1;
+    }
+    .node {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.65rem 0.85rem 0.75rem;
+    }
+    .node p { margin: 0.25rem 0 0; }
+    .node .svcs { color: var(--teal); font-size: 0.86rem; }
+    .flow > li.ai .idx { color: var(--orange); border-color: var(--orange); background: #2a1812; }
+    .flow > li.ai .node { border-color: #8a4a28; background: var(--ai-bg); }
+    .mark {
+      display: inline-block;
+      margin-left: 0.35rem;
+      color: var(--orange);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.95rem 1rem 1.05rem;
+      margin: 0.75rem 0 0;
+    }
+    .card.ai { border-color: #8a4a28; background: var(--ai-bg); }
+    .card header { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; align-items: center; margin-bottom: 0.45rem; }
+    .card p { margin: 0.4rem 0 0; }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.7rem 0 0; padding: 0; list-style: none; }
+    .tags li {
+      font-size: 0.78rem;
+      line-height: 1.35;
+      color: var(--teal);
+      border: 1px solid #2c4a44;
+      background: #16211e;
+      border-radius: 999px;
+      padding: 0.12rem 0.5rem;
+    }
+    .table-wrap { overflow-x: auto; margin-top: 0.6rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; min-width: 36rem; }
+    th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-weight: 600; }
+    pre {
+      margin: 0.6rem 0 0;
+      padding: 0.75rem 0.9rem;
+      overflow-x: auto;
+      background: #100e0c;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--teal);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+    pre code { color: inherit; }
+    @media (max-width: 640px) {
+      body { font-size: 16px; }
+      main { padding: 1.15rem 0.9rem 3rem; }
+      h1 { font-size: 1.6rem; }
+      .table-wrap { overflow: visible; }
+      table, thead, tbody, tr, th, td { display: block; min-width: 0; }
+      thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      tr { padding: 0.7rem 0; border-bottom: 1px solid var(--line); }
+      td { border: 0; padding: 0.12rem 0; }
+      td::before {
+        content: attr(data-label);
+        display: block;
+        color: var(--muted);
+        font-size: 0.75rem;
+      }
+    }
   </style>
 </head>
 <body>
+  <header class="bar">
+    <p>NBA × AWS Broadcast Code 12 · Team 04</p>
+    <a href="/game.html">返回播放器</a>
+  </header>
   <main>
-    <p class="muted">NBA × AWS Broadcast Code 12 · Team 04</p>
     <h1>Deep Court</h1>
+    <p class="lead">Deep Court 读取一段 NBA 比赛视频和官方深度数据，在云上生成带记分牌、人名和数据的回放；分析师跑在 Amazon Bedrock AgentCore 上，观众从 Amazon CloudFront 打开成片。</p>
     <p>让每一次出手被重新讲述一遍。打开这个域名就是成片回放，不用选文件，也不用等分析跑完。</p>
+    <ul class="toc">
+      <li><a href="#highlights">作品亮点</a></li>
+      <li><a href="#flow">管道</a></li>
+      <li><a href="#agent">AI Agent</a></li>
+      <li><a href="#bedrock">Bedrock</a></li>
+      <li><a href="#steps">逐步说明</a></li>
+      <li><a href="#services">服务总表</a></li>
+      <li><a href="#iac">基础设施即代码</a></li>
+      <li><a href="#trust">可信度</a></li>
+    </ul>
 
-    <h2>作品亮点</h2>
+    <h2 id="highlights">作品亮点</h2>
     <ol>
       <li>比分条跟着记分牌走：节次、比赛钟、客队和主队比分。出手后约三秒弹出这一球的预期命中率、区域和距离。</li>
-      <li>这一回合场上 10 个人先对上身体：号码、持球和领防是钉子，剩下的人只在同队还空着的坑里排除。成片前 3 秒标出已经对上的人，之后只标持球人、传球双方和领防人。两个差不多高、又没有号码的坑先空着。</li>
+      <li>这一回合场上 10 个人先对上身体：号码、持球和领防是钉子，剩下的人只在同队还空着的坑里排除。成片前 3 秒标出已经对上的人，之后只标持球人、传球双方和领防人。两个差不多高、又没有号码的坑先空着。这是训练片在本机上的做法。考试片改由云上认人，规则在第 5 步。</li>
       <li>暂停后展开官方逐回合原文、助攻和当时场上的十个人。半场图上的点用官方坐标。</li>
-      <li>播放器可以选英文原声或中文解说。中文是整段英文解说的译文，用 Polly 的知语说出来，不再只写两句，原解说也不留在这条音轨里。</li>
+      <li>播放器可以选英文原声或中文解说。中文是整段英文解说的译文，用 Amazon Polly 的知语说出来，不再只写两句，原解说也不留在这条音轨里。</li>
     </ol>
 
-    <h2>数字从哪来</h2>
-    <p>事件不由模型看图编造。记分牌读出节次、比赛钟和比分；追踪给出人和框；官方逐回合补上投篮人、助攻和预期命中率（xFG）。AgentCore 只取回并校验这份清单。</p>
+    <h2 id="flow">整条管道</h2>
+    <p>下面按处理顺序串起每一步和它用的亚马逊云服务。橙色节点是 Amazon Bedrock 和 Amazon Bedrock AgentCore。状态和仓库 <code>docs/pipeline-map.md</code> 一致，日期 2026-10-10。</p>
+    <p class="legend">
+      <span class="badge path">主路径</span>
+      <span class="badge ok">已接通</span>
+      <span class="badge wait">部署中</span>
+      <span class="badge local">本地</span>
+      <span class="note">部署中表示代码已在仓库里，考试片发布后再部署。</span>
+    </p>
+    <ol class="flow">
+      <li>
+        <span class="idx">1</span>
+        <div class="node">
+          <strong>收片</strong> <span class="badge path">主路径</span>
+          <p>浏览器拿预签名地址，把原始视频直传到媒体桶。</p>
+          <p class="svcs">Amazon CloudFront · Amazon API Gateway · AWS Lambda · Amazon S3 · Amazon DynamoDB</p>
+        </div>
+      </li>
+      <li>
+        <span class="idx">2</span>
+        <div class="node">
+          <strong>编排</strong> <span class="badge wait">部署中</span>
+          <p>由 AWS CDK 定义。部署之后，上传到 <code>raw/</code> 即自动跑完全流程：改任务状态、等追踪结束、叫醒分析师、核对成片并失效这一支片子的缓存。</p>
+          <p class="svcs">Amazon EventBridge · AWS Step Functions · Amazon DynamoDB · AWS Batch · AWS Lambda · Amazon CloudFront</p>
+        </div>
+      </li>
+      <li>
+        <span class="idx">3</span>
+        <div class="node">
+          <strong>追踪</strong> <span class="badge ok">已接通</span>
+          <p>同一台保持开着的机器检测人和球，写出轨迹。</p>
+          <p class="svcs">AWS Batch · Amazon EC2 · Amazon EBS · Amazon ECR · Amazon S3</p>
+        </div>
+      </li>
+      <li>
+        <span class="idx">4</span>
+        <div class="node">
+          <strong>记分牌</strong> <span class="badge ok">已接通</span>
+          <p>同一台机器用 RapidOCR 读节次、比赛钟、进攻钟和比分。Amazon Textract 的 DetectDocumentText 只做过探测。</p>
+          <p class="svcs">Amazon EC2（RapidOCR）· Amazon Textract 只做过探测</p>
+        </div>
+      </li>
+      <li class="ai">
+        <span class="idx">5</span>
+        <div class="node">
+          <strong>认人</strong> <span class="mark">Bedrock</span> <span class="badge ok">已接通</span>
+          <p>多帧投票读球衣号码和队色，只在这一刻场上的 5 人里对名字。</p>
+          <p class="svcs">Amazon Bedrock · Amazon Rekognition · Amazon Textract（调用失败才用）· Amazon S3</p>
+        </div>
+      </li>
+      <li>
+        <span class="idx">6</span>
+        <div class="node">
+          <strong>事件清单和官方数据</strong> <span class="badge ok">已接通</span>
+          <p>按持球写接球和传球，用官方逐回合对上这场比赛，清单落到媒体桶。</p>
+          <p class="svcs">Amazon S3 <code>structured/</code> · Amazon S3 <code>official/</code></p>
+        </div>
+      </li>
+      <li class="ai">
+        <span class="idx">7</span>
+        <div class="node">
+          <strong>分析师</strong> <span class="mark">AgentCore · Bedrock</span> <span class="badge wait">部署中</span>
+          <p>智能体自己决定查哪些工具，中英文解说必须对上工具里的数字和人名。页面事件的写入已经在用。</p>
+          <p class="svcs">AWS Lambda · Amazon Bedrock AgentCore · Amazon Bedrock · Amazon DynamoDB · Amazon S3</p>
+        </div>
+      </li>
+      <li>
+        <span class="idx">8</span>
+        <div class="node">
+          <strong>回放、音轨、成片、网页</strong> <span class="badge path">主路径</span>
+          <p>成片只烧记分牌。英文留原声，中文是译文合成。播放器在 CloudFront 上。</p>
+          <p class="svcs">Amazon API Gateway · Amazon Transcribe · Amazon Translate · Amazon Polly · Amazon CloudFront · Amazon S3</p>
+        </div>
+      </li>
+    </ol>
+    <p class="note">训练片是组委会发放的火箭、独行侠录像。领防、脱手帧、分差效率、引力和队内排名仍在本机。考试片发布后再按同一条命令重跑，并在这里补上出处。</p>
+
+    <h2 id="agent">AI Agent 做了什么</h2>
+    <p>Amazon Bedrock AgentCore 运行时的名字是 <code>DeepCourtAnalyst</code>，也就是 Deep Court 分析师。它不看图编事件。事件已经写在结构化清单里。分析师的工作是查数据，再写观众听得懂的解说。</p>
+    <p>运行时用 Amazon Bedrock 的 Converse 接口调用 <code>global.anthropic.claude-sonnet-4-6</code>（Claude Sonnet 4.6）。第一轮必须先调用工具，后面由模型自己决定还要不要再查。它可以使用的工具有五个：</p>
+    <ul>
+      <li><code>read_manifest</code>：读本段回放的事件清单 <code>structured/{jobId}.json</code>，里面是回合、接球、传球，以及清单里已经对上的官方出手。</li>
+      <li><code>validate_manifest</code>：校验清单格式。版本必须是 0.1，回合不能空，进攻方只能是火箭或独行侠。</li>
+      <li><code>read_official</code>：读媒体桶 <code>official/2025-26/</code> 的官方逐回合和 shot quality。预期命中率已经换成 0 到 100 的百分数。清单里没有这段的比赛钟时，不返回整场出手，避免把别的回合说成这一段。</li>
+      <li><code>read_season</code>：读 2025-26 赛季火箭、独行侠的攻防三区（近框、其余两分、三分）和个人资料。数据打进运行时的 <code>season_hou_dal.json</code>。空值保持空，不当成 0。出手数为 0 时不给命中率。</li>
+      <li><code>read_identity</code>：读认人结果 <code>identity/{jobId}.json</code>。解说里的姓名、球队和号码只能来自这份结果。</li>
+    </ul>
+    <p>每句中文和英文都要过一遍落地校验：句子里的数字必须出现在工具结果里，人名必须出现在工具结果里，命中率旁边的数字必须来自百分数字段。对不上的句子删掉，不改写成一个新数字。查不到就不写。问分析师时如果工具里没有足够的数据，回答固定是「工具里没有足够的数据来回答这个问题。」管道模式要写满三条亮点；凑不满时，空位写明这段没有更多能对上官方或赛季数据的看点。</p>
+    <p>通过校验的解说写到媒体桶 <code>analysis/{jobId}.json</code>。网页上的「问分析师」把问题发到 <code>/api/agent/ask</code>。Amazon CloudFront 去掉 <code>/api</code> 前缀后，Amazon API Gateway 的 <code>POST /agent/ask</code> 交给 Lambda <code>ask_agent</code>，叫醒的仍是同一个运行时。已经写好的解说用 <code>GET /agent/analysis/{jobId}</code> 读取。客户端在 <code>web/analyst.js</code>。</p>
+    <p>部署之后，状态机在 AWS Batch 成功时调用 Lambda <code>analyze_job</code>，再由它叫醒分析师。<code>structured/</code> 不再发 Amazon S3 通知。上下文 <code>enableOrchestration=false</code> 时，仍由这条通知叫醒。运行时冷启动或调用失败时，<code>analyze_job</code> 直接读清单，把页面事件写入 Amazon DynamoDB，回放不会停在分析中。清单格式不合法时任务写成失败，不把坏清单放进页面。模型没有返回可用解说时，运行时仍把清单交还给 Lambda，页面事件照常写入。</p>
+    <p>下午探测时，运行时 30 秒内没有完成初始化：入口导入了没有打进代码包的库，进程一起床就退出。现在入口先用 Python 标准库响应 <code>/ping</code>，boto3 由 CDK 打进代码包，第一次分析才加载。这段分析师代码还没有用当前模板执行 <code>cdk deploy</code>，所以这一节的状态是部署中。页面事件写入本身已经在用。</p>
+
+    <h2 id="bedrock">Bedrock 做了什么</h2>
+    <p>Amazon Bedrock 在这条管道里承担两类模型调用，都走 Converse，区域是 <code>us-east-1</code>。视觉认人和文字解说分开，解说模型不看画面编事件。</p>
+    <article class="card ai">
+      <header>
+        <h3>认人：Qwen3 VL</h3>
+        <span class="badge ok">已接通</span>
+      </header>
+      <p>考试片在 <code>inference/chain.py</code> 里调用 <code>qwen.qwen3-vl-235b-a22b</code>。每条轨迹挑选框够大、重叠少的帧，最多 12 帧。模型读球衣号码和球衣颜色，并判断这个人是不是裁判。温度是 0，回复要求是一份 JSON。</p>
+      <p>多帧投票定号码，至少两票，并且要多于第二名，否则号码作废。Amazon Rekognition 的 <code>DetectText</code> 把读到的号码投进同一轮，算第二票。Qwen 调用失败时才用 Amazon Textract 的 <code>DetectDocumentText</code> 兜底读号码。裁判那段轨迹切出去，不投票，也不挂标签。</p>
+      <p>场上 10 人由这场官方逐回合里的换人推出来。号码只和球衣颜色那一队、这一刻的场上 5 人匹配。颜色和号码对不上就不写名字。同一个名字只留在票数最多的那条轨迹上，名签从这条轨迹的第一帧挂到结尾。名签贴在头顶上方，最多上挪一行；「Agent detecting」放不下就不画。分得出队但没有名字的人，标签只写 Agent detecting，颜色用队色。分不出队的不挂标签。官方逐回合里的得分人和助攻人先钉上。</p>
+      <p>探测片 <code>qwen-flagg</code> 第 1 秒写出小史密斯、弗拉格，两人都在场上，裁判身上没有标签。其余分得出队的 4 人挂 Agent detecting。整段 10 个名字各留一条轨迹，球衣颜色都和队一致。认人多花 114 秒。训练片的身体坑和排除法仍在本机 <code>pipeline/vision/backtrack.py</code>。</p>
+    </article>
+    <article class="card ai">
+      <header>
+        <h3>解说：Claude Sonnet 4.6</h3>
+        <span class="badge wait">部署中</span>
+      </header>
+      <p>分析师推理用的是上面的 <code>global.anthropic.claude-sonnet-4-6</code>。跨区域推理配置和底层模型的调用权限都写在 AgentCore 运行时角色上，动作包括 <code>bedrock:Converse</code>。温度是 0。它只根据工具返回的内容写回合解说、定格卡和三条亮点。</p>
+      <p>栈里另有一条 <code>POST /commentary</code>。它用同一个模型写两句短解说，再用 Amazon Polly 合成，失败不影响分析任务。播放器上的中文音轨不走这条接口。</p>
+    </article>
+    <article class="card">
+      <header>
+        <h3>认人和语音旁边的托管服务</h3>
+        <span class="badge ok">已接通</span>
+      </header>
+      <p>Amazon Rekognition <code>DetectText</code> 是号码的第二票，和 Qwen 的读数放进同一次多数票。Amazon Textract <code>DetectDocumentText</code> 只在 Qwen 调用失败时读号码。记分牌上的 Textract 只做过探测，不在主路径；CDK 里的 <code>OcrScoreboard</code> 函数主路径不调用。记分牌主路径是同一台机器上的 RapidOCR，检测边长限制 640。</p>
+      <p>中文音轨在成片之后、同一容器里做。Amazon Transcribe 转写英文原声。常见的人名听错先改掉，再交给 Amazon Translate 译成中文。Amazon Polly 用 Neural 引擎、语音知语（<code>Zhiyu</code>）、语言 <code>cmn-CN</code>，按原句时间合成。普通话在 Polly 里这条神经语音是知语。现场声和原解说叠在一起，声道又几乎是单声道，分不开，所以中文音轨只有合成人声，原解说不留在里面。英文音轨就是成片里的原声。</p>
+      <p>仓库里有篮球术语表 <code>data/terminology/basketball-en-zh.csv</code>，导入脚本交给 Amazon Translate 时的名称是 <code>deepcourt-basketball</code>。音轨代码只有在环境变量 <code>TRANSLATE_TERMINOLOGY</code> 写了这个名字时才带上术语表。当前 Batch 作业定义没有这个变量，探测片的翻译请求不带术语表。术语表不存在或没有权限时，同一句去掉术语表再译一次，音轨不会因此中断。</p>
+      <p>探测片 <code>warm-probe</code> 的中文音轨已经在播放器里。训练片弗拉格、阿门的两条音轨是本机做的，已经放在网页桶。</p>
+    </article>
+
+    <h2 id="steps">逐步说明</h2>
+    <p>每张卡片对应全景里的一步：业务流程、对观众和解说的意义、用到的亚马逊云服务、现在的状态。</p>
+
+    <article class="card" id="step-1">
+      <header>
+        <h3>1. 收片</h3>
+        <span class="badge path">主路径</span>
+      </header>
+      <p><b>业务流程。</b>训练片或考试片进入管道。上传页经 Amazon CloudFront 的 <code>/api/*</code> 调用 Amazon API Gateway <code>POST /jobs</code>。Lambda <code>create_job</code> 在 Amazon DynamoDB 的 JobsTable 记下任务，返回 Amazon S3 预签名地址。浏览器把视频直传到媒体桶 <code>raw/{jobId}/</code>。<code>create_job</code> 不提交计算，也不启动状态机。<code>run_clip</code> 也可以直接读本地文件。</p>
+      <p><b>业务意义。</b>评委打开的是成片，不是上传页。上传页在 <a href="/index.html">/index.html</a>，只给我们自己把片子送进管道。视频不经过应用服务器。</p>
+      <ul class="tags">
+        <li>Amazon S3 raw/</li>
+        <li>Amazon API Gateway</li>
+        <li>AWS Lambda create_job</li>
+        <li>Amazon DynamoDB JobsTable</li>
+        <li>Amazon CloudFront</li>
+      </ul>
+      <p class="note">栈 <code>Team04DeepCourt</code> 已创建。分配 <code>d2vzd2batw1eqe.cloudfront.net</code> 已部署。部署之后，<code>raw/</code> 的对象创建才由 Amazon EventBridge 启动状态机。</p>
+    </article>
+
+    <article class="card" id="step-2">
+      <header>
+        <h3>2. 编排</h3>
+        <span class="badge wait">部署中</span>
+      </header>
+      <p><b>业务流程。</b>状态机 <code>deepcourt-film</code> 是标准工作流，代码在 <code>cdk/lib/orchestration.ts</code>。由 AWS CDK 定义。部署之后，上传即自动跑完全流程：Amazon EventBridge 规则 <code>deepcourt-raw-upload</code> 只匹配媒体桶 <code>raw/</code> 的对象创建；状态机把任务写成 TRACKING，向 AWS Batch 提交作业并等到结束，再调用 <code>analyze_job</code>，然后核对网页桶里的成片和 <code>replay/clips.js</code>，失效 <code>/assets/{jobId}-broadcast.mp4</code>、<code>-zh.mp4</code>、<code>-en.mp4</code> 和 <code>/replay/clips.js</code>。失败写成 FAILED，并记下是哪一步。同一次上传的重复事件由 DynamoDB 条件挡住，停在 <code>DuplicateSkipped</code>。<code>-c enableOrchestration=false</code> 时不接 EventBridge，S3 仍通知 <code>analyze_job</code>。</p>
+      <p><b>业务意义。</b>上传之后只有一条路。不会在文件还没传完时启动，也不会和手工提交各跑一遍。观众等到的是同一支片子的成片、片单和事件。</p>
+      <ul class="tags">
+        <li>AWS Step Functions</li>
+        <li>Amazon EventBridge</li>
+        <li>Amazon DynamoDB</li>
+        <li>AWS Batch</li>
+        <li>AWS Lambda analyze_job</li>
+        <li>Amazon S3</li>
+        <li>Amazon CloudFront</li>
+      </ul>
+      <p class="note">代码已合入。这次栈更新还没部署，考试片仍走已经部署的作业定义。状态机用服务直连，不另包一层专门提交作业的 Lambda。<code>SubmitTrack</code> 留着，没有事件源。</p>
+    </article>
+
+    <article class="card" id="step-3">
+      <header>
+        <h3>3. 追踪</h3>
+        <span class="badge ok">已接通</span>
+      </header>
+      <p><b>业务流程。</b>YOLO 检测人和球，ByteTrack 串成轨迹。一次看 16 帧，不跑球场关键点。部署之后由状态机对队列 <code>deepcourt-track</code> 做同步提交。部署前仍是手工提交作业。机器是 Amazon EC2 <code>c7i.48xlarge</code>，磁盘是 Amazon EBS gp3 1000GB，镜像在 Amazon ECR <code>deepcourt-tracker:ready</code>。轨迹写到 S3 <code>tracking/</code>，启动脚本从 S3 <code>bootstrap/track/</code> 拉下来。本机 MPS 仍能出训练片。</p>
+      <p><b>业务意义。</b>后面的认人、持球和传球都站在这条轨迹上。没有轨迹，画面上就没有人和球可标。</p>
+      <ul class="tags">
+        <li>AWS Batch</li>
+        <li>Amazon EC2 c7i.48xlarge</li>
+        <li>Amazon EBS gp3</li>
+        <li>Amazon ECR</li>
+        <li>Amazon S3</li>
+        <li>Amazon VPC</li>
+      </ul>
+      <p class="note">G 和 VT 实例配额为 0。标准配额 256 vCPU，这台机器用其中 192，并且保持开着。镜像已烤好。探测作业 <code>warm-probe</code> 写出 39 帧轨迹。计算环境在本栈的 VPC 里，公有子网，没有 NAT。实例角色包含 SSM，用来管理这台主机。</p>
+    </article>
+
+    <article class="card" id="step-4">
+      <header>
+        <h3>4. 记分牌</h3>
+        <span class="badge ok">已接通</span>
+      </header>
+      <p><b>业务流程。</b>考试片在同一台 <code>c7i.48xlarge</code> 上跑 <code>pipeline/vision/scoreboard.py</code>。RapidOCR 读节次、比赛钟、进攻钟和比分，检测边长限制 640，避免整幅画面把读数拖慢。训练片仍在本机。Amazon Textract 的 <code>DetectDocumentText</code> 只做过探测，不在记分牌主路径。</p>
+      <p><b>业务意义。</b>记分牌是转播自己打上的时钟和比分。节次、比赛钟和比分用来对上是哪一场、哪一个回合，也用来把比分条烧进成片。观众看到的时间以记分牌为准。</p>
+      <ul class="tags">
+        <li>Amazon EC2 上的 RapidOCR</li>
+        <li>Amazon Textract 仅探测</li>
+      </ul>
+      <p class="note"><code>warm-probe</code> 读出 6 条比分条。训练片主路径仍在本地。</p>
+    </article>
+
+    <article class="card ai" id="step-5">
+      <header>
+        <h3>5. 认人</h3>
+        <span class="badge ok">已接通</span>
+      </header>
+      <p><b>业务流程。</b>考试片把轨迹帧交给 Amazon Bedrock 上的 Qwen3 VL，读号码和队色，多数票定号码。Amazon Rekognition 算第二票。裁判排除。号码只在同队、这一刻的场上 5 人里对。分得出队但没有名字就挂队色标签 Agent detecting。得分人和助攻人先按官方逐回合钉住。结果写到 S3 <code>identity/</code>。Qwen 失败时 Amazon Textract 兜底。训练片算法仍在本机。</p>
+      <p><b>业务意义。</b>解说和名签要有人名。认不出就标明正在识别，不把猜出来的名字贴到人身上。观众能分清谁已经对上，谁还只有队色。</p>
+      <ul class="tags">
+        <li>Amazon Bedrock Qwen3 VL</li>
+        <li>Amazon Rekognition DetectText</li>
+        <li>Amazon Textract 兜底</li>
+        <li>Amazon S3 official/ 与 identity/</li>
+      </ul>
+      <p class="note">细节和探测结果见上面「Bedrock 做了什么」。</p>
+    </article>
+
+    <article class="card" id="step-6">
+      <header>
+        <h3>6. 事件清单</h3>
+        <span class="badge ok">已接通</span>
+      </header>
+      <p><b>业务流程。</b>考试片按球在谁脚下写出接球和传球。比分跳动再对上官方出手。清单写成媒体桶 <code>structured/{jobId}.json</code>。部署之后由状态机调用 <code>analyze_job</code>，<code>structured/</code> 不再发 S3 通知。分析师读这份清单，把回合解说写到 <code>analysis/{jobId}.json</code>。训练片仍在本机找脱手帧和领防人，代码在 <code>pipeline/events</code> 和 <code>pipeline/vision/release.py</code>。</p>
+      <p><b>业务意义。</b>时间线上的事件来自这份清单，不来自模型看图。解说如果要提到一次传球或一次出手，得先在清单里有这一笔。</p>
+      <ul class="tags">
+        <li>Amazon S3 structured/</li>
+        <li>Amazon S3 analysis/</li>
+        <li>AWS Lambda analyze_job</li>
+        <li>Amazon Bedrock AgentCore</li>
+        <li>Amazon DynamoDB</li>
+      </ul>
+      <p class="note"><code>warm-probe</code> 的清单是 3 条事件，Jobs 表状态 DONE。分析师解说的状态见第 9 步。领防和脱手帧仍在本地。</p>
+    </article>
+
+    <article class="card" id="step-7">
+      <header>
+        <h3>7. 官方数据</h3>
+        <span class="badge ok">已接通</span>
+      </header>
+      <p><b>业务流程。</b>考试片从媒体桶 <code>official/2025-26/</code> 读逐回合和 shot quality，用节次、比赛钟和比分对上是哪一场。比分有跳动时，把是否命中、分值、助攻和预期命中率写进出手。代码在 <code>inference/chain.py</code>。训练片仍在本机读 <code>data/</code>，并补分差效率、引力和队内排名。</p>
+      <p><b>业务意义。</b>预期命中率、助攻和落点来自官方深度数据。暂停后展开的原文和半场图因此和转播记录对得上，不是画面估算。</p>
+      <ul class="tags">
+        <li>Amazon S3 official/</li>
+      </ul>
+      <p class="note">探测片对上比赛 <code>0022500356</code>。这 5 秒里比分没有跳动，所以没有出手行。训练片的其余官方字段仍在本地。</p>
+    </article>
+
+    <article class="card" id="step-8">
+      <header>
+        <h3>8. 清单上云</h3>
+        <span class="badge path">主路径</span>
+      </header>
+      <p><b>业务流程。</b>考试片把 <code>structured/{jobId}.json</code> 写进媒体桶 <code>team04deepcourt-mediabucketbcbb02ba-haisfxujonfg</code>。这一步是第 6 步的落点：文件进桶之后，校验和分析师才有输入。</p>
+      <p><b>业务意义。</b>页面、分析师和失败时的兜底读的是同一份清单。时间线和解说不会各讲一套。</p>
+      <ul class="tags">
+        <li>Amazon S3 媒体桶</li>
+      </ul>
+    </article>
+
+    <article class="card ai" id="step-9">
+      <header>
+        <h3>9. 校验</h3>
+        <span class="badge path">主路径</span>
+      </header>
+      <p><b>业务流程。</b>Lambda <code>analyze_job</code> 取回清单，校验格式，写成页面事件，放进 DynamoDB EventsTable。分析师另外把解说写到 S3 <code>analysis/</code>。AgentCore 冷启动或调用失败时，Lambda 直接读清单写事件。部署之后只由状态机调用。日志在 Amazon CloudWatch Logs，保留 7 天。</p>
+      <p><b>业务意义。</b>回放时间线不依赖分析师是否醒着。分析师醒着时，解说和亮点用的是同一份已经校验过的清单。</p>
+      <ul class="tags">
+        <li>AWS Lambda analyze_job</li>
+        <li>Amazon Bedrock AgentCore DeepCourtAnalyst</li>
+        <li>Amazon DynamoDB EventsTable</li>
+        <li>Amazon CloudWatch Logs</li>
+        <li>Amazon S3 analysis/</li>
+      </ul>
+      <p class="note">事件写入已在用，所以这一步标主路径。分析师这次的工具调用运行时是部署中，见「AI Agent 做了什么」。</p>
+    </article>
+
+    <article class="card" id="step-10">
+      <header>
+        <h3>10. 回放</h3>
+        <span class="badge path">主路径</span>
+      </header>
+      <p><b>业务流程。</b>浏览器打开成片、时间线，暂停可以展开。进球后跳回出手帧，定格 5 秒：投篮人脚下画红圈，弹出投篮人和领防人的队内排名星级，定格卡不再烧比分条。领防人脚下画黄色虚线圈，领防名签贴在他躯干旁、背向投篮人一侧。领防人号码没读出就只写没读出。右栏是分区热区图，红圈标出这一投。带任务号时，页面轮询 Amazon API Gateway <code>GET /jobs/{id}</code> 和 <code>GET /jobs/{id}/events</code>，由 Lambda <code>get_job</code>、<code>list_events</code> 读取。考试片的 mp4 和 <code>replay/clips.js</code> 用新文件名直传网页桶，只失效这几个路径。</p>
+      <p><b>业务意义。</b>观众可以停在这一球上，看见谁投的、谁在防、这个位置的预期命中率，而不只是把进球再看一遍。</p>
+      <ul class="tags">
+        <li>Amazon API Gateway</li>
+        <li>AWS Lambda get_job</li>
+        <li>AWS Lambda list_events</li>
+      </ul>
+      <p class="note">站点本身在第 13 步。没有任务号时，画面上的示例回合用来对齐设计稿；带上任务号之后，时间线换成表里的事件。</p>
+    </article>
+
+    <article class="card" id="step-11">
+      <header>
+        <h3>11. 解说音轨</h3>
+        <span class="badge ok">已接通</span>
+      </header>
+      <p><b>业务流程。</b>成片出来之后，在同一容器里做两条音轨。英文是成片里的原声，不另处理。中文把这条原声交给 Amazon Transcribe，再由 Amazon Translate 译成中文，按原句时间用 Amazon Polly Neural 知语合成。脚本从 S3 <code>bootstrap/track/</code> 拉取。CDK 把 <code>inference/run_job.py</code>、<code>inference/chain.py</code>、<code>inference/dub.py</code> 和 <code>pipeline/present/tracks.py</code>（桶里的名字是 <code>commentary.py</code>）传到这个前缀。转写中间结果在 S3 <code>commentary/asr/</code>。任务角色是 <code>TrackJobRole</code>。</p>
+      <p><b>业务意义。</b>播放器上可以换成中文听。中文是英文解说的译文，不是模型看图另写的一段。原解说不留在中文音轨里。</p>
+      <ul class="tags">
+        <li>Amazon Transcribe</li>
+        <li>Amazon Translate</li>
+        <li>Amazon Polly Neural Zhiyu</li>
+        <li>Amazon S3</li>
+      </ul>
+      <p class="note"><code>warm-probe</code> 的中文音轨已在播放器里。训练片的两条音轨是本机做的。术语表要设 <code>TRANSLATE_TERMINOLOGY</code> 才带上，当前作业没有这个变量。</p>
+    </article>
+
+    <article class="card" id="step-12">
+      <header>
+        <h3>12. 成片</h3>
+        <span class="badge ok">已接通</span>
+      </header>
+      <p><b>业务流程。</b>考试片在同一台 <code>c7i.48xlarge</code> 上用 ffmpeg，只把记分牌烧进 <code>assets/{jobId}-broadcast.mp4</code>。原声留在里面，不烧人名。训练片在本机另烧人名，并出带回放定格的片子。AWS Elemental MediaConvert 模板 <code>deepcourt-render-template</code> 已在栈里，用来把叠加层合成 1080p，写到 <code>rendered/</code>。还没有向它提交转码作业。</p>
+      <p><b>业务意义。</b>评委看到的画面带着转播记分牌，声音仍是原声。人名由播放器叠上去，成片文件本身不把名字烙死。</p>
+      <ul class="tags">
+        <li>Amazon EC2 上的 ffmpeg</li>
+        <li>Amazon S3 网页桶 assets/</li>
+        <li>AWS Elemental MediaConvert 模板已建</li>
+      </ul>
+      <p class="note"><code>assets/warm-probe-broadcast.mp4</code> 已在网页桶。</p>
+    </article>
+
+    <article class="card" id="step-13">
+      <header>
+        <h3>13. 网页呈现</h3>
+        <span class="badge path">主路径</span>
+      </header>
+      <p><b>业务流程。</b>Amazon CloudFront 分配 <code>Site</code>（<code>d2vzd2batw1eqe.cloudfront.net</code>）是评委打开的地址。默认根对象是 <code>game.html</code>：成片、时间线、音轨选择。CloudFront Function <code>ReadmePath</code> 把 <code>/readme</code> 指到 <code>readme.html</code>。<code>/index.html</code> 只给自己上传。网页桶不公开，只经 CloudFront 源访问控制（OAC）读取。<code>/api/*</code> 转到 API Gateway，函数 <code>StripApiPrefix</code> 去掉 <code>/api</code> 前缀。CDK 的 <code>DeployWeb</code> 把 <code>web/</code> 部署到网页桶。</p>
+      <p><b>业务意义。</b>提交链接打开就能看回放，页面上有 Team 04。作品说明和播放器在同一个域名下。</p>
+      <ul class="tags">
+        <li>Amazon CloudFront</li>
+        <li>Amazon S3 网页桶</li>
+        <li>CloudFront Function</li>
+      </ul>
+      <p class="note"><code>/</code> 和 <code>/readme</code> 已能打开。</p>
+    </article>
+
+    <article class="card" id="step-14">
+      <header>
+        <h3>14. 观测和密钥</h3>
+        <span class="badge ok">已接通</span>
+      </header>
+      <p><b>业务流程。</b>Amazon CloudWatch 仪表盘 <code>deepcourt-overview</code> 看分析吞吐、延迟和 Bedrock 限流。告警 <code>deepcourt-bedrock-throttles</code> 在每分钟限流超过 10 次时触发，还没有接通知。AWS X-Ray 开在 API 阶段和 Lambda 上，处理段带 jobId。AWS Secrets Manager 里有 <code>deepcourt/feishu-webhook</code>、<code>deepcourt/github-token</code>、<code>deepcourt/kuaishou</code>。AWS Cost Explorer 按 <code>project</code> 标签看花费，脚本是 <code>scripts/cost-report.sh</code>。编排部署之后，同一张仪表盘加上状态机的成功、失败和耗时。</p>
+      <p><b>业务意义。</b>限流和失败可以在控制台里看到，不用进机器翻。密钥不写进仓库，也不写进前端。</p>
+      <ul class="tags">
+        <li>Amazon CloudWatch</li>
+        <li>AWS X-Ray</li>
+        <li>AWS Secrets Manager</li>
+        <li>AWS Cost Explorer</li>
+      </ul>
+      <p class="note">密钥仍是空占位。成本分配标签激活被拒绝。X-Ray 写过一条追踪。</p>
+    </article>
+
+    <h2 id="services">服务总表</h2>
+    <p>下表只列仓库里真实出现、并且已经接通或已由 CDK 定义的服务。托管版指用亚马逊云服务的托管能力，而不是在比赛机器上自建一套等价系统。</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>服务</th><th>用在哪一步</th><th>为什么用托管版</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="服务">Amazon CloudFront</td>
+            <td data-label="用在哪一步">1 收片，2 编排，13 网页</td>
+            <td data-label="为什么用托管版">赛题要求用 CloudFront 发布。网页桶不公开，只允许源访问控制读取。<code>/readme</code> 和 <code>/api</code> 用函数改写路径。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon S3</td>
+            <td data-label="用在哪一步">1、6、7、8、11、12、13</td>
+            <td data-label="为什么用托管版">原始视频、清单、官方数据、认人结果、解说和成片都是对象。浏览器拿预签名地址直传，不经过应用服务器。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon API Gateway</td>
+            <td data-label="用在哪一步">1 收片，10 回放，问分析师</td>
+            <td data-label="为什么用托管版">REST API：<code>POST /jobs</code>、<code>GET /jobs/{id}</code>、<code>GET /jobs/{id}/events</code>、<code>POST /agent/ask</code>、<code>GET /agent/analysis/{jobId}</code>。浏览器不直连执行地址，走 CloudFront 的 <code>/api/*</code>。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">AWS Lambda</td>
+            <td data-label="用在哪一步">1、2、6、9、10，以及问分析师</td>
+            <td data-label="为什么用托管版">建任务、校验、读状态、读事件、叫醒分析师都是短请求。没有常驻的接口进程。日志进 CloudWatch，保留 7 天。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon DynamoDB</td>
+            <td data-label="用在哪一步">1 任务，2 去重，9 页面事件</td>
+            <td data-label="为什么用托管版">JobsTable 和 EventsTable 按 jobId 查询，按需容量。任务状态和事件列表分开。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon EventBridge</td>
+            <td data-label="用在哪一步">2 编排</td>
+            <td data-label="为什么用托管版">只有 <code>raw/</code> 对象创建才启动状态机。建任务的接口不提交计算。状态：部署中。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">AWS Step Functions</td>
+            <td data-label="用在哪一步">2 编排</td>
+            <td data-label="为什么用托管版">标准工作流把收片、Batch 等待、校验和缓存失效串成一条，用服务直连。失败写回任务表。由 CDK 定义，上传即自动跑完全流程。状态：部署中。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">AWS Batch</td>
+            <td data-label="用在哪一步">3 追踪，以及同一作业里的 4、5、11、12</td>
+            <td data-label="为什么用托管版">追踪要一台固定的大机器。托管计算环境把 <code>c7i.48xlarge</code> 保持在 192 vCPU，队列负责投递。作业容器信任 <code>ecs-tasks.amazonaws.com</code>。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon EC2</td>
+            <td data-label="用在哪一步">3、4、5、12</td>
+            <td data-label="为什么用托管版">G 和 VT 配额为 0，跟踪用标准配额里的 <code>c7i.48xlarge</code>。检测、记分牌、认人抽帧和 ffmpeg 都在这台机器上。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon EBS</td>
+            <td data-label="用在哪一步">3 追踪</td>
+            <td data-label="为什么用托管版">启动模板挂 gp3 1000GB，给镜像和中间文件用。加密打开。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon ECR</td>
+            <td data-label="用在哪一步">3 追踪</td>
+            <td data-label="为什么用托管版">跟踪镜像放在仓库 <code>deepcourt-tracker</code>，作业引用已经烤好的标签 <code>ready</code>。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon VPC</td>
+            <td data-label="用在哪一步">3 追踪</td>
+            <td data-label="为什么用托管版">Batch 计算环境的网络由 CDK 声明：两个可用区、公有子网、没有 NAT。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon Bedrock</td>
+            <td data-label="用在哪一步">5 认人，9 分析师解说</td>
+            <td data-label="为什么用托管版">Qwen3 VL 和 Claude Sonnet 4.6 都用 Converse 调用，不自建推理集群。认人看裁切帧，解说只看工具数据。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon Bedrock AgentCore</td>
+            <td data-label="用在哪一步">9 校验，以及问分析师</td>
+            <td data-label="为什么用托管版">赛题要求智能体跑在 AgentCore 上。运行时 <code>DeepCourtAnalyst</code> 自己决定调用哪些工具。Lambda 用 <code>InvokeAgentRuntime</code> 叫醒它。状态：部署中。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon Rekognition</td>
+            <td data-label="用在哪一步">5 认人</td>
+            <td data-label="为什么用托管版"><code>DetectText</code> 读号码，作为 Qwen 多数票里的第二票。不另训一个号码模型。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon Textract</td>
+            <td data-label="用在哪一步">5 认人兜底</td>
+            <td data-label="为什么用托管版"><code>DetectDocumentText</code> 只在 Qwen 调用失败时读号码。记分牌上的探测不在主路径。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon Transcribe</td>
+            <td data-label="用在哪一步">11 解说音轨</td>
+            <td data-label="为什么用托管版">把成片里的英文原声转写成文字，再交给翻译。中文音轨不由模型看图重写。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon Translate</td>
+            <td data-label="用在哪一步">11 解说音轨</td>
+            <td data-label="为什么用托管版">把转写译成中文。术语表代码已接上，当前作业未设置术语表名称，请求就不带表。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon Polly</td>
+            <td data-label="用在哪一步">11 解说音轨</td>
+            <td data-label="为什么用托管版">Neural 知语按原句时间合成普通话。现场声和原解说分不开，中文音轨只留合成人声。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">AWS Elemental MediaConvert</td>
+            <td data-label="用在哪一步">12 成片</td>
+            <td data-label="为什么用托管版">模板 <code>deepcourt-render-template</code> 声明了 1080p 合成。当前成片由作业里的 ffmpeg 完成，还没有提交 MediaConvert 作业。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">Amazon CloudWatch</td>
+            <td data-label="用在哪一步">14 观测，以及各 Lambda 日志</td>
+            <td data-label="为什么用托管版">仪表盘、限流告警和 7 天日志都在托管监控里。告警还没有接通知。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">AWS X-Ray</td>
+            <td data-label="用在哪一步">14 观测</td>
+            <td data-label="为什么用托管版">API 阶段和 Lambda 打开追踪，片段上带 jobId。已经写过一条追踪。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">AWS Secrets Manager</td>
+            <td data-label="用在哪一步">14 密钥</td>
+            <td data-label="为什么用托管版">飞书 webhook、GitHub token 和快手应用信息不进仓库、不进浏览器。三个密钥仍是空占位。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">AWS Cost Explorer</td>
+            <td data-label="用在哪一步">14 观测</td>
+            <td data-label="为什么用托管版">按 <code>project</code> 标签看花费。成本分配标签激活被拒绝，所以这条还看不全。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">AWS CDK / AWS CloudFormation</td>
+            <td data-label="用在哪一步">整栈</td>
+            <td data-label="为什么用托管版">赛题要求基础设施即代码。一个栈 <code>Team04DeepCourt</code> 声明上面的资源，避免跨栈导出互相卡住。</td>
+          </tr>
+          <tr>
+            <td data-label="服务">AWS Identity and Access Management</td>
+            <td data-label="用在哪一步">整栈的权限边界</td>
+            <td data-label="为什么用托管版">每个函数和运行时只拿自己那一段前缀的读写，加上对应的模型调用。角色由 CDK 声明，并挂权限边界。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">不在这条管道里：Amazon Cognito 不建，回放和上传不登录。快手 OAuth 代码在 <code>lambdas/kuaishou</code>，没有 app_id 时接口只返回敬请期待。预置桶 <code>nba-hackathon-382918437747-team04</code> 只放过探测对象，不是媒体桶，也不是网页桶。</p>
+
+    <h2 id="iac">基础设施即代码</h2>
+    <p>栈名 <code>Team04DeepCourt</code>，代码在 <code>cdk/</code>。账号 <code>382918437747</code>，profile <code>nba</code>，区域只有 <code>us-east-1</code>。标签是 <code>team=04</code>、<code>stage=prod</code>、<code>project=deepcourt</code>。部署身份代入 <code>NBAHackathonParticipantRole</code>。参赛角色不能脱离权限边界新建 IAM 角色。<code>cdk/bin/app.ts</code> 给这个账号上 CDK 创建的角色加上权限边界 <code>NBAHackathonParticipantBoundary</code>。</p>
+    <p>权限按调用方拆开。建任务只能写 Jobs 表和 <code>raw/*</code>。读任务只能读 Jobs 和 <code>raw/*</code>。读事件只能读 Events。分析 Lambda 读 <code>structured/*</code>、写 Events、调用 AgentCore。问分析师的 Lambda 读 <code>analysis/*</code> 并调用 AgentCore。分析师角色读 <code>structured/*</code>、<code>official/*</code>、<code>identity/*</code>，写 <code>analysis/*</code>，并可对 Claude Sonnet 4.6 的推理配置和底层模型调用 Converse。追踪作业读原始视频、启动脚本和官方数据，写轨迹、认人结果、清单、成片和片单，并可调用 Qwen、Rekognition、Transcribe、Translate、Polly 和 Textract。</p>
+    <p>一条部署命令，在仓库根目录执行：</p>
+    <pre><code>cd cdk &amp;&amp; npm ci &amp;&amp; npx cdk deploy Team04DeepCourt --profile nba --require-approval never</code></pre>
+    <p>先看模板、不连账号：</p>
+    <pre><code>cd cdk &amp;&amp; npm ci &amp;&amp; npx cdk synth</code></pre>
+    <p>默认开着编排、Batch 和 P2。只有显式加上 <code>-c enableOrchestration=false</code> 才不建状态机。<code>-c enableP1=false</code> 时不建 Batch，也不建状态机。<code>buildTrackerImage</code> 默认关，已部署的栈不要打开，作业镜像仍是 ECR <code>deepcourt-tracker:ready</code>。<code>-c enableP2=false</code> 时不建短解说 Lambda、密钥和 X-Ray。</p>
+    <p class="note">本页只记下命令。考试片仍走已经部署的作业定义。这次栈更新等成片出来之后再部署，不在这里执行。</p>
+
+    <h2 id="trust">可信度</h2>
+    <p>事件来自结构化清单。模型不看图编事件。页面中文音轨是英文解说的译文，不是模型看图写的。</p>
+    <p>记分牌读出节次、比赛钟和比分。追踪给出人和框。官方逐回合补上投篮人、助攻和预期命中率（xFG）。AgentCore 取回并校验这份清单；叫不醒时由 <code>analyze_job</code> 直接读同一份文件。</p>
+    <p>认人只在官方逐回合推出的场上 10 人里匹配，而且号码必须落在球衣颜色那一队这一刻的 5 人中。对不上名字、但分得出队，标签写 Agent detecting，颜色用队色。分不出队就不挂。裁判不挂标签。解说里的每一句中文和英文都要对上工具返回的数字和人名，查不到就不写。</p>
     <p>决策反差是二次加工，不是另一套数据：预期命中率低于四成却进了，标成英雄球；高于六成却没进，标成可惜。其余出手只显示预期命中率本身。</p>
-    <p>引力和关键度来自官方赛季汇总。暂停后写在该球员这一球旁边，标明不是这一球的胜率变化。</p>
-
-    <h2>数据管道</h2>
-    <p>考试片在云上写出结构化清单，上传到 S3 <code>structured/</code>。Lambda 调 Bedrock AgentCore 校验；Agent 不可用时 Lambda 直接读清单，回放不会停住。页面通过 CloudFront 打开成片。上传入口在 <a href="/index.html">/index.html</a>，只给我们自己用。</p>
-    <ol>
-      <li>收片：浏览器经 CloudFront、API Gateway、Lambda 把视频直传到 S3，任务记在 DynamoDB。本地命令也可以直接读文件。部署之后，<code>raw/</code> 上传由 EventBridge 启动一条 Step Functions，只提交一次 Batch。</li>
-      <li>追踪和记分牌：考试片交给 Batch，机器是保持开着的 c7i.48xlarge。状态机等到这台机器跑完，再让 Lambda 调 AgentCore 校验。同一台机器读记分牌，再用 ffmpeg 把比分烧进成片，直接放进网页桶。训练片仍可以在本机用 MPS 出片。记分牌检测边长限制在 640。</li>
-      <li>认人、事件和官方数据：考试片在同一台机器上把轨迹帧交给 Qwen3 VL 读号码和球衣颜色，多数票定人；Rekognition 算第二票。裁判先排除。号码只在球衣颜色那一队这一刻的场上 5 人里对，同一个名字只留一条轨迹，并从这条轨迹的第一帧挂到结尾。分得出队但没有名字的人，标签只写 Agent detecting，颜色用队色；分不出队的不挂。官方逐回合的得分人、助攻人先钉。按持球写出接球和传球；从 S3 的官方逐回合对上是哪一场，比分跳动时补上命中、助攻和预期命中率。清单写到 <code>structured/</code>。训练片的领防、脱手帧、分差效率和队内排名仍在本机。</li>
-      <li>回放时，进球后画面跳回出手那一帧，定格 5 秒：投篮人脚下画红圈，领防人脚下画黄色虚线圈，领防名签贴在他躯干旁、背向投篮人一侧；卡片写投篮人和领防人的队内排名星级（定格卡不再烧比分条）；认出领防人才写他的名字、本场对位和赛季场均。右栏是投篮人的分区热区图，红圈标出这一投，并写出这个位置的预期命中率。</li>
-      <li>清单放到 S3。部署之后由状态机调用 Lambda，Lambda 再调 Bedrock AgentCore 校验，页面事件写入 DynamoDB。分析师把解说写到 S3 <code>analysis/</code>。校验完，状态机核对成片和片单，并只失效这一支片子的路径。</li>
-      <li>成片之后才做音轨。英文是原声。中文把这条原声转写、译成中文，用 Polly Neural 知语按原句时间合成。播放器上自己选。探测片的中文音轨已经能播。</li>
-      <li>网页呈现：CloudFront 根路径打开播放器 <code>game.html</code>。作品说明在 <code>/readme</code>。上传页只给我们自己用。</li>
-    </ol>
-    <table>
-      <thead>
-        <tr><th>步骤</th><th>AWS 服务</th><th>状态</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>收片、任务</td><td>CloudFront、API Gateway、Lambda、S3、DynamoDB</td><td>主路径</td></tr>
-        <tr><td>编排</td><td>Step Functions、EventBridge、DynamoDB、Batch、Lambda、CloudFront</td><td>部署中</td></tr>
-        <tr><td>追踪</td><td>Batch、EC2 c7i.48xlarge、EBS、ECR、S3</td><td>已接通。192 vCPU 保持开着，镜像已烤好</td></tr>
-        <tr><td>记分牌</td><td>同一台 c7i.48xlarge 上的 RapidOCR</td><td>已接通</td></tr>
-        <tr><td>认人</td><td>Bedrock Qwen3 VL、Rekognition DetectText、S3 逐回合和 identity/</td><td>已接通。探测片第 1 秒写出 2 个名字，都在场上 10 人里，裁判不挂标签。同一个名字只留一条轨迹，球衣颜色要和队一致。分得出队但没有名字的人挂 Agent detecting</td></tr>
-        <tr><td>事件清单</td><td>S3 structured/、Lambda、Bedrock AgentCore、DynamoDB</td><td>已接通。探测片 3 条事件已写入。领防仍在本地</td></tr>
-        <tr><td>官方数据</td><td>S3 official/ 逐回合和 shot quality</td><td>已接通。探测片对上 0022500356。这 5 秒没有比分跳动，没有出手行</td></tr>
-        <tr><td>校验清单</td><td>Lambda、Bedrock AgentCore、DynamoDB、CloudWatch Logs、S3 analysis/</td><td>主路径。分析师解说部署中</td></tr>
-        <tr><td>回放</td><td>API Gateway、Lambda</td><td>主路径</td></tr>
-        <tr><td>解说</td><td>Transcribe、Translate、Polly Neural 知语、S3</td><td>已接通。探测片的中文音轨已在播放器里</td></tr>
-        <tr><td>成片</td><td>同一台机器上的 ffmpeg，只烧记分牌，原声留在成片里。MediaConvert 模板已建</td><td>已接通。探测成片已在网页桶。MediaConvert 还没提交转码作业</td></tr>
-        <tr><td>网页呈现</td><td>CloudFront、S3 网页桶</td><td>主路径。根路径是播放器，/readme 是作品说明</td></tr>
-        <tr><td>观测和密钥</td><td>CloudWatch、X-Ray、Secrets Manager、Cost Explorer</td><td>已接通。密钥是空占位</td></tr>
-      </tbody>
-    </table>
-    <p class="muted">和仓库里的 <code>docs/pipeline-map.md</code> 是同一张图。训练片是组委会发放的火箭、独行侠录像。考试片发布后再按同一条命令重跑，并在这里补上出处。</p>
+    <p>引力和关键度来自官方赛季汇总。暂停后写在该球员这一球旁边，标明不是这一球的胜率变化。训练片的分差效率、引力和队内排名仍在本机计算。</p>
+    <p class="note">和仓库里的 <code>docs/pipeline-map.md</code> 是同一张图。训练片是组委会发放的火箭、独行侠录像。考试片发布后再按同一条命令重跑，并在这里补上出处。</p>
 
     <h2>页面</h2>
     <ul>
-      <li><a href="/">回放页</a>：成片、人名、时间线和半场落点。页面上有 Team 04。</li>
+      <li><a href="/game.html">返回播放器</a>，也就是 <a href="/">回放页</a>：成片、人名、时间线和半场落点。页面上有 Team 04。</li>
       <li><a href="/index.html">上传页</a>：生产用，不是提交链接。</li>
       <li>本页路径是 <code>/readme</code>。</li>
     </ul>
