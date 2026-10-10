@@ -1,5 +1,41 @@
 # 深度数据格式与对齐方案
 
+## 已获取的官方深度数据与字段字典（2026-10-10）
+
+NBA 主站 <https://www.nba.com/inside-the-game> 可访问，无需登录即可通过页面使用的 stats.nba.com 接口取得数据。门户给出的 china.nba.cn 地址当前返回 404，因此采用主站官方来源。已保存 data/deep 下的 5 张真实 CSV、原始 JSON 及 manifest.json（URL、UTC 抓取时间、双格式哈希）。
+
+| 数据 | 官方接口 | 本次记录数 | 关键字段与口径 |
+| --- | --- | ---: | --- |
+| 出手难度 | shotqualityleaders | 125 | PLAYERID/PLAYERNAME/TEAMABBREVIATION；AVGSHOTQUALITY=预期 FG 概率；FGPCT=实际 FG 概率；FGPCTABOVEEXPECTED=实际减预期；FGA/FG2A/FG3A=跟踪出手次数 |
+| 引力 | gravityleaders | 234 | AVGGRAVITYSCORE=高于预期的平均防守压力；ONBALL/OFFBALL、PERIMETER/INTERIOR 分项；FRAMES=计算覆盖帧数；GAMESPLAYED、MINUTES |
+| 关键度 | leverageleaders | 234 | FULL、OFFENSE、DEFENSE、SHOOTING、CREATION、REBOUNDS、TURNOVERS、ONBALLDEF；保留 API 原始值，不把球员汇总当回合 WPA |
+| 弗拉格单场出手 | shotqualityvideologs | 23 | gameId=0022500701、playerId=1642843、eventNum、period、gameClock、shotQuality、success、shotType、locX/locY、官方视频 URL |
+| 阿门单场出手 | shotqualityvideologs | 18 | gameId=0022500491、playerId=1641708；字段同上 |
+
+定义依据 <https://www.nba.com/news/inside-the-game-stat-glossary>：xFG 表示平均 NBA 球员在同等跟踪条件下的预期命中率，FG%+ 是实际减预期。接口单位为 0–1，展示时转百分比；125 行均核验守恒。Leverage 官网显示层会对 FULL 等列乘 10，CSV 保留原始值，不擅自定义胜率单位。引力不是百分比。locX/locY 原样留存，坐标原点、单位尚未核验，不用于画面映射。
+
+两队在出手质量样本中 HOU 5 人、DAL 3 人，其余人员不补零。基准为这 125 人按跟踪 FGA 加权的 xFG=46.5813473%，不是完整联盟实际 FG%。已有真实模型 JSON/图表及 41 条单球叠加数据；5 个大残差候选不冒充高 Leverage 回合。两场官方 winprobabilitypbp 请求返回 500，WPA 和训练视频偏移未得到验证。
+
+NBA 美国比赛日期 2026-01-31/01-03 对应训练视频北京日期 02-01/01-04。通过官方 GameID 与节次、比赛时钟匹配，不直接把 gameClock 当视频时间。
+
+## 官方门户数据入口核查（2026-10-10）
+
+### 后续 NBA Stats 拉取成功
+
+当前 stats.nba.com 的 commonteamroster、leaguedashplayerstats、playercareerstats 已返回 HTTP 200，证据在 `pipeline/vision/rosters/sources/2025-26-official-sources.json`。前面的代理失败记录是历史状态，不再代表这些 Stats 请求的现状。
+
+已核验 HOU 17 人、DAL 24 人的 ID/GP/GS/精确总分钟。字段口径：commonteamroster 的 PLAYER_ID、PLAYER、NUM、POSITION 用于名单快照；leaguedashplayerstats 使用 Regular Season + PerMode=Totals + TeamID，GP 为该队赛季出场，MIN 为赛季总分钟（小数）；该接口没有 GS，补查 playercareerstats 的 SeasonTotalsRegularSeason，按 SEASON_ID 和 TEAM_ID 取 GS。两队 GS 总和均为 410。快照和统计并集不能证明赛季登记历史完整，from/to 与历史号码仍待官方历史记录，不生成带猜测日期的正式名单。
+
+Codex 已读取官方门户 `/portal` 页面及其页面资源。“NBA data downloads”在当前版本提供以下入口，而非直接提供 CSV 字段表：
+
+- NBA 比赛页：<https://www.nba.com/games>
+- 深度数据页：<https://china.nba.cn/inside-the-game>
+- 两段高清训练视频：<https://comfile.csdnimg.cn/file/train_video.zip>
+
+门户页面 HTTP 200；登录入口跳转 Amazon Cognito，当前代理拦截登录域名和 china.nba.cn，因此尚未完成账号登录或取得数据文件。api.nba.cn 根路径返回源站 HTML 403（标题 405），不同于代理隧道拒绝；这不能证明具体 NBA API 数据端点不可用。需要从深度数据页确认真实端点、参数和字段定义后请求，不猜测接口。
+
+字段字典、官方数据复核与正式模型输出仍待实际文件。上列信息仅证明官方页面当前公布了哪些链接，不证明文件已下载、登录成功或数据字段已核验。账号密码和认证响应不存入仓库。
+
 > 主人：B（视觉线）。别人可以提意见，只有主人改。
 > 核心问题：官方数据只有出手瞬间点位、没有逐帧轨迹。
 
@@ -193,3 +229,7 @@ HSV 规则是高明度、低饱和度算白，明度低于 110 算深色。抽�
 
 号码不再等 Roboflow 权重。RapidOCR 对每条球员轨迹最多 8 张躯干裁切投票，至少两票（或一票且置信度不低于 0.95）才收下，而且只有对上出场名单才写姓名。basketball_analysis 弗拉格写出 Amen、Christie、Flagg、Klay、Sengun、Smith，185 帧里 182 帧至少有一个姓名；阿门写出 Amen、Capela、Christie、Davis、Durant、Eason、Flagg、Marshall、Smith。侧面和背面仍然是空的。E-BARD 用同一次投票，弗拉格还多认出 Gafford 和 Durant。没有再调用 Qwen。
 
+
+## 2026-10-10 历史名单补查
+
+基础统计扩充到 HOU 19 / DAL 25（44 条球员—球队记录），真实 ID/GP/GS/MIN 在 `pipeline/vision/rosters/sources/2025-26-verified-totals.csv`。已收集两队 160 场去重常规赛的名单与 inactive 观察，并保留官方交易和位置响应。观察日期不能替代登记日期，当前 profile 不能替代历史号码；正式名单仍受号码冲突和完整登记区间核验阻塞。复现与逐项说明见 [roster-history-notes.md](roster-history-notes.md)。模型扩展依用户指示暂停。
