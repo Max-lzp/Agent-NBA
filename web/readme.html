@@ -271,7 +271,7 @@
       <li class="ai">
         <span class="idx">7</span>
         <div class="node">
-          <strong>分析师</strong> <span class="mark">AgentCore · Bedrock</span> <span class="badge wait">部署中</span>
+          <strong>分析师</strong> <span class="mark">AgentCore · Bedrock</span> <span class="badge ok">已接通</span>
           <p>智能体自己决定查哪些工具，中英文解说必须对上工具里的数字和人名。页面事件的写入已经在用。</p>
           <p class="svcs">AWS Lambda · Amazon Bedrock AgentCore · Amazon Bedrock · Amazon DynamoDB · Amazon S3</p>
         </div>
@@ -300,7 +300,7 @@
     <p>每句中文和英文都要过一遍落地校验：句子里的数字必须出现在工具结果里，人名必须出现在工具结果里，命中率旁边的数字必须来自百分数字段。对不上的句子删掉，不改写成一个新数字。查不到就不写。问分析师时如果工具里没有足够的数据，回答固定是「工具里没有足够的数据来回答这个问题。」管道模式要写满三条亮点；凑不满时，空位写明这段没有更多能对上官方或赛季数据的看点。</p>
     <p>通过校验的解说写到媒体桶 <code>analysis/{jobId}.json</code>。网页上的「问分析师」把问题发到 <code>/api/agent/ask</code>。Amazon CloudFront 去掉 <code>/api</code> 前缀后，Amazon API Gateway 的 <code>POST /agent/ask</code> 交给 Lambda <code>ask_agent</code>，叫醒的仍是同一个运行时。已经写好的解说用 <code>GET /agent/analysis/{jobId}</code> 读取。客户端在 <code>web/analyst.js</code>。</p>
     <p>部署之后，状态机在 AWS Batch 成功时调用 Lambda <code>analyze_job</code>，再由它叫醒分析师。<code>structured/</code> 不再发 Amazon S3 通知。上下文 <code>enableOrchestration=false</code> 时，仍由这条通知叫醒。运行时冷启动或调用失败时，<code>analyze_job</code> 直接读清单，把页面事件写入 Amazon DynamoDB，回放不会停在分析中。清单格式不合法时任务写成失败，不把坏清单放进页面。模型没有返回可用解说时，运行时仍把清单交还给 Lambda，页面事件照常写入。</p>
-    <p>下午探测时，运行时 30 秒内没有完成初始化：入口导入了没有打进代码包的库，进程一起床就退出。现在入口先用 Python 标准库响应 <code>/ping</code>，boto3 由 CDK 打进代码包，第一次分析才加载。这段分析师代码还没有用当前模板执行 <code>cdk deploy</code>，所以这一节的状态是部署中。页面事件写入本身已经在用。</p>
+    <p>下午探测时，运行时 30 秒内没有完成初始化：入口导入了没有打进代码包的库，进程一起床就退出。现在入口先用 Python 标准库响应 <code>/ping</code>，boto3 由 CDK 打进代码包，第一次分析才加载。这版运行时已于 2026-10-10 17:54 用 <code>cdk deploy</code> 上线，实测直接调用运行时 23 秒完成分析并写入 <code>analysis/warm-probe.json</code>，网页「问分析师」接口 <code>/api/agent/ask</code> 也已经能按事件清单回答并注明数据来源。</p>
 
     <h2 id="bedrock">Bedrock 做了什么</h2>
     <p>Amazon Bedrock 在这条管道里承担两类模型调用，都走 Converse，区域是 <code>us-east-1</code>。视觉认人和文字解说分开，解说模型不看画面编事件。</p>
@@ -317,7 +317,7 @@
     <article class="card ai">
       <header>
         <h3>解说：Claude Sonnet 4.6</h3>
-        <span class="badge wait">部署中</span>
+        <span class="badge ok">已接通</span>
       </header>
       <p>分析师推理用的是上面的 <code>global.anthropic.claude-sonnet-4-6</code>。跨区域推理配置和底层模型的调用权限都写在 AgentCore 运行时角色上，动作包括 <code>bedrock:Converse</code>。温度是 0。它只根据工具返回的内容写回合解说、定格卡和三条亮点。</p>
       <p>栈里另有一条 <code>POST /commentary</code>。它用同一个模型写两句短解说，再用 Amazon Polly 合成，失败不影响分析任务。播放器上的中文音轨不走这条接口。</p>
@@ -476,7 +476,7 @@
         <li>Amazon CloudWatch Logs</li>
         <li>Amazon S3 analysis/</li>
       </ul>
-      <p class="note">事件写入已在用，所以这一步标主路径。分析师这次的工具调用运行时是部署中，见「AI Agent 做了什么」。</p>
+      <p class="note">事件写入已在用，所以这一步标主路径。分析师的工具调用运行时也已上线，见「AI Agent 做了什么」。</p>
     </article>
 
     <article class="card" id="step-10">
@@ -632,7 +632,7 @@
           <tr>
             <td data-label="服务">Amazon Bedrock AgentCore</td>
             <td data-label="用在哪一步">9 校验，以及问分析师</td>
-            <td data-label="为什么用托管版">赛题要求智能体跑在 AgentCore 上。运行时 <code>DeepCourtAnalyst</code> 自己决定调用哪些工具。Lambda 用 <code>InvokeAgentRuntime</code> 叫醒它。状态：部署中。</td>
+            <td data-label="为什么用托管版">赛题要求智能体跑在 AgentCore 上。运行时 <code>DeepCourtAnalyst</code> 自己决定调用哪些工具。Lambda 用 <code>InvokeAgentRuntime</code> 叫醒它。状态：已接通。</td>
           </tr>
           <tr>
             <td data-label="服务">Amazon Rekognition</td>
