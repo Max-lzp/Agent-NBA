@@ -214,7 +214,7 @@ COMMENTARY_ZH = {
     "He has played very hard tonight.":
         "他今晚打得很猛。",
     "Eason in a one-on-one against Marshall drives Marshall defended well so he forced him to pass it to Durant outside.":
-        "伊森一对一打马歇尔，杀进去，马歇尔防住了，逼他把球交到外线的杜兰特。",
+        "伊森一对一打马绍尔，杀进去，马绍尔防住了，逼他把球交到外线的杜兰特。",
     "Here comes Thompson off one foot at the end of the shot clock hits a jumper at the free throw line.":
         "进攻时间结束前，阿门单脚起跳，罚球线跳投命中。",
 }

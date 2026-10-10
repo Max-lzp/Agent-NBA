@@ -25,19 +25,20 @@ MODEL_ID = "qwen.qwen3-vl-235b-a22b"
 PROMPT = (
     'This is a cropped frame of one basketball player from an NBA broadcast. '
     'What jersey number is on this player\'s uniform, and what color is the jersey? '
-    'Reply ONLY as JSON: {"number":"<digits or unknown>","color":"<color>"}'
+    'If the person is a referee (grey shirt or black-and-white stripes, not a team jersey), set referee to true. '
+    'Reply ONLY as JSON: {"number":"<digits or unknown>","color":"<color>","referee":<true or false>}'
 )
 MIN_VOTES = 2
 FRAMES_PER_TRACK = 12
 SCORE_LAG_S = 8.0
 NAMES = {
-    ("HOU", "0"): "霍利戴", ("HOU", "1"): "阿门", ("HOU", "2"): "芬尼史密斯",
-    ("HOU", "7"): "杜兰特", ("HOU", "8"): "泰特", ("HOU", "10"): "史密斯",
+    ("HOU", "0"): "霍勒迪", ("HOU", "1"): "阿门", ("HOU", "2"): "芬尼-史密斯",
+    ("HOU", "7"): "杜兰特", ("HOU", "8"): "泰特", ("HOU", "10"): "小史密斯",
     ("HOU", "15"): "谢泼德", ("HOU", "17"): "伊森", ("HOU", "20"): "奥科吉",
     ("HOU", "28"): "申京", ("HOU", "30"): "卡佩拉",
     ("DAL", "00"): "克里斯蒂", ("DAL", "0"): "克里斯蒂", ("DAL", "1"): "哈迪",
     ("DAL", "3"): "戴维斯", ("DAL", "5"): "拉塞尔", ("DAL", "7"): "鲍威尔",
-    ("DAL", "9"): "南姆哈德", ("DAL", "10"): "威廉姆斯", ("DAL", "13"): "马歇尔",
+    ("DAL", "9"): "内姆哈德", ("DAL", "10"): "威廉姆斯", ("DAL", "13"): "马绍尔",
     ("DAL", "16"): "马丁", ("DAL", "21"): "加福德", ("DAL", "25"): "华盛顿",
     ("DAL", "30"): "西塞", ("DAL", "31"): "克莱", ("DAL", "32"): "弗拉格",
 }
@@ -49,7 +50,7 @@ def link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> di
     _download_official(s3, bucket)
     roster = _roster()
     started = time.time()
-    reads, votes, stats = _read_jerseys(video, frames)
+    reads, votes, stats = _read_jerseys(video, frames, roster)
     game_id, plays, quality = _official_game(board.get("reads") or [])
     pinned = _pin_official(plays, board, roster)
     _stamp_numbers(plays, game_id)
@@ -143,7 +144,7 @@ def _roster() -> dict:
     return out
 
 
-def _read_jerseys(video: Path, frames: list) -> tuple[list[dict], list[dict], dict]:
+def _read_jerseys(video: Path, frames: list, roster: dict) -> tuple[list[dict], list[dict], dict]:
     tracks = _associate(frames)
     chosen = []
     cap = cv2.VideoCapture(str(video))
@@ -175,25 +176,70 @@ def _read_jerseys(video: Path, frames: list) -> tuple[list[dict], list[dict], di
     stats["bedrockCalls"] = len(reads)
     stats["rekognitionCalls"] = sum(1 for read in reads if read.get("rekognitionCalled"))
     stats["textractCalls"] = sum(1 for read in reads if read.get("textractCalled"))
+    _spread_referee(reads, roster)
     by_track = {track["id"]: track for track in tracks}
     votes = []
     for track_id, group in _grouped(reads).items():
         track = by_track.get(track_id) or {"id": track_id, "boxes": []}
-        number, ballots, color, color_votes = _majority(group)
-        votes.append({
-            "id": track_id,
-            "boxes": track["boxes"],
-            "number": number,
-            "ballots": ballots,
-            "color": color,
-            "colorVotes": color_votes,
-            "samples": len(group),
-        })
+        for part, (boxes, sub, referee) in enumerate(_split_referee(track["boxes"], group)):
+            if referee:
+                votes.append({
+                    "id": f"{track_id}.{part}", "boxes": boxes, "number": "", "ballots": 0,
+                    "color": "", "colorVotes": 0, "samples": len(sub), "referee": True,
+                })
+                continue
+            number, ballots, color, color_votes = _majority(sub)
+            votes.append({
+                "id": f"{track_id}.{part}",
+                "boxes": boxes,
+                "number": number,
+                "ballots": ballots,
+                "color": color,
+                "colorVotes": color_votes,
+                "samples": len(sub),
+                "referee": False,
+            })
     return reads, votes, stats
+
+
+def _spread_referee(reads: list[dict], roster: dict) -> None:
+    """Qwen 对同一个裁判时答时不答。被认作裁判、又不在两队名单里的号码，其余帧也算裁判。"""
+    teams = {os.environ.get("AWAY", ""), os.environ.get("HOME_TEAM", "")} - {""}
+    players = {number for (team, number) in roster if not teams or team in teams}
+    numbers = {
+        number for read in reads if read.get("referee")
+        for number in (read.get("number"), read.get("rekognition")) if number and number not in players
+    }
+    for read in reads:
+        if read.get("number") in numbers or read.get("rekognition") in numbers:
+            read["referee"] = True
+
+
+def _split_referee(boxes: list, reads: list) -> list[tuple[list, list, bool]]:
+    """简易连线会把裁判和球员接成一条。裁判和球员交接处切开，裁判那段不投票、不挂标签。"""
+    ordered = sorted(reads, key=lambda read: read["t"])
+    runs: list[list] = []
+    for read in ordered:
+        if runs and bool(runs[-1][0].get("referee")) == bool(read.get("referee")):
+            runs[-1].append(read)
+        else:
+            runs.append([read])
+    if len(runs) <= 1:
+        return [(boxes, ordered, bool(ordered and ordered[0].get("referee")))]
+    cuts = [(runs[k][-1]["t"] + runs[k + 1][0]["t"]) / 2 for k in range(len(runs) - 1)]
+    edges = [float("-inf")] + cuts + [float("inf")]
+    parts = []
+    for k, run in enumerate(runs):
+        lo, hi = edges[k], edges[k + 1]
+        part = [(stamp, box) for stamp, box in boxes if lo <= float(stamp) < hi]
+        if part:
+            parts.append((part, run, bool(run[0].get("referee"))))
+    return parts
 
 
 def _ask(bedrock, rekognition, textract, track_id: int, stamp: float, payload: bytes) -> dict:
     number, color, error = "", "", ""
+    referee = False
     textract_called = False
     try:
         response = bedrock.converse(
@@ -208,7 +254,7 @@ def _ask(bedrock, rekognition, textract, track_id: int, stamp: float, payload: b
             block.get("text", "")
             for block in response.get("output", {}).get("message", {}).get("content") or []
         )
-        number, color = _parse_qwen(text)
+        number, color, referee = _parse_qwen(text)
     except Exception as exc:  # noqa: BLE001 — Qwen 失败才落到 Textract
         error = str(exc)[:500]
         textract_called = True
@@ -243,6 +289,7 @@ def _ask(bedrock, rekognition, textract, track_id: int, stamp: float, payload: b
         "number": number,
         "rekognition": rek_number,
         "color": color,
+        "referee": referee or _referee_color(color),
         "error": error,
         "textractCalled": textract_called,
         "rekognitionCalled": rek_called,
@@ -349,14 +396,20 @@ def _majority(reads: list[dict]) -> tuple[str, int, str, int]:
     color, color_votes = ("", 0)
     if colors:
         color, color_votes = colors.most_common(1)[0]
-        second = colors.most_common(2)[1][1] if len(colors) > 1 else 0
-        if color_votes < MIN_VOTES or color_votes <= second:
+        if color_votes < MIN_VOTES or color_votes < 0.7 * sum(colors.values()):
             color, color_votes = "", 0
     return number, votes, color, color_votes
 
 
+def _referee_color(color: str) -> bool:
+    text = color.lower()
+    return any(word in text for word in ("gray", "grey", "stripe", "灰", "条纹"))
+
+
 def _team_from_color(color: str) -> str:
     text = color.lower()
+    if _referee_color(text):
+        return ""
     if any(word in text for word in ("white", "白", "light")):
         return "HOU"
     if any(word in text for word in ("dark", "navy", "black", "blue", "深", "蓝", "黑")):
@@ -471,10 +524,10 @@ def _court_at(table: list, period, clock) -> dict:
 
 
 def _match_on_court(number: str, color: str, court: dict):
-    if not number or not court:
+    """号码对上了，球衣颜色也得是那个人的队。颜色分不出就不写名字。"""
+    if not number or not court or color not in court:
         return None
-    teams = [color] if color in court else list(court)
-    hits = [person for team in teams for person in court.get(team) or [] if person["number"] == number]
+    hits = [person for person in court.get(color) or [] if person["number"] == number]
     return hits[0] if len(hits) == 1 else None
 
 
@@ -500,6 +553,9 @@ def _one_track_each(named: list[dict]) -> list[dict]:
 def _hang_labels(named: list[dict]) -> list[dict]:
     """名字从轨迹第一帧挂到最后一帧。有队无名才写 Agent detecting。"""
     for item in named:
+        if item.get("referee"):
+            item.update(nameZh="", team="", label="")
+            continue
         if item.get("nameZh"):
             item["label"] = item["nameZh"]
             continue
@@ -581,17 +637,19 @@ def _grouped(reads: list[dict]) -> dict[int, list[dict]]:
     return groups
 
 
-def _parse_qwen(text: str) -> tuple[str, str]:
+def _parse_qwen(text: str) -> tuple[str, str, bool]:
     match = re.search(r"\{.*\}", text, re.S)
     if not match:
-        return "", ""
+        return "", "", False
     try:
         data = json.loads(match.group(0))
     except json.JSONDecodeError:
-        return "", ""
+        return "", "", False
     raw = str(data.get("number") or "").strip()
     number = "" if raw.lower() == "unknown" else _jersey_number([raw])
-    return number, str(data.get("color") or "")
+    referee = data.get("referee")
+    referee = referee is True or str(referee).strip().lower() == "true"
+    return number, str(data.get("color") or ""), referee
 
 
 def _iou(a, b) -> float:
@@ -718,7 +776,7 @@ def _playback_tags(named: list[dict], src_w: float, src_h: float) -> list[dict]:
         jersey = "" if text == "Agent detecting" else str(item.get("number") or "")
         for stamp, box in item.get("boxes") or []:
             x, y, w, h = [float(value) for value in box[:4]]
-            if h * scale_y < 48:
+            if h * scale_y < 48 or w * scale_x > h * scale_y:
                 continue
             key = round(float(stamp), 3)
             by_time.setdefault(key, []).append({
@@ -857,9 +915,9 @@ def _xfg(play, quality):
 def _shot_actor(play, team: str) -> dict:
     if not play:
         return {"name": TEAM_ZH.get(team, team or "球员"), "team": team}
-    number = ""
+    number = play.get("number") or ""
     match = re.search(r"#(\d+)", play.get("description") or "")
-    if match:
+    if match and not number:
         number = match.group(1)
     zh = NAMES.get((play["team"], number))
     return {"name": zh or play.get("player") or TEAM_ZH.get(team, "球员"), "team": play["team"], "number": number}
