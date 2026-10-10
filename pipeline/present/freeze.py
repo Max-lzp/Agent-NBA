@@ -1,7 +1,7 @@
 """进球后的出手定格烧进成片。
 
 网页那份成片保持原时间轴，人名和时间线都按它对齐；这里另出一份 `{clip}-replay.mp4`：
-进球后插入 5 秒出手帧，画红圈、防守人虚线圈、数据卡和分区热区图。解说照原时间铺，
+进球后插入 5 秒出手帧，画红圈、领防人虚线圈、数据卡和分区热区图。解说照原时间铺，
 定格期间现场声静音。
 """
 from __future__ import annotations
@@ -84,7 +84,7 @@ def card_lines(pack: dict, shot: dict) -> list[tuple[str, str]]:
         mine = bug["awayScore"] - bug["homeScore"] if shot.get("team") == bug["away"] else bug["homeScore"] - bug["awayScore"]
         gap = "打平" if mine == 0 else f"{TEAM_ZH.get(shot.get('team'), shot.get('team'))}{'领先' if mine > 0 else '落后'} {abs(mine)} 分"
         lines.append(("score", f"{bug['period']} {bug['clock']} · {bug['awayName']} {bug['awayScore']} : {bug['homeScore']} {bug['homeName']} · {gap}"))
-    lines.append(("off", f"{shot['name']} #{shot.get('number') or ''}".strip()))
+    lines.append(("off", f"{shot['name']} #{shot.get('number') or ''}（{shooter_source(shot)}）"))
     season = shot.get("season")
     if season:
         lines.append(("line", f"赛季场均 {season['pts']} 分 · 投篮 {_pct(season['fg_pct'])} · 三分 {_pct(season['fg3_pct'])}"))
@@ -98,25 +98,30 @@ def card_lines(pack: dict, shot: dict) -> list[tuple[str, str]]:
             diff = (float(margin["ts"]) - float(margin["team_ts"])) * 100
             text += f"，比全队同档{'高' if diff >= 0 else '低'} {abs(diff):.1f} 个百分点"
         lines.append(("line", text))
-    near = shot.get("nearest")
-    defender = shot.get("defender")
-    if near or defender:
-        lines.append(("def", "防守"))
-    if near:
-        who = near.get("display") or f"{TEAM_ZH.get(near.get('team'), near.get('team') or '')}球员" + (
-            f" #{near['number']}" if near.get("number") else "，号码没读出")
-        lines.append(("line", f"最近防守人：{who}（画面）"))
-    if defender:
-        head = "本场主防（对位表）" if defender.get("source") == "matchup" else "防守人"
-        text = f"{head}：{defender.get('display') or defender.get('name')} #{defender.get('number')}"
-        vs = defender.get("vs_shooter")
+    lines.append(("def", "防守"))
+    d = shot.get("defender")
+    if not d or not d.get("name"):
+        team = f"{TEAM_ZH.get(d.get('team'), d.get('team'))}球员，" if d and d.get("team") else ""
+        lines.append(("line", f"领防：{team}号码没读出"))
+    else:
+        who = d.get("display") or d["name"]
+        lines.append(("line", f"领防：{who} #{d['number']}（画面，出手前贴防 {float(d['guard_seconds']):.1f} 秒）"))
+        vs = d.get("vs_shooter")
         if vs:
-            text += f" · 对位 {round(vs['seconds'] / 60)} 分钟，{shot['name']} {vs['fgm']}/{vs['fga']}"
-        lines.append(("line", text))
-        ds = defender.get("season")
+            lines.append(("line", f"本场对位 {round(vs['seconds'] / 60)} 分钟，{shot['name']} {vs['fgm']}/{vs['fga']}、得 {vs['points']} 分"))
+        ds = d.get("season")
         if ds:
             lines.append(("line", f"赛季场均 抢断 {ds['stl']} · 盖帽 {ds['blk']} · 防守篮板 {ds['dreb']}"))
     return lines
+
+
+def shooter_source(shot: dict) -> str:
+    c = shot.get("shooterCheck") or {}
+    if c.get("number") and c["number"] == c.get("official_number"):
+        return "画面确认"
+    if c.get("number"):
+        return f"画面读到 #{c['number']}，以官方记录为准"
+    return "官方记录"
 
 
 def _ellipse(draw, box, scale, color, fill=None, dashed=False):
@@ -200,12 +205,13 @@ def draw_still(frame: Path, dest: Path, pack: dict, shot: dict, font_path: Path)
     tiny = ImageFont.truetype(str(font_path), 13)
     scale = OUT_W / float(pack.get("width") or OUT_W)
 
-    near = shot.get("nearest") or {}
-    if near.get("box"):
-        cx, _ = _ellipse(draw, near["box"], scale, GOLD, dashed=True)
-        _tag(draw, small, "最近防守", cx, near["box"][1] * scale, GOLD)
+    lead = shot.get("leadBox")
+    if lead:
+        cx, _ = _ellipse(draw, lead, scale, GOLD, dashed=True)
+        d = shot.get("defender") or {}
+        label = f"领防 · {d.get('display') or d.get('name')} #{d.get('number')}" if d.get("name") else "领防"
+        _tag(draw, small, label, cx, lead[1] * scale, GOLD)
     box = shot["release"]["shooter_box"]
-    draw.rounded_rectangle(tuple(v * scale for v in box), radius=10, outline=(255, 43, 43, 200), width=3)
     cx, _ = _ellipse(draw, box, scale, RED, fill=(255, 43, 43, 80))
     _tag(draw, small, f"出手 · {shot['name']}", cx, box[1] * scale, RED)
 

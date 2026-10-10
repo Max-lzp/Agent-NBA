@@ -264,15 +264,6 @@ def _at(reads: list[dict], t: float) -> dict | None:
     return found
 
 
-def _nearest(defense: dict) -> dict | None:
-    near = defense.get("nearest")
-    if not near:
-        return None
-    team = near.get("team") or ""
-    return {**near, "box": defense.get("nearest_box"),
-            "display": display_name(team, str(near.get("number") or ""), near.get("name") or "") if near.get("name") else ""}
-
-
 def _defender(defender: dict | None) -> dict | None:
     if not defender:
         return None
@@ -325,7 +316,8 @@ def _shots(stream: dict) -> list[dict]:
                 "season_profile": profile,
                 "zoneKey": geom.get("shot_zone") or "",
                 "release": ev.get("release"),
-                "nearest": _nearest(ev.get("defense") or {}),
+                "leadBox": (ev.get("defense") or {}).get("lead_box"),
+                "shooterCheck": official.get("shooter_check"),
                 "defender": _defender(official.get("defender")),
                 "season": official.get("shooter_season"),
                 "zoneChart": official.get("zone_chart"),

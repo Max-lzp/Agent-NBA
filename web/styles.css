@@ -1139,6 +1139,7 @@ h2 {
 .freeze-head b { color: #ff2b2b; letter-spacing: .12em; font-size: 1.05em; }
 .freeze-head span { color: var(--muted); font-size: .95em; }
 .freeze .freeze-score { color: var(--cream); font-weight: 600; margin: 0 0 6px; }
+.freeze h3 small { font-size: .78em; font-weight: 400; color: var(--muted); margin-left: .4em; }
 .freeze h3 { margin: .4em 0 .1em; font-size: 1.1em; display: flex; align-items: center; gap: 6px; }
 .freeze p { margin: 0; color: var(--muted); }
 .freeze .dot { width: .7em; height: .7em; border-radius: 50%; display: inline-block; }

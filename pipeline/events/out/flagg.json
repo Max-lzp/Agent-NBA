@@ -195,32 +195,40 @@
             "court_half": "right",
             "defender": {
               "team": "HOU",
-              "number": "1",
-              "name": "Thompson",
-              "full_name": "Amen Thompson",
-              "person_id": 1641708,
-              "source": "matchup",
+              "source": "cv_lead",
+              "guard_seconds": 1.76,
+              "ocr": {
+                "votes": 7,
+                "reads": 19,
+                "share": 1.0,
+                "conf": 0.921,
+                "candidate": "17"
+              },
+              "number": "17",
+              "name": "Eason",
+              "person_id": 1631106,
+              "full_name": "Tari Eason",
               "vs_shooter": {
-                "seconds": 251.0,
-                "possessions": 21.8,
+                "seconds": 143.0,
+                "possessions": 15.0,
                 "fgm": 0,
-                "fga": 0,
-                "points": 0,
+                "fga": 1,
+                "points": 3,
                 "blocks": 0
               },
               "season": {
                 "season": "2025-26",
                 "team": "HOU",
-                "gp": 79,
-                "pts": 18.3,
-                "reb": 7.8,
-                "ast": 5.3,
-                "stl": 1.5,
-                "blk": 0.6,
-                "dreb": 4.8,
-                "fg_pct": 0.534,
-                "fg3_pct": 0.216,
-                "ft_pct": 0.779
+                "gp": 60,
+                "pts": 10.4,
+                "reb": 6.3,
+                "ast": 1.5,
+                "stl": 1.2,
+                "blk": 0.5,
+                "dreb": 4.2,
+                "fg_pct": 0.416,
+                "fg3_pct": 0.358,
+                "ft_pct": 0.776
               }
             },
             "shooter_season": {
@@ -303,6 +311,14 @@
                   "league_fga": 37
                 }
               }
+            },
+            "shooter_check": {
+              "number": null,
+              "official_number": "32",
+              "votes": 0,
+              "reads": 2,
+              "seconds": 4.24,
+              "hold_seconds": 0.76
             }
           },
           "release": {
@@ -335,6 +351,7 @@
               858.4,
               561.2
             ],
+            "lead_box": null,
             "matchup": {
               "person_id": 1641708,
               "team": "HOU",
