@@ -73,6 +73,18 @@ curl -sS -X POST "<api>jobs" -H 'content-type: application/json' \
 | 交付 | CloudFront + Web 界面（硬性要求） |
 | 基础设施 | AWS CDK（硬性要求，全部资源 us-east-1） |
 
+## Bedrock AgentCore 智能体做什么
+
+比赛要求智能体跑在 Amazon Bedrock AgentCore 上。智能体逻辑如果只在自己电脑的进程里，或者只是一段循环在调大模型，都不算数。
+
+Deep Court 的分析师就住在这个运行时里，名字叫 DeepCourtAnalyst。一条回放的事件清单写进 S3 之后，Lambda `analyze_job` 会叫醒它。它自己决定要查什么：这份清单、官方逐回合和投篮质量、火箭和独行侠的赛季三分区、以及认人结果。然后用 Claude Sonnet 4.6 写成中英文解说、定格卡上的一句话，和全片三条亮点。模型号必须是 `global.anthropic.claude-sonnet-4-6`。每句话都标了数据来源。工具里没有的数字和人名，它不说。
+
+观众也可以就这段回放提问。问题走网站的 `/api/agent/ask`，还是同一个分析师回答，不会另外编一套。
+
+如果运行时还在冷启动，或者这次没叫起来，收清单的 Lambda 会自己把事件写进页面，回放不会卡住。解说会等运行时醒了再出现。
+
+上次探测时，运行时报「30 秒内没完成初始化」。原因不是模型慢，而是代码包里只有 `agent.py`。这个部署方式不会在启动时安装 `requirements.txt`，入口却去导入没打进包的 `bedrock-agentcore`。进程一起床就崩了，报错被说成初始化超时。现在入口先用 Python 标准库把健康检查端口打开，boto3 打进代码包，第一次真正分析时才加载。
+
 ## 目录
 
 本仓库只放交付物。每个文件一个主人。

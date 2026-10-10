@@ -1,2 +1,6 @@
-bedrock-agentcore>=0.1.0
-boto3>=1.35.0
+# AgentCore 直接代码部署不会在启动时安装这份文件，依赖必须打进 zip。
+# 下午那次 30 秒初始化失败，是入口导入了没打进包的 bedrock-agentcore。
+# 进程一起床就崩，平台把 ModuleNotFoundError 说成
+# “Runtime initialization time exceeded”。
+# 现在入口只用标准库先听 8080。boto3 由 CDK 在打包时装进 zip，第一次请求才导入。
+# 不装 strands-agents：它会带上 OpenTelemetry，冷启动更重，这里用 boto3 Converse 自己做工具循环。

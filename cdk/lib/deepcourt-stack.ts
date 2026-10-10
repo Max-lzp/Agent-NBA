@@ -1,3 +1,5 @@
+import { execFileSync } from 'node:child_process';
+import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as cdk from 'aws-cdk-lib/core';
 import * as agentcore from 'aws-cdk-lib/aws-bedrockagentcore';
@@ -75,7 +77,7 @@ export class DeepCourtStack extends cdk.Stack {
       JOBS_TABLE: jobs.tableName,
       EVENTS_TABLE: events.tableName,
       MEDIA_BUCKET: mediaBucket.bucketName,
-    }, 120, 1024, 1024);
+    }, 240, 1024, 1024);
     const createFn = this.pyFunction('CreateJob', 'create_job.handler.handler', code, {
       JOBS_TABLE: jobs.tableName,
       MEDIA_BUCKET: mediaBucket.bucketName,
@@ -97,9 +99,21 @@ export class DeepCourtStack extends cdk.Stack {
     mediaBucket.grantRead(analyzeFn, 'structured/*');
     mediaBucket.grantRead(getFn, 'raw/*');
 
+    const textModel = 'global.anthropic.claude-sonnet-4-6';
+    const foundationModel = 'anthropic.claude-sonnet-4-6';
+    const agentDir = path.join(repoRoot, 'agent');
     const agentAsset = new s3assets.Asset(this, 'AgentCode', {
-      path: path.join(repoRoot, 'agent'),
-      exclude: ['__pycache__', '*.pyc'],
+      path: agentDir,
+      exclude: ['__pycache__', '*.pyc', 'test_*.py', 'requirements.txt'],
+      bundling: {
+        image: cdk.DockerImage.fromRegistry('public.ecr.aws/docker/library/python:3.12-slim'),
+        local: {
+          tryBundle(outputDir: string): boolean {
+            stageAgentBundle(outputDir, agentDir);
+            return true;
+          },
+        },
+      },
     });
     const agentRole = new iam.Role(this, 'AgentRuntimeRole', {
       assumedBy: new iam.ServicePrincipal('bedrock-agentcore.amazonaws.com'),
@@ -107,12 +121,56 @@ export class DeepCourtStack extends cdk.Stack {
     });
     agentAsset.grantRead(agentRole);
     mediaBucket.grantRead(agentRole, 'structured/*');
+    mediaBucket.grantRead(agentRole, 'official/*');
+    mediaBucket.grantRead(agentRole, 'identity/*');
+    mediaBucket.grantPut(agentRole, 'analysis/*');
+    // Global CRIS 要同时允许推理配置，以及两种底层模型 ARN。
+    // https://docs.aws.amazon.com/bedrock/latest/userguide/global-cross-region-inference.html
+    const profileArn = `arn:aws:bedrock:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:inference-profile/${textModel}`;
+    const invokeActions = [
+      'bedrock:InvokeModel',
+      'bedrock:InvokeModelWithResponseStream',
+      'bedrock:Converse',
+      'bedrock:ConverseStream',
+    ];
+    agentRole.addToPolicy(new iam.PolicyStatement({
+      actions: invokeActions,
+      resources: [profileArn],
+    }));
+    agentRole.addToPolicy(new iam.PolicyStatement({
+      actions: invokeActions,
+      resources: [`arn:aws:bedrock:${cdk.Aws.REGION}::foundation-model/${foundationModel}`],
+      conditions: {
+        StringEquals: { 'bedrock:InferenceProfileArn': profileArn },
+      },
+    }));
+    agentRole.addToPolicy(new iam.PolicyStatement({
+      actions: invokeActions,
+      resources: [`arn:aws:bedrock:::foundation-model/${foundationModel}`],
+      conditions: {
+        StringEquals: {
+          'aws:RequestedRegion': 'unspecified',
+          'bedrock:InferenceProfileArn': profileArn,
+        },
+      },
+    }));
+    agentRole.addToPolicy(new iam.PolicyStatement({
+      actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+      resources: [
+        `arn:aws:logs:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:log-group:/aws/bedrock-agentcore/*`,
+        `arn:aws:logs:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:log-group:/aws/bedrock-agentcore/*:*`,
+      ],
+    }));
 
     const runtime = new agentcore.CfnRuntime(this, 'AnalystRuntime', {
       agentRuntimeName: 'DeepCourtAnalyst',
-      description: 'Deep Court orchestrator. Fetches and validates the CV event stream; no model writes events.',
+      description: 'Deep Court analyst. Converse tool loop over the manifest, official plays, season zones, and identity.',
       roleArn: agentRole.roleArn,
       networkConfiguration: { networkMode: 'PUBLIC' },
+      environmentVariables: {
+        MODEL_ID: textModel,
+        MEDIA_BUCKET: mediaBucket.bucketName,
+      },
       agentRuntimeArtifact: {
         codeConfiguration: {
           runtime: 'PYTHON_3_12',
@@ -168,6 +226,27 @@ export class DeepCourtStack extends cdk.Stack {
     const oneJob = jobsResource.addResource('{id}');
     oneJob.addMethod('GET', new apigw.LambdaIntegration(getFn));
     oneJob.addResource('events').addMethod('GET', new apigw.LambdaIntegration(listFn));
+
+    const askFn = this.pyFunction('AskAgent', 'ask_agent.handler.handler', code, {
+      MEDIA_BUCKET: mediaBucket.bucketName,
+      AGENT_RUNTIME_ARN: runtime.attrAgentRuntimeArn,
+    }, 28, 256);
+    mediaBucket.grantRead(askFn, 'analysis/*');
+    askFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['bedrock-agentcore:InvokeAgentRuntime'],
+      resources: [
+        runtime.attrAgentRuntimeArn,
+        `arn:aws:bedrock-agentcore:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:runtime/*`,
+      ],
+    }));
+    const agentApi = api.root.addResource('agent');
+    agentApi.addResource('ask').addMethod('POST', new apigw.LambdaIntegration(askFn, {
+      timeout: cdk.Duration.seconds(29),
+    }));
+    agentApi.addResource('analysis').addResource('{jobId}').addMethod(
+      'GET',
+      new apigw.LambdaIntegration(askFn),
+    );
 
     const rewrite = new cloudfront.Function(this, 'StripApiPrefix', {
       comment: 'Map /api/* on the site to API Gateway stage paths',
@@ -311,4 +390,26 @@ export class DeepCourtStack extends cdk.Stack {
       }),
     });
   }
+}
+
+const AGENT_BUNDLE_FILES = [
+  'agent.py',
+  'converse_loop.py',
+  'tools.py',
+  'manifest.py',
+  'grounding.py',
+  'season_data.py',
+  'season_hou_dal.json',
+];
+
+function stageAgentBundle(outputDir: string, agentDir: string): void {
+  fs.mkdirSync(outputDir, { recursive: true });
+  for (const name of AGENT_BUNDLE_FILES) {
+    fs.copyFileSync(path.join(agentDir, name), path.join(outputDir, name));
+  }
+  execFileSync('python3', [
+    '-m', 'pip', 'install', '--no-cache-dir', '--upgrade',
+    '--target', outputDir,
+    'boto3==1.35.99',
+  ], { stdio: 'inherit' });
 }
