@@ -1,7 +1,7 @@
 # 架构说明
 
 > 主人：A（部署线）。别人可以提意见，只有主人改。
-> 用途：机器评分扫仓库时对照「每个 AWS 服务为什么出现」。状态：P0 代码在仓库里。主办方共享账号已关闭，部署改到本队账号 `405496568869`。
+> 用途：机器评分扫仓库时对照「每个 AWS 服务为什么出现」。步骤和当前状态以 [pipeline-map.md](pipeline-map.md) 为准，并同步 `web/readme.html` 的「数据管道」。主办方共享账号已关闭。当前部署账号是 `382918437747`（profile `nba`）。
 
 ## 评委看到的路径
 
@@ -43,13 +43,13 @@ URL 模式不经过 S3：create_job 只把任务标成 TRACKING，等本地追�
 | CloudWatch Logs | 每个 Lambda 的日志组 | 分析日志带 jobId，排错不用进机器。仪表盘留到 P1。 |
 | STS | 角色信任策略 | Lambda 信任 `lambda.amazonaws.com`，Agent 信任 `bedrock-agentcore.amazonaws.com`。部署身份用 profile `team04`。 |
 
-区域只使用 `us-east-1`。本队账号 `405496568869`（profile `team04`）。主办方共享账号 `278477606068` 已关闭，不再部署到那里。本队账号若还没有 CDK bootstrap，部署前要先做一次。
+区域只使用 `us-east-1`。当前栈 `Team04DeepCourt` 建在参赛账号 `382918437747`（profile `nba`）。本队 SSO 账号 `405496568869`（profile `team04`）不再作为部署目标。主办方共享账号 `278477606068` 已关闭。
 
 ## 和后续阶段的边界
 
 播放器里的数字解说开关标着即将推出，对应 Polly。画面上的示例回合（弗拉格 / 申京）只在没有 `jobId` 时出现，用来对齐设计稿；带 `jobId` 之后时间线换成表里的事件。
 
-## P1（代码在同一栈，尚未部署）
+## P1（代码在同一栈。有没有建出来以 pipeline-map.md 为准）
 
 上下文 `enableP1=false` 可以整段跳过。GPU 配额或 Batch 服务角色卡住时，用这个开关先把 P0 部署出去。跟踪作业不由 `analyze_job` 调用。
 

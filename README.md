@@ -80,6 +80,7 @@ repo/
 ├── README.md            ← 项目名/队名/一句话价值主张/一键部署步骤（评分要件，主人：A）
 ├── docs/
 │   ├── architecture.md  ← 架构说明（决赛技术分 18 分的素材库，主人：A）
+│   ├── pipeline-map.md  ← 数据管道全景：每一步用哪个 AWS 服务。和 web/readme.html 一起改
 │   ├── data-notes.md    ← 深度数据格式、字段口径、对齐方案（主人：B）
 │   └── decisions.md     ← 关键决策记录（主人：呈现线）
 ├── cdk/                 ← 基础设施

@@ -6,7 +6,10 @@
   <title>Team 04 · Deep Court 作品说明</title>
   <style>
     body { margin: 0; background: #14110E; color: #F3EDE2; font: 18px/1.6 sans-serif; }
-    main { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    main { max-width: 52rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 0.6rem 0 0; }
+    th, td { text-align: left; vertical-align: top; padding: 0.35rem 0.45rem; border-bottom: 1px solid #3a342c; }
+    th { color: #A3988A; font-weight: 600; }
     h1 { font-size: 1.8rem; line-height: 1.25; margin: 0 0 0.4rem; }
     h2 { font-size: 1.15rem; margin: 2rem 0 0.4rem; }
     p, li { color: #F3EDE2; }
@@ -34,9 +37,31 @@
     <p>决策反差是二次加工，不是另一套数据：预期命中率低于四成却进了，标成英雄球；高于六成却没进，标成可惜。其余出手只显示预期命中率本身。</p>
     <p>引力和胜率摆幅没有逐回合来源，画面上不出现。</p>
 
-    <h2>这条链路怎么走</h2>
+    <h2>数据管道</h2>
     <p>本地追踪写出结构化清单，上传到 S3 <code>structured/</code>。Lambda 调 Bedrock AgentCore 校验；Agent 不可用时 Lambda 直接读清单，回放不会停住。页面通过 CloudFront 打开成片。上传入口在 <a href="/index.html">/index.html</a>，只给我们自己用。</p>
-    <p class="muted">训练片是组委会发放的火箭、独行侠录像。考试片发布后再按同一条命令重跑，并在这里补上出处。</p>
+    <ol>
+      <li>收片：浏览器经 CloudFront、API Gateway、Lambda 把视频直传到 S3，任务记在 DynamoDB。本地命令也可以直接读文件。</li>
+      <li>追踪和记分牌：YOLO、ByteTrack、RapidOCR 在本地跑。记分牌不走 Textract。</li>
+      <li>事件清单在本地生成，再用本地的官方逐回合数据补出手人、助攻和预期命中率。</li>
+      <li>清单放到 S3。Lambda 调 Bedrock AgentCore 校验，页面事件写入 DynamoDB。</li>
+      <li>CloudFront 打开回放。两句解说可以交给 Bedrock 写；现在混进成片的声音仍是本机中文语音。Polly 已接通，还没替换这段声音。</li>
+    </ol>
+    <table>
+      <thead>
+        <tr><th>步骤</th><th>AWS 服务</th><th>状态</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>收片、任务</td><td>CloudFront、API Gateway、Lambda、S3、DynamoDB</td><td>主路径</td></tr>
+        <tr><td>追踪</td><td>无。计划用 ECR、Batch、EC2、EBS</td><td>本地。GPU 配额为 0，实例没开</td></tr>
+        <tr><td>记分牌、认人、事件、官方数据</td><td>无。Textract 只做过探测</td><td>本地</td></tr>
+        <tr><td>校验清单</td><td>Lambda、Bedrock AgentCore、DynamoDB、CloudWatch Logs</td><td>主路径</td></tr>
+        <tr><td>回放</td><td>CloudFront、S3、API Gateway、Lambda</td><td>主路径</td></tr>
+        <tr><td>解说</td><td>Bedrock、Polly、S3</td><td>成片仍用本机语音</td></tr>
+        <tr><td>成片</td><td>无。MediaConvert 模板已建</td><td>本地 ffmpeg。还没提交转码作业</td></tr>
+        <tr><td>观测和密钥</td><td>CloudWatch、X-Ray、Secrets Manager、Cost Explorer</td><td>已接通。密钥是空占位</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">和仓库里的 <code>docs/pipeline-map.md</code> 是同一张图。训练片是组委会发放的火箭、独行侠录像。考试片发布后再按同一条命令重跑，并在这里补上出处。</p>
 
     <h2>页面</h2>
     <ul>
