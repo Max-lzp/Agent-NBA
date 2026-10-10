@@ -55,6 +55,9 @@ def link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> di
     _stamp_numbers(plays, game_id)
     named = _apply_votes(votes, roster, pinned, board, plays)
     matches = _matches_from_tracks(named)
+    people = _people(named)
+    width, height = _frame_size(video)
+    tags = _playback_tags(named, width, height)
     elapsed = round(time.time() - started, 1)
     first_second = sorted({
         item["nameZh"] for item in named
@@ -70,6 +73,8 @@ def link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> di
         "identitySeconds": elapsed,
         "firstSecond": first_second,
         "pinned": pinned,
+        "people": people,
+        "tags": tags,
         "votes": [
             {key: value for key, value in item.items() if key != "boxes"}
             for item in named
@@ -83,7 +88,7 @@ def link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> di
         Body=json.dumps(identity, ensure_ascii=False).encode(),
         ContentType="application/json",
     )
-    stream = _stream(job_id, game_id, frames, board, matches, plays, quality)
+    stream = _stream(job_id, game_id, frames, board, matches, plays, quality, people)
     s3.put_object(
         Bucket=bucket,
         Key=f"structured/{job_id}.json",
@@ -98,6 +103,8 @@ def link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> di
         "textractCalls": stats["textractCalls"],
         "identitySeconds": elapsed,
         "firstSecond": first_second,
+        "firstSecondDetecting": _detecting_at(named, 1.0),
+        "tags": tags,
     }
 
 
@@ -172,13 +179,14 @@ def _read_jerseys(video: Path, frames: list) -> tuple[list[dict], list[dict], di
     votes = []
     for track_id, group in _grouped(reads).items():
         track = by_track.get(track_id) or {"id": track_id, "boxes": []}
-        number, ballots, color = _majority(group)
+        number, ballots, color, color_votes = _majority(group)
         votes.append({
             "id": track_id,
             "boxes": track["boxes"],
             "number": number,
             "ballots": ballots,
             "color": color,
+            "colorVotes": color_votes,
             "samples": len(group),
         })
     return reads, votes, stats
@@ -322,7 +330,7 @@ def _pick_frames(track: dict, frames: list) -> list[tuple[float, list]]:
     return picked
 
 
-def _majority(reads: list[dict]) -> tuple[str, int, str]:
+def _majority(reads: list[dict]) -> tuple[str, int, str, int]:
     ballots = []
     for read in reads:
         if read.get("number"):
@@ -338,8 +346,13 @@ def _majority(reads: list[dict]) -> tuple[str, int, str]:
             number = ""
     colors = Counter(_team_from_color(read.get("color") or "") for read in reads)
     colors.pop("", None)
-    color = colors.most_common(1)[0][0] if colors else ""
-    return number, votes, color
+    color, color_votes = ("", 0)
+    if colors:
+        color, color_votes = colors.most_common(1)[0]
+        second = colors.most_common(2)[1][1] if len(colors) > 1 else 0
+        if color_votes < MIN_VOTES or color_votes <= second:
+            color, color_votes = "", 0
+    return number, votes, color, color_votes
 
 
 def _team_from_color(color: str) -> str:
@@ -377,7 +390,7 @@ def _apply_votes(votes: list[dict], roster: dict, pinned: list[dict], board: dic
         else:
             item.update(team="", rosterName="", nameZh="", source="")
         named.append(item)
-    return _one_track_each(named)
+    return _hang_labels(_one_track_each(named))
 
 
 def _lookup(number: str, color_team: str, roster: dict):
@@ -481,6 +494,23 @@ def _one_track_each(named: list[dict]) -> list[dict]:
             item["nameZh"] = ""
             item["rosterName"] = ""
             item["source"] = "duplicate"
+    return named
+
+
+def _hang_labels(named: list[dict]) -> list[dict]:
+    """名字从轨迹第一帧挂到最后一帧。有队无名才写 Agent detecting。"""
+    for item in named:
+        if item.get("nameZh"):
+            item["label"] = item["nameZh"]
+            continue
+        team = item.get("team") or item.get("color") or ""
+        item["nameZh"] = ""
+        if team:
+            item["team"] = team
+            item["label"] = "Agent detecting"
+        else:
+            item["team"] = ""
+            item["label"] = ""
     return named
 
 
@@ -643,7 +673,68 @@ def _score_seen(plays: list, read: dict) -> bool:
     )
 
 
-def _stream(job_id, game_id, frames, board, matches, plays, quality) -> dict:
+def _people(named: list[dict]) -> list[dict]:
+    rows = []
+    for item in named:
+        label = item.get("label") or ""
+        if not label:
+            continue
+        stamps = [float(stamp) for stamp, _box in item.get("boxes") or []]
+        rows.append({
+            "id": item.get("id"),
+            "team": item.get("team") or "",
+            "nameZh": item.get("nameZh") or "",
+            "label": label,
+            "t0": round(min(stamps), 3) if stamps else None,
+            "t1": round(max(stamps), 3) if stamps else None,
+        })
+    return rows
+
+
+def _detecting_at(named: list[dict], limit: float) -> int:
+    return sum(
+        1 for item in named
+        if item.get("label") == "Agent detecting" and any(float(stamp) <= limit for stamp, _box in item.get("boxes") or [])
+    )
+
+
+def _frame_size(video: Path) -> tuple[float, float]:
+    cap = cv2.VideoCapture(str(video))
+    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 1280
+    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 720
+    cap.release()
+    return width, height
+
+
+def _playback_tags(named: list[dict], src_w: float, src_h: float) -> list[dict]:
+    """标签坐标按成片 1280×720。名字和 Agent detecting 都从轨迹第一帧画到最后一帧。"""
+    scale_x = 1280 / src_w if src_w else 1
+    scale_y = 720 / src_h if src_h else 1
+    by_time: dict[float, list] = {}
+    for item in named:
+        text = item.get("label") or ""
+        if not text:
+            continue
+        jersey = "" if text == "Agent detecting" else str(item.get("number") or "")
+        for stamp, box in item.get("boxes") or []:
+            x, y, w, h = [float(value) for value in box[:4]]
+            if h * scale_y < 48:
+                continue
+            key = round(float(stamp), 3)
+            by_time.setdefault(key, []).append({
+                "name": text,
+                "jersey": jersey,
+                "team": item.get("team") or "",
+                "label": text,
+                "x": round(x * scale_x, 1),
+                "y": round(y * scale_y, 1),
+                "w": round(w * scale_x, 1),
+                "h": round(h * scale_y, 1),
+            })
+    return [{"t": stamp, "players": players} for stamp, players in sorted(by_time.items())]
+
+
+def _stream(job_id, game_id, frames, board, matches, plays, quality, people=None) -> dict:
     away = board.get("away") or os.environ.get("AWAY", "")
     home = board.get("home") or os.environ.get("HOME_TEAM", "")
     events = _holder_events(frames, matches, away, home)
@@ -658,6 +749,7 @@ def _stream(job_id, game_id, frames, board, matches, plays, quality) -> dict:
             "offense_team": away if away in {"HOU", "DAL"} else "HOU",
             "events": events,
         }],
+        "people": people or [],
     }
 
 
