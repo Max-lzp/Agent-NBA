@@ -142,7 +142,7 @@
       <div class="card"><b>比分条跟着记分牌走</b><span>节次、比赛钟、客队与主队比分实时同步。出手后约 3 秒弹出这一球的预期命中率（expected FG，xFG）、区域和距离。</span></div>
       <div class="card"><b>人名标在人身上</b><span>球衣号码识别对上场名单（roster），把名字写在球员身上，不是堆一张表格。认不出就只写「火箭球员 / 独行侠球员」，绝不编名字。</span></div>
       <div class="card"><b>暂停展开官方记录</b><span>暂停后展开官方逐回合（play-by-play）原文、助攻和当时场上的十个人；半场图上的落点用官方坐标。</span></div>
-      <div class="card"><b>进球定格回看</b><span>进球后画面跳回出手帧定格 5 秒：投篮人脚下画红圈，领防人脚下画黄色虚线圈、名签贴在他躯干旁背向投篮人一侧，弹出两人的队内排名星级；右栏是分区热区图，红圈标出这一投。定格卡不烧比分条。</span></div>
+      <div class="card"><b>进球定格回看</b><span>进球后画面跳回出手帧定格 5 秒：投篮人脚下画红圈，领防人脚下画黄色虚线圈、名签贴在他躯干旁背向投篮人一侧，弹出两人的队内排名星级，以及这一投所在区的对手命中率（越低越好）、投篮人同区命中率和身高/位置/选秀等资料；右栏是分区热区图，红圈标出这一投。定格卡不烧比分条。</span></div>
       <div class="card"><b>中英文双音轨</b><span>播放器可切英文原声或中文解说。中文是整段英文解说经转写、翻译后，用 Amazon Polly 知语合成的译制音轨，不是只写两句。</span></div>
     </div>
 
@@ -155,14 +155,14 @@
       <div class="flow-row">
         <div class="step"><span class="idx">1</span><div class="body"><b>追踪 Tracking</b><span>Ultralytics YOLO11 检测人和球，ByteTrack 跟踪保持球员 ID，产出每帧的人、球轨迹。</span></div></div>
         <div class="step"><span class="idx">2</span><div class="body"><b>记分牌识别 Scoreboard OCR</b><span>读节次、比赛钟、进攻钟（shot clock）和比分——这是转播方给的、几乎不会错的「免费真值」。</span></div></div>
-        <div class="step"><span class="idx">3</span><div class="body"><b>认人 Identity</b><span>裁球衣上半身做号码 OCR，对上 2025-26 赛季名单；号码在两队里不唯一就不写名字。</span></div></div>
+        <div class="step"><span class="idx">3</span><div class="body"><b>认人 Identity</b><span>把清楚的轨迹帧交给 Qwen3 VL（经 Bedrock）读号码和球衣颜色、多帧多数票，Amazon Rekognition 读数算第二票；号码只在此刻场上同队 5 人里对，对不上就不写名字。</span></div></div>
         <div class="step"><span class="idx">4</span><div class="body"><b>事件流 Events</b><span>按球在谁脚下写出持球、传球、出手、回合；用球路找脱手那一帧，并回溯贴住投篮人最久的对方球员作为领防人。</span></div></div>
         <div class="step"><span class="idx">5</span><div class="body"><b>官方数据补全 Enrich</b><span>用记分牌比分对上是哪一场官方比赛，补上投篮人、助攻、预期命中率、出手坐标和当时场上十人。</span></div></div>
         <div class="step"><span class="idx">6</span><div class="body"><b>校验与成片 Verify &amp; Render</b><span>结构化清单上传 S3，Lambda 调 Bedrock AgentCore 校验后写入 DynamoDB；FFmpeg 把记分牌烧进成片，再做中英文音轨。</span></div></div>
         <div class="step"><span class="idx">7</span><div class="body"><b>回放 Playback</b><span>CloudFront 播放器按任务号取回事件，画到时间线和画面叠加层上，供评委交互。</span></div></div>
       </div>
     </div>
-    <p class="muted"><b>一条纪律：</b>事件只来自上面这份结构化清单，不让任何模型「看图」生成事件。早期抽帧问视觉大模型「发生了什么」的做法准确率低，已停用。</p>
+    <p class="muted"><b>一条纪律：</b>事件只来自上面这份结构化清单，不让任何模型凭画面「编」出比赛事件。认人用 Qwen3 VL 读球衣号码和颜色，属于识别、不生成事件；早期抽帧问视觉大模型「发生了什么」的做法准确率低，已停用。</p>
 
     <h2 id="data"><span class="n">03</span>数据从哪来，怎么保证准确</h2>
     <h3>三个数据来源</h3>
@@ -174,7 +174,7 @@
     <h3>怎么保证准确</h3>
     <ul>
       <li><b>记分牌当真值。</b>画面里球真正被检测到的帧只有约四成，球衣颜色在贴身防守时会把人分错队；但记分牌数字几乎不会错。<b>进攻钟不重置就不换球权</b>，比分跳变要连续读到 2 次、且只有一边加 1–3 分才确认——靠这两条规则把误读挡掉。读记分牌后，进攻方判对率从约四成提升到接近 100%。</li>
-      <li><b>号码宁缺勿错。</b>每条轨迹挑最清楚的 8 帧投票认号码，第一名和第二名票数一样就弃权；号码对上名单，名字就对。认不出的只写「某队球员」，不编名字。</li>
+      <li><b>号码宁缺勿错。</b>考试片把清楚的轨迹帧交给 Qwen3 VL 多帧投票读号码和球衣颜色，Rekognition 读数作第二票，Textract 仅在调用失败时兜底；号码只在此刻场上同队 5 人里比对，对不上只写「某队球员」，同一个名字只留票数最多的一条轨迹，官方逐回合的得分人、助攻人先钉。训练片仍用本机 8 帧投票、第一二名票数持平就弃权。</li>
       <li><b>对上官方比赛才补数据。</b>用记分牌比分比对四场已下载的官方比赛，对上了才回填投篮人、助攻和预期命中率；对不上就只保留画面能确定的信息。</li>
       <li><b>AgentCore 只校验、不编造。</b>Bedrock AgentCore 负责取回并校验这份清单，不调模型生成事件；它不可用时 Lambda 直接读清单，回放不会停住。</li>
     </ul>
@@ -188,7 +188,7 @@
         <tr><td><b>收片 / 任务</b></td><td>CloudFront、API Gateway、Lambda <code>create_job</code>、S3 <code>raw/</code>、DynamoDB</td><td>浏览器经预签名地址把视频直传 S3，任务状态记进 DynamoDB，录像不进应用服务器。</td><td><span class="pill main">主路径</span></td></tr>
         <tr><td><b>追踪</b></td><td>AWS Batch、EC2 <code>c7i.48xlarge</code>、EBS、ECR、S3</td><td>GPU 配额为 0，改用标准配额最大的 CPU 实例（192 vCPU）跑检测与跟踪，机器保持开着不等开机。</td><td><span class="pill on">已接通</span></td></tr>
         <tr><td><b>记分牌</b></td><td>同一台 <code>c7i.48xlarge</code> 上的 RapidOCR</td><td>读节次、比赛钟、进攻钟和比分（本地 OCR 库，不走 Textract）。</td><td><span class="pill on">已接通</span></td></tr>
-        <tr><td><b>认人</b></td><td>Amazon Textract、S3 <code>official/roster/</code> 与 <code>identity/</code></td><td>考试片裁球衣，Textract 读 1–2 位号码对上名单；训练片仍用本机回溯认人。</td><td><span class="pill on">已接通</span> / <span class="pill local">训练片本机</span></td></tr>
+        <tr><td><b>认人</b></td><td>Bedrock Converse（Qwen3 VL）、Amazon Rekognition DetectText、S3 <code>official/</code> 与 <code>identity/</code>（Textract 仅兜底）</td><td>考试片把轨迹帧交给 Qwen3 VL 多帧投票读号码和球衣颜色，Rekognition 第二票，只在场上同队 5 人里对；训练片仍用本机回溯认人。</td><td><span class="pill on">已接通</span> / <span class="pill local">训练片本机</span></td></tr>
         <tr><td><b>事件清单</b></td><td>S3 <code>structured/</code>、Lambda <code>analyze_job</code>、Bedrock AgentCore、DynamoDB</td><td>考试片按持球写接球和传球、对上官方出手，清单写进媒体桶；领防与脱手帧仍在本机。</td><td><span class="pill on">已接通</span> / <span class="pill local">领防本机</span></td></tr>
         <tr><td><b>官方数据</b></td><td>S3 <code>official/</code>（逐回合、shot quality）</td><td>用节次、比赛钟和比分对上是哪一场，补命中、助攻、预期命中率；分差效率、引力、队内排名仍在本机。</td><td><span class="pill on">已接通</span> / <span class="pill local">对位本机</span></td></tr>
         <tr><td><b>校验</b></td><td>Lambda <code>analyze_job</code>、Bedrock AgentCore <code>DeepCourtAnalyst</code>、DynamoDB、CloudWatch Logs</td><td>取回并校验清单写成页面事件；Agent 不可用时 Lambda 直接读清单兜底。</td><td><span class="pill main">主路径</span></td></tr>
@@ -206,7 +206,7 @@
     <div class="flow">
       <div class="flow-row">
         <div class="step"><span class="idx">A</span><div class="body"><b>浏览器 → CloudFront → API Gateway → Lambda</b><span>建任务，返回 S3 预签名地址，浏览器把录像直传到 <code>raw/</code>。</span></div></div>
-        <div class="step"><span class="idx">B</span><div class="body"><b>c7i.48xlarge：追踪 + 记分牌 + Textract 认人</b><span>同一台机器出轨迹、读记分牌、认号码，并从 S3 的官方逐回合对上比赛，写出结构化清单。</span></div></div>
+        <div class="step"><span class="idx">B</span><div class="body"><b>c7i.48xlarge：追踪 + 记分牌 + Qwen3 VL 认人</b><span>同一台机器出轨迹、读记分牌，用 Qwen3 VL（Rekognition 第二票）认号码，并从 S3 的官方逐回合对上比赛，写出结构化清单。</span></div></div>
         <div class="step"><span class="idx">C</span><div class="body"><b>S3 <code>structured/</code> → Lambda <code>analyze_job</code> → Bedrock AgentCore → DynamoDB</b><span>清单上云触发校验，事件写入 DynamoDB。</span></div></div>
         <div class="step"><span class="idx">D</span><div class="body"><b>成片 → Transcribe → Translate → Polly 知语</b><span>FFmpeg 烧记分牌出成片；英文原声转写、翻译后合成中文音轨。</span></div></div>
         <div class="step"><span class="idx">E</span><div class="body"><b>CloudFront 播放器</b><span>按任务号取回 DynamoDB 事件，画到时间线和叠加层，提供英文 / 中文双音轨。</span></div></div>

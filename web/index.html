@@ -88,7 +88,7 @@
       <li>
         <span class="step">03</span>
         <b>理解</b>
-        <span>同一台 c7i.48xlarge 做追踪、记分牌识别、Textract 认人，对上官方逐回合，写出结构化清单。</span>
+        <span>同一台 c7i.48xlarge 做追踪、记分牌识别、Qwen3 VL 认人，对上官方逐回合，写出结构化清单。</span>
       </li>
       <li>
         <span class="step">04</span>
@@ -122,7 +122,7 @@
           <ul>
             <li><b>AWS Lambda</b><span>建任务、校验、查询、解说</span></li>
             <li><b>Bedrock AgentCore</b><span>校验运行时 DeepCourtAnalyst</span></li>
-            <li><b>Amazon Bedrock</b><span>Claude 事件短解说，不生成事件</span></li>
+            <li><b>Amazon Bedrock</b><span>Qwen3 VL 认人 · Claude 短解说，不生成事件</span></li>
             <li><b>Amazon CloudWatch</b><span>日志、仪表盘、错误与限流告警</span></li>
           </ul>
         </article>
@@ -132,7 +132,7 @@
             <li><b>AWS Batch</b><span>c7i.48xlarge，192 vCPU，保持开着</span></li>
             <li><b>Amazon EC2 · EBS</b><span>追踪实例与加密系统盘</span></li>
             <li><b>Amazon ECR</b><span>追踪镜像 deepcourt-tracker</span></li>
-            <li><b>Textract · MediaConvert</b><span>认人读球衣号码 · 成片转码模板</span></li>
+            <li><b>Rekognition · MediaConvert</b><span>认人第二票读号码 · 成片转码模板</span></li>
           </ul>
         </article>
         <article>
