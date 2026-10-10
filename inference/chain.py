@@ -52,7 +52,8 @@ def link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> di
     reads, votes, stats = _read_jerseys(video, frames)
     game_id, plays, quality = _official_game(board.get("reads") or [])
     pinned = _pin_official(plays, board, roster)
-    named = _apply_votes(votes, roster, pinned)
+    _stamp_numbers(plays, game_id)
+    named = _apply_votes(votes, roster, pinned, board, plays)
     matches = _matches_from_tracks(named)
     elapsed = round(time.time() - started, 1)
     first_second = sorted({
@@ -350,25 +351,33 @@ def _team_from_color(color: str) -> str:
     return ""
 
 
-def _apply_votes(votes: list[dict], roster: dict, pinned: list[dict]) -> list[dict]:
+def _apply_votes(votes: list[dict], roster: dict, pinned: list[dict], board: dict, plays: list) -> list[dict]:
     pins = {(item["team"], item["number"]): item for item in pinned}
+    table = _court_table(plays, roster)
     named = []
     for vote in votes:
         number = vote.get("number") or ""
-        pin_hits = [pin for pin in pinned if pin.get("number") == number]
-        found = (pin_hits[0]["team"], pin_hits[0]["nameZh"]) if number and len(pin_hits) == 1 else _lookup(number, vote.get("color") or "", roster)
+        period, clock = _moment(vote, board)
+        court = _court_at(table, period, clock)
+        person = _match_on_court(number, vote.get("color") or "", court)
         item = dict(vote)
         item["nameZh"] = ""
-        if found:
-            team, name = found
+        if person:
+            team, number = person["team"], person["number"]
             pin = pins.get((team, number))
-            item.update(team=team, rosterName=name, nameZh=NAMES.get((team, number), name), source="official" if pin else "qwen")
+            item.update(
+                team=team,
+                number=number,
+                rosterName=person["name"],
+                nameZh=NAMES.get((team, number), person["name"]),
+                source="official" if pin else "qwen",
+            )
         elif number:
-            item.update(team="", rosterName="", nameZh="", source="ambiguous")
+            item.update(team="", rosterName="", nameZh="", source="offcourt")
         else:
             item.update(team="", rosterName="", nameZh="", source="")
         named.append(item)
-    return named
+    return _one_track_each(named)
 
 
 def _lookup(number: str, color_team: str, roster: dict):
@@ -380,6 +389,99 @@ def _lookup(number: str, color_team: str, roster: dict):
         if len(sided) == 1:
             return sided[0]
     return hits[0] if len(hits) == 1 else None
+
+
+def _court_table(plays: list, roster: dict) -> list[tuple]:
+    court = _opening_lineup(plays)
+    rows = []
+    for play in plays:
+        team = play.get("team") or ""
+        number = play.get("number") or ""
+        if play.get("kind") == "substitution" and team in court and number:
+            side = court[team]
+            if play.get("sub") == "out":
+                court[team] = [person for person in side if person["number"] != number]
+            elif play.get("sub") == "in" and len(side) < 5 and all(person["number"] != number for person in side):
+                side.append({"team": team, "number": number, "name": roster.get((team, number), play.get("family") or "")})
+        period, clock = play.get("period"), play.get("clock")
+        if period is not None and clock is not None:
+            rows.append((period, clock, {name: list(people) for name, people in court.items()}))
+    return rows
+
+
+def _opening_lineup(plays: list) -> dict:
+    court = {"HOU": [], "DAL": []}
+    for play in plays:
+        if play.get("kind") == "substitution":
+            break
+        team, number = play.get("team") or "", play.get("number") or ""
+        if team in court and number and len(court[team]) < 5 and all(person["number"] != number for person in court[team]):
+            court[team].append({"team": team, "number": number, "name": play.get("family") or ""})
+    return court
+
+
+def _stamp_numbers(plays: list, game_id: str) -> None:
+    numbers = {}
+    if game_id:
+        for path in ROOT.rglob(f"{game_id}_boxscore.json"):
+            doc = json.loads(path.read_text())
+            for side in ("homeTeam", "awayTeam"):
+                team = (doc.get("game") or {}).get(side) or {}
+                tri = str(team.get("teamTricode") or "").upper()
+                for player in team.get("players") or []:
+                    numbers[(tri, str(player.get("familyName") or "").lower())] = str(player.get("jerseyNum") or "")
+            break
+    for play in plays:
+        play["number"] = numbers.get((play.get("team") or "", (play.get("family") or "").lower()), "")
+
+
+def _moment(vote: dict, board: dict) -> tuple:
+    stamps = [stamp for stamp, _box in vote.get("boxes") or []]
+    stamp = sorted(stamps)[len(stamps) // 2] if stamps else 0
+    reads = [read for read in board.get("reads") or [] if read.get("clock")]
+    if not reads:
+        return None, None
+    read = min(reads, key=lambda item: abs(float(item.get("t") or 0) - stamp))
+    return _period_num(read.get("period")), _clock_seconds(read.get("clock"))
+
+
+def _court_at(table: list, period, clock) -> dict:
+    if period is None or clock is None:
+        return {}
+    chosen = None
+    for row_period, row_clock, court in table:
+        if row_period == period and row_clock >= clock:
+            chosen = court
+        elif row_period == period and row_clock < clock and chosen is not None:
+            break
+    return chosen or {}
+
+
+def _match_on_court(number: str, color: str, court: dict):
+    if not number or not court:
+        return None
+    teams = [color] if color in court else list(court)
+    hits = [person for team in teams for person in court.get(team) or [] if person["number"] == number]
+    return hits[0] if len(hits) == 1 else None
+
+
+def _one_track_each(named: list[dict]) -> list[dict]:
+    best = {}
+    for item in named:
+        name = item.get("nameZh") or ""
+        if not name:
+            continue
+        current = best.get(name)
+        rank = (item.get("ballots") or 0, item.get("samples") or 0)
+        if current is None or rank > current[0]:
+            best[name] = (rank, item)
+    for item in named:
+        name = item.get("nameZh") or ""
+        if name and best.get(name, (None, None))[1] is not item:
+            item["nameZh"] = ""
+            item["rosterName"] = ""
+            item["source"] = "duplicate"
+    return named
 
 
 def _matches_from_tracks(named: list[dict]) -> list[dict]:
@@ -518,6 +620,8 @@ def _play(raw: dict) -> dict:
         "assist": _assist(raw.get("description") or ""),
         "scores": _pair(raw.get("scoreAway"), raw.get("scoreHome")),
         "player": raw.get("playerNameI") or raw.get("playerName") or "",
+        "family": raw.get("playerName") or "",
+        "sub": str(raw.get("subType") or "").lower(),
     }
 
 
