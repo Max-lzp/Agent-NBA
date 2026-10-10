@@ -20,3 +20,5 @@ web/assets/*-zh.m4a
 pipeline/batch/out/
 pipeline/vision/results/local/b_*
 pipeline/events/out/b_*
+# 成片自检报告（scripts/qa/check_output.py）
+scripts/qa/out/
