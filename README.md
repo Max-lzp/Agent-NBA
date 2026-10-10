@@ -62,6 +62,16 @@ curl -sS -X POST "<api>jobs" -H 'content-type: application/json' \
 # 4. 提交作品 URL（门户 Submit your entry，截止 2026-10-10 20:00 北京时间）
 ```
 
+## 从干净账号重跑
+
+考试片出完之后再部署。步骤、context 开关和「默认部署不会替换哪些资源」写在 [docs/deploy.md](docs/deploy.md)。
+
+```bash
+cd cdk && npm ci && npx cdk deploy Team04DeepCourt --profile nba --require-approval never
+```
+
+默认仍用已经烤好的镜像 `deepcourt-tracker:ready`，并由 Step Functions 接 `raw/` 上传。没有这枚镜像时才加 `-c buildTrackerImage=true`。要回到现在的 S3 通知、不自动提交 Batch：`-c enableOrchestration=false`。
+
 ## 技术栈
 
 | 环节 | 服务 |

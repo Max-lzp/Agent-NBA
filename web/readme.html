@@ -40,11 +40,11 @@
     <h2>数据管道</h2>
     <p>考试片在云上写出结构化清单，上传到 S3 <code>structured/</code>。Lambda 调 Bedrock AgentCore 校验；Agent 不可用时 Lambda 直接读清单，回放不会停住。页面通过 CloudFront 打开成片。上传入口在 <a href="/index.html">/index.html</a>，只给我们自己用。</p>
     <ol>
-      <li>收片：浏览器经 CloudFront、API Gateway、Lambda 把视频直传到 S3，任务记在 DynamoDB。本地命令也可以直接读文件。</li>
-      <li>追踪和记分牌：考试片交给 Batch，机器是保持开着的 c7i.48xlarge。同一台机器读记分牌，再用 ffmpeg 把比分烧进成片，直接放进网页桶。训练片仍可以在本机用 MPS 出片。记分牌检测边长限制在 640。</li>
+      <li>收片：浏览器经 CloudFront、API Gateway、Lambda 把视频直传到 S3，任务记在 DynamoDB。本地命令也可以直接读文件。部署之后，<code>raw/</code> 上传由 EventBridge 启动一条 Step Functions，只提交一次 Batch。</li>
+      <li>追踪和记分牌：考试片交给 Batch，机器是保持开着的 c7i.48xlarge。状态机等到这台机器跑完，再让 Lambda 调 AgentCore 校验。同一台机器读记分牌，再用 ffmpeg 把比分烧进成片，直接放进网页桶。训练片仍可以在本机用 MPS 出片。记分牌检测边长限制在 640。</li>
       <li>认人、事件和官方数据：考试片在同一台机器上把轨迹帧交给 Qwen3 VL 读号码和球衣颜色，多数票定人；Rekognition 算第二票。裁判先排除。号码只在球衣颜色那一队这一刻的场上 5 人里对，同一个名字只留一条轨迹，并从这条轨迹的第一帧挂到结尾。分得出队但没有名字的人，标签只写 Agent detecting，颜色用队色；分不出队的不挂。官方逐回合的得分人、助攻人先钉。按持球写出接球和传球；从 S3 的官方逐回合对上是哪一场，比分跳动时补上命中、助攻和预期命中率。清单写到 <code>structured/</code>。训练片的领防、脱手帧、分差效率和队内排名仍在本机。</li>
       <li>回放时，进球后画面跳回出手那一帧，定格 5 秒：投篮人脚下画红圈，领防人脚下画黄色虚线圈，领防名签贴在他躯干旁、背向投篮人一侧；卡片写投篮人和领防人的队内排名星级（定格卡不再烧比分条）；认出领防人才写他的名字、本场对位和赛季场均。右栏是投篮人的分区热区图，红圈标出这一投，并写出这个位置的预期命中率。</li>
-      <li>清单放到 S3。Lambda 调 Bedrock AgentCore 校验，页面事件写入 DynamoDB。</li>
+      <li>清单放到 S3。部署之后由状态机调用 Lambda，Lambda 再调 Bedrock AgentCore 校验，页面事件写入 DynamoDB。分析师把解说写到 S3 <code>analysis/</code>。校验完，状态机核对成片和片单，并只失效这一支片子的路径。</li>
       <li>成片之后才做音轨。英文是原声。中文把这条原声转写、译成中文，用 Polly Neural 知语按原句时间合成。播放器上自己选。探测片的中文音轨已经能播。</li>
       <li>网页呈现：CloudFront 根路径打开播放器 <code>game.html</code>。作品说明在 <code>/readme</code>。上传页只给我们自己用。</li>
     </ol>
@@ -54,12 +54,13 @@
       </thead>
       <tbody>
         <tr><td>收片、任务</td><td>CloudFront、API Gateway、Lambda、S3、DynamoDB</td><td>主路径</td></tr>
+        <tr><td>编排</td><td>Step Functions、EventBridge、DynamoDB、Batch、Lambda、CloudFront</td><td>部署中</td></tr>
         <tr><td>追踪</td><td>Batch、EC2 c7i.48xlarge、EBS、ECR、S3</td><td>已接通。192 vCPU 保持开着，镜像已烤好</td></tr>
         <tr><td>记分牌</td><td>同一台 c7i.48xlarge 上的 RapidOCR</td><td>已接通</td></tr>
         <tr><td>认人</td><td>Bedrock Qwen3 VL、Rekognition DetectText、S3 逐回合和 identity/</td><td>已接通。探测片第 1 秒写出 2 个名字，都在场上 10 人里，裁判不挂标签。同一个名字只留一条轨迹，球衣颜色要和队一致。分得出队但没有名字的人挂 Agent detecting</td></tr>
         <tr><td>事件清单</td><td>S3 structured/、Lambda、Bedrock AgentCore、DynamoDB</td><td>已接通。探测片 3 条事件已写入。领防仍在本地</td></tr>
         <tr><td>官方数据</td><td>S3 official/ 逐回合和 shot quality</td><td>已接通。探测片对上 0022500356。这 5 秒没有比分跳动，没有出手行</td></tr>
-        <tr><td>校验清单</td><td>Lambda、Bedrock AgentCore、DynamoDB、CloudWatch Logs</td><td>主路径</td></tr>
+        <tr><td>校验清单</td><td>Lambda、Bedrock AgentCore、DynamoDB、CloudWatch Logs、S3 analysis/</td><td>主路径。分析师解说部署中</td></tr>
         <tr><td>回放</td><td>API Gateway、Lambda</td><td>主路径</td></tr>
         <tr><td>解说</td><td>Transcribe、Translate、Polly Neural 知语、S3</td><td>已接通。探测片的中文音轨已在播放器里</td></tr>
         <tr><td>成片</td><td>同一台机器上的 ffmpeg，只烧记分牌，原声留在成片里。MediaConvert 模板已建</td><td>已接通。探测成片已在网页桶。MediaConvert 还没提交转码作业</td></tr>

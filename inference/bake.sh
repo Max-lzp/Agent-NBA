@@ -1,6 +1,8 @@
 #!/bin/bash
 # 在已经开着的 Batch 主机上把依赖、libxcb、ffmpeg 和两份权重打进 ECR。
 # 本机没有 Docker。不要把这段写进启动模板，避免盖掉 Batch 注册 ECS 的用户数据。
+# 仓库里的 inference/Dockerfile 按仓库根目录构建，给 CDK -c buildTrackerImage=true 用。
+# 这里仍同步 S3 bootstrap/bake/ 的扁平目录。不要把新 Dockerfile 直接覆盖进那个目录。
 set -euo pipefail
 BUCKET="${BUCKET:?}"
 REPO="${REPO:?}"

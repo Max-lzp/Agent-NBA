@@ -15,6 +15,7 @@ import * as s3assets from 'aws-cdk-lib/aws-s3-assets';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import { Construct } from 'constructs';
+import { addOrchestration, orchestrationEnabled } from './orchestration';
 import { addP1 } from './p1';
 import { addP2 } from './p2';
 
@@ -197,16 +198,19 @@ export class DeepCourtStack extends cdk.Stack {
       ],
     }));
 
-    mediaBucket.addEventNotification(
-      s3.EventType.OBJECT_CREATED,
-      new s3n.LambdaDestination(analyzeFn),
-      { prefix: 'raw/' },
-    );
-    mediaBucket.addEventNotification(
-      s3.EventType.OBJECT_CREATED,
-      new s3n.LambdaDestination(analyzeFn),
-      { prefix: 'structured/', suffix: '.json' },
-    );
+    // 状态机开启时，raw/ 只进 EventBridge，structured/ 不再通知 analyze_job。
+    if (!orchestrationEnabled(this)) {
+      mediaBucket.addEventNotification(
+        s3.EventType.OBJECT_CREATED,
+        new s3n.LambdaDestination(analyzeFn),
+        { prefix: 'raw/' },
+      );
+      mediaBucket.addEventNotification(
+        s3.EventType.OBJECT_CREATED,
+        new s3n.LambdaDestination(analyzeFn),
+        { prefix: 'structured/', suffix: '.json' },
+      );
+    }
 
     const api = new apigw.LambdaRestApi(this, 'JobsApi', {
       handler: createFn,
@@ -354,7 +358,19 @@ export class DeepCourtStack extends cdk.Stack {
     });
 
     if (this.node.tryGetContext('enableP1') !== 'false') {
-      addP1(this, { mediaBucket, webBucket, distribution, jobs, events, analyzeFn, code });
+      const track = addP1(this, { mediaBucket, webBucket, distribution, jobs, events, analyzeFn, code });
+      addOrchestration(this, {
+        mediaBucket,
+        webBucket,
+        distribution,
+        jobs,
+        analyzeFn,
+        queue: track.queue,
+        jobDefinition: track.jobDefinition,
+        dashboard: track.dashboard,
+        jobRole: track.jobRole,
+        executionRole: track.executionRole,
+      });
     }
     if (this.node.tryGetContext('enableP2') !== 'false') {
       addP2(this, {
