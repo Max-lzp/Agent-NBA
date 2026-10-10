@@ -46,7 +46,7 @@ Team 04 · NBA × AWS Broadcast Code 12H · 珠海初赛 / 澳门决赛
 
 根路径打开的是回放页 `game.html`：成片、时间线、音轨。`/readme` 由 CloudFront Function `ReadmePath` 指到 `readme.html`。`/index.html` 是自己用的上传页。提交链接用根路径。
 
-回放页有三种观看方式，写在 `web/game.js` 的 `MODES`：`laofan` 老球迷、`xinfan` 新球迷、`daikan` 带新球迷一起看。按钮在 `web/game.html`。地址带 `?mode=` 时直接进入；没带时先问「你想怎么看这段比赛」。老球迷不显示术语白话。带看这一档放球员头像、两队 2026–27 赛程（`schedules/dal-2026-27.ics`、`schedules/hou-2026-27.ics`）、NBA League Pass（`https://www.nba.com/league-pass-purchase`）、腾讯视频（`https://v.qq.com/channel/nba`），以及两队 NBA Store。队内排名画成星：第 1 名五颗星，每往后一名少半颗，最少半颗（`pipeline/enrich/defense.py` 的 `stars`）。`web/config.js` 的 `examOnly: true` 让切换列表只留考试片，训练片和样片 `flagg`、`amen`、`warm-probe`、`rehearsal` 隐藏，文件仍在；考试片还没到时页面写「考试片生成中」。同一份配置把 `hiddenTracks` 设为 `zh`，中文解说先不展示；`webNames: false` 时网页不再叠画名签，只用成片里烧进去的一层。这版播放器脚本还没换上 CloudFront。状态：代码已就绪，待部署。线上仍是较早的「解说向 / 陪女友观看」。
+回放页有三种观看方式，写在 `web/game.js` 的 `MODES`：`laofan` 老球迷、`xinfan` 新球迷、`daikan` 带新球迷一起看。按钮在 `web/game.html`。地址带 `?mode=` 时直接进入；没带时先问「你想怎么看这段比赛」。老球迷不显示术语白话。带看这一档放球员头像、两队 2026–27 赛程（`schedules/dal-2026-27.ics`、`schedules/hou-2026-27.ics`）、NBA League Pass（`https://www.nba.com/league-pass-purchase`）、腾讯视频（`https://v.qq.com/channel/nba`），以及两队 NBA Store。队内排名画成星：第 1 名五颗星，每往后一名少半颗，最少半颗（`pipeline/enrich/defense.py` 的 `stars`）。`web/config.js` 的 `examOnly: true` 让切换列表只留考试片，训练片和样片 `flagg`、`amen`、`warm-probe`、`rehearsal` 隐藏，文件仍在；考试片还没到时页面写「考试片生成中」。`webNames: false` 时网页不再叠画名签，只用成片里烧进去的一层。这版播放器脚本还没换上 CloudFront。状态：代码已就绪，待部署。线上仍是较早的「解说向 / 陪女友观看」。
 
 步骤和每个服务的当前状态以 [docs/pipeline-map.md](docs/pipeline-map.md) 为准。服务为什么在，见 [docs/architecture.md](docs/architecture.md)。从干净账号重跑的开关和「默认部署不会替换哪些资源」，见 [docs/deploy.md](docs/deploy.md)。
 
@@ -63,7 +63,7 @@ Team 04 · NBA × AWS Broadcast Code 12H · 珠海初赛 / 澳门决赛
 
 ## 架构
 
-仓库里的编排是一条状态机：成片和音轨在同一台 Batch 机器上完成，然后状态机才调用分析师。分析师读的是已经写好的事件清单。这条状态机的状态是部署中，见下一节。
+仓库里的编排是一条状态机：成片在同一台 Batch 机器上完成，然后状态机才调用分析师。分析师读的是已经写好的事件清单。这条状态机的状态是部署中，见下一节。
 
 ```mermaid
 flowchart TB
@@ -74,7 +74,7 @@ flowchart TB
   batch --> track["YOLO + ByteTrack"]
   batch --> board["记分牌"]
   batch --> who["认人：Bedrock Qwen3 VL + Rekognition"]
-  batch --> film["ffmpeg 成片 + Transcribe / Translate / Polly"]
+  batch --> film["ffmpeg 成片"]
   who --> structured["S3 structured/ 事件清单"]
   film --> sitebucket["网页桶 assets/ 与 replay/clips.js"]
   sfn --> analyze["Lambda analyze_job"]
@@ -92,7 +92,7 @@ flowchart TB
 
 观众提问走网站的 `/api/agent/ask`。CloudFront Function `StripApiPrefix` 去掉 `/api`，API Gateway 上的路径是 `POST /agent/ask`。还是同一个运行时，不另写一套回答。
 
-状态机 `deepcourt-film` 和这次 AgentCore 入口修复的状态是**部署中**：代码在仓库里，还没有用这份模板执行 `cdk deploy`。线上已经能打开 CloudFront 站点；Batch 追踪、认人、成片和音轨已经接通，见下一节。考试片仍走已经部署的作业定义。
+状态机 `deepcourt-film` 和这次 AgentCore 入口修复的状态是**部署中**：代码在仓库里，还没有用这份模板执行 `cdk deploy`。线上已经能打开 CloudFront 站点；Batch 追踪、认人、成片已经接通，见下一节。考试片仍走已经部署的作业定义。
 
 ## 每个服务用在哪
 
@@ -101,7 +101,7 @@ flowchart TB
 | 服务 | 用在哪 | 代码 | 状态 |
 | --- | --- | --- | --- |
 | CloudFront | 作品链接。默认对象 `game.html`。`/readme` 指到 `readme.html`。`/api/*` 转到 API Gateway 阶段 `prod`。网页桶不公开，只经 OAC 读 | `cdk/lib/deepcourt-stack.ts` 的 `Site`、`ReadmePath`、`StripApiPrefix`、`DeployWeb` | 主路径。分配 `d2vzd2batw1eqe.cloudfront.net`，`/` 和 `/readme` 已能打开 |
-| S3 媒体桶 | `raw/` 原片，`structured/` 事件清单，`official/` 逐回合，`identity/` 认人，`analysis/` 解说，`tracking/` 轨迹，`commentary/asr/` 转写，`bootstrap/track/` 作业脚本 | `cdk/lib/deepcourt-stack.ts` `MediaBucket`。线上桶名 `team04deepcourt-mediabucketbcbb02ba-haisfxujonfg` | 主路径 |
+| S3 媒体桶 | `raw/` 原片，`structured/` 事件清单，`official/` 逐回合，`identity/` 认人，`analysis/` 解说，`tracking/` 轨迹，`bootstrap/track/` 作业脚本 | `cdk/lib/deepcourt-stack.ts` `MediaBucket`。线上桶名 `team04deepcourt-mediabucketbcbb02ba-haisfxujonfg` | 主路径 |
 | S3 网页桶 | 静态站、`assets/{jobId}-*.mp4`、`replay/clips.js` | 同上 `WebBucket` | 主路径 |
 | API Gateway | REST `JobsApi`：`POST /jobs`，`GET /jobs/{id}`，`GET /jobs/{id}/events`，`POST /agent/ask`，`GET /agent/analysis/{jobId}`。浏览器走 CloudFront 的 `/api` 前缀 | `cdk/lib/deepcourt-stack.ts` | 主路径（建任务和回放）。`/agent/ask` 与 `/agent/analysis/{jobId}` 随这次分析师部署一起上，状态是部署中 |
 | Lambda `create_job` | 写 Jobs 表，返回 1 小时预签名 PUT。不启动状态机，避免文件还没传完就跑 | `lambdas/create_job/handler.py` | 主路径 |
@@ -111,7 +111,7 @@ flowchart TB
 | DynamoDB | `JobsTable` 分区键 `jobId`。`EventsTable` 分区键 `jobId`、排序键 `TS#序号` | `cdk/lib/deepcourt-stack.ts` | 主路径 |
 | EventBridge | 只有媒体桶 `raw/` 的对象创建会启动状态机。规则名 `deepcourt-raw-upload` | `cdk/lib/orchestration.ts` | 部署中 |
 | Step Functions | 标准工作流 `deepcourt-film`：任务改成 TRACKING，`SubmitJob.sync` 等到 Batch 结束，调用 `analyze_job`，核对成片和 `replay/clips.js`，失效这一支片子的四条路径，写成 DONE。失败写成 FAILED。重复上传停在 `DuplicateSkipped` | `cdk/lib/orchestration.ts` | 部署中。`-c enableOrchestration=false` 时不建，`raw/` 和 `structured/*.json` 仍通知 `analyze_job` |
-| AWS Batch | 队列 `deepcourt-track`。计算环境 `c7i.48xlarge`，最低 192 vCPU，上限 256。镜像 `deepcourt-tracker:ready`。同一台机器做追踪、记分牌、认人、清单、ffmpeg 和音轨 | `cdk/lib/p1.ts`，容器入口 `inference/run_job.py` | 已接通。G/VT 配额为 0，GPU 路径配额挡住，所以走这台 CPU 机器 |
+| AWS Batch | 队列 `deepcourt-track`。计算环境 `c7i.48xlarge`，最低 192 vCPU，上限 256。镜像 `deepcourt-tracker:ready`。同一台机器做追踪、记分牌、认人、清单、ffmpeg | `cdk/lib/p1.ts`，容器入口 `inference/run_job.py` | 已接通。G/VT 配额为 0，GPU 路径配额挡住，所以走这台 CPU 机器 |
 | ECR | 仓库 `deepcourt-tracker`。默认作业定义仍指向已经烤好的 `:ready` | `cdk/lib/p1.ts`。镜像烘焙脚本 `inference/bake.sh` | 已接通。默认部署不重建这枚镜像 |
 | 追踪 | YOLO 检测 + ByteTrack，一次看 16 帧 | `inference/track.py`，权重在媒体桶 `bootstrap/models/`，不在 git 里 | 已接通。本机 MPS 仍能出训练片 |
 | 记分牌 | 读节次、比赛钟、进攻钟、比分 | 考试片 `pipeline/vision/scoreboard.py`，作业从镜像里的 `/opt/track/vision` 加载（`inference/run_job.py`） | 已接通。训练片主路径仍在本地 |
@@ -119,11 +119,9 @@ flowchart TB
 | Amazon Bedrock Qwen3 VL | 认人：号码、球衣颜色、是不是裁判。模型 `qwen.qwen3-vl-235b-a22b` | `inference/chain.py`。作业角色的 `bedrock:InvokeModel` 在 `cdk/lib/p1.ts` | 已接通 |
 | Amazon Rekognition | `DetectText`，认人的第二票 | `inference/chain.py`，权限在 `cdk/lib/p1.ts` | 已接通 |
 | ffmpeg | 云上成片把记分牌烧进 `assets/{jobId}-broadcast.mp4`，原声留下，不烧人名 | `inference/run_job.py` | 已接通。`assets/warm-probe-broadcast.mp4` 已在网页桶 |
-| Amazon Transcribe / Translate / Polly | 英文音轨是成片原声。中文音轨：Transcribe 转写原声，Translate 译成中文，Polly Neural 知语（`Zhiyu`，`cmn-CN`）按原句时间合成。自定义术语表 `deepcourt-basketball` 由 CDK 的 `AwsCustomResource`（`cdk/lib/terminology.ts`）导入 `data/terminology/basketball-en-zh.csv`，作业定义写入 `TRANSLATE_TERMINOLOGY`。译名以 `data/names/zh-names.json` 为准 | `inference/dub.py` 调用 `pipeline/present/tracks.py`。CDK 把后者传到 `bootstrap/track/commentary.py`。术语表 `cdk/lib/terminology.ts` | 已接通（音轨）。`warm-probe` 的中文音轨已在播放器里。训练片弗拉格、阿门的两条音轨是本机做的。术语表：代码已就绪，待部署。线上作业定义还没有这个环境变量；术语表缺失时同一句去掉术语表再译 |
 | AWS Elemental MediaConvert | 模板 `deepcourt-render-template`，设计上把叠加层合成到 `rendered/` | `cdk/lib/p1.ts` | 已接通（模板在栈里）。还没有提交转码作业，成片是上面的 ffmpeg |
 | Amazon Bedrock AgentCore | 运行时 `DeepCourtAnalyst`。Python 3.12，入口 `agent.py`，监听 8080 的 `/ping` 和 `/invocations`。Lambda 用 `bedrock-agentcore:InvokeAgentRuntime` 调用 | `agent/agent.py`，`cdk/lib/deepcourt-stack.ts` `AnalystRuntime` | 部署中。见下面「智能体」 |
 | Amazon Bedrock Converse | 分析师的工具循环。模型 `global.anthropic.claude-sonnet-4-6`，温度 0 | `agent/converse_loop.py`，工具在 `agent/tools.py` | 部署中（随这次运行时一起上） |
-| Lambda `commentary` | `POST /commentary` 可以给单条事件写两句短解说。页面上的中文音轨不走这里 | `lambdas/commentary/`，`cdk/lib/p2.ts` | `enableP2` 默认开，模板里会建。页面音轨是 Batch 里的 Transcribe / Translate / Polly |
 | Secrets Manager | `deepcourt/feishu-webhook`、`deepcourt/github-token`、`deepcourt/kuaishou`。部署时生成空占位，真实值不进仓库 | `cdk/lib/p2.ts`，读取代码 `lambdas/runtime_secrets.py` | 已接通。密钥仍是空占位 |
 | CloudWatch / X-Ray | 仪表盘 `deepcourt-overview`，告警 `deepcourt-bedrock-throttles`，Lambda 日志保留 7 天。`enableP2` 打开时 API 和 Lambda 追踪 | `cdk/lib/p1.ts`，`cdk/lib/p2.ts`，`cdk/lib/orchestration.ts`，`lambdas/trace_job.py` | 已接通。成本分配标签激活被拒绝 |
 | 快手 OAuth | `GET /oauth/kuaishou/start` 和 `/callback`。没有 app_id 时只返回敬请期待 | `lambdas/kuaishou/` | 代码在。业务未接通 |
@@ -377,9 +375,9 @@ cd cdk && npm ci && \
 ## 工程质量
 
 - GitHub Actions [`.github/workflows/ci.yml`](.github/workflows/ci.yml)：`agent/`、`lambdas/` 单元测试，`inference/` 与 `pipeline/` 语法检查，以及 `cdk synth`。不连 AWS 账号。
-- 成片自动自检 [`scripts/qa/check_output.py`](scripts/qa/check_output.py)。检查 CloudFront、成片和中英文音轨、清单、任务表、认人、记分牌。失败只写报告，不中途退出。默认输出在 `scripts/qa/out/`。`--publish` 才把 HTML 报告传到网页桶 `qa/{jobId}.html`。
+- 成片自动自检 [`scripts/qa/check_output.py`](scripts/qa/check_output.py)。检查 CloudFront、成片和英文音轨、清单、任务表、认人、记分牌。失败只写报告，不中途退出。默认输出在 `scripts/qa/out/`。`--publish` 才把 HTML 报告传到网页桶 `qa/{jobId}.html`。
 - 考试应急预案 [docs/exam-fallback.md](docs/exam-fallback.md)：考试片发布后，云上重交、本机成片、只烧记分牌，按时间退到 CloudFront 根路径。
-- 标准答案只用于验收。[docs/exam/answer-key.md](docs/exam/answer-key.md) 对照考试片 `double.mp4` 和官方数据。[docs/exam/audit-1910.md](docs/exam/audit-1910.md) 是 19:10 的只读纠错清单：不改识别代码，也不把标准答案写进页面或解说合成稿。
+- 标准答案只用于验收。[docs/exam/answer-key.md](docs/exam/answer-key.md) 对照考试片 `double.mp4` 和官方数据。[docs/exam/audit-1910.md](docs/exam/audit-1910.md) 是 19:10 的只读纠错清单：不改识别代码，也不把标准答案写进页面。
 - 分析师问答评测在 [agent/eval/](agent/eval/)。`run_eval.py` 用 `questions.json` 里的参考答案打分，参考数字不进提示词和工具。`report.md`：模拟模式修后 20/20；线上 `POST /api/agent/ask` 评的是已经部署的分析师，通过 0/20，这次没有重新部署。工具和接地的修改：代码已就绪，待部署。
 
 ## 目录
@@ -391,16 +389,15 @@ docs/                     架构、管道全景、部署、数据口径
 docs/exam-fallback.md     考试应急预案
 docs/exam/answer-key.md   考试片标准答案，只用于验收
 docs/exam/audit-1910.md   19:10 只读纠错清单
-cdk/                      栈 Team04DeepCourt（bin/app.ts，lib/deepcourt-stack.ts，orchestration.ts，p1.ts，p2.ts，terminology.ts）
+cdk/                      栈 Team04DeepCourt（bin/app.ts，lib/deepcourt-stack.ts，orchestration.ts，p1.ts，p2.ts）
 agent/                    AgentCore 入口、工具循环、赛季切片、单测
 agent/eval/               分析师问答评测，参考答案只用来打分
 lambdas/                  create / analyze / get / list / ask，以及记分牌、解说、快手
-inference/                Batch 作业：追踪、认人、成片、音轨；highlights.py 是成片后的精彩回放；card_layout.py 让数据卡避开球员
-pipeline/                 本机视觉、事件、赛季对齐、音轨实现
+inference/                Batch 作业：追踪、认人、成片；highlights.py 是成片后的精彩回放；card_layout.py 让数据卡避开球员
+pipeline/                 本机视觉、事件、赛季对齐
 web/                      回放页、作品页、上传页；三种观看方式；schedules/ 是 2026–27 赛程
 data/                     赛季和深度数据（含来源说明）
 data/names/zh-names.json  中文译名
-data/terminology/         Amazon Translate 篮球术语表 CSV
 scripts/                  本队自己的成片和发布脚本
 scripts/qa/check_output.py 成片自动自检
 ```
@@ -414,8 +411,6 @@ scripts/qa/check_output.py 成片自动自检
 认人只在这场官方逐回合推出的场上 10 人里进行。号码必须落在球衣颜色那一队、这一刻的 5 人里。颜色和号码对不上，就不写名字。同一个名字只留在票数最多的那条轨迹上。分得出队但没有名字，标签写 **Agent detecting**，颜色用队色。分不出队的不挂标签。裁判不挂标签。官方逐回合里的得分人、助攻人先钉。探测片 `qwen-flagg` 第 1 秒写出小史密斯和弗拉格，其余分得出队的人挂 Agent detecting。训练片的身体坑和排除法仍在本机 `pipeline/vision/backtrack.py`。
 
 解说的每一句中文和英文都要能对上工具返回的数字和人名。百分数在工具里已经是 0 到 100。`null` 不当成 0，出手数为 0 时不说命中率是 0%。中文名只用工具里的 `alias_zh` 或 `name_zh`。没有更多数据就少写，不用同一句凑满三条亮点。
-
-页面中文音轨是英文原声的译文：Transcribe → Translate → Polly。它不是模型看图写的。现场声和原解说叠在一起、声道又几乎是单声道，所以中文音轨只留合成人声。
 
 官方数据来自 NBA 主站和 stats.nba.com，无需登录即可取得的接口。已保存的深度数据、抓取时间和哈希见 [docs/data-notes.md](docs/data-notes.md) 和 `data/deep/`。赛季攻防三区只含火箭和独行侠。两场官方 win probability 请求曾返回 500，WPA 和训练视频偏移未验证，页面不拿它们当结论。出手坐标 `locX` / `locY` 的原点和单位还没核验，不拿来做画面映射。
 
