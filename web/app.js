@@ -1,4 +1,4 @@
-const DEFAULT_HINT = "平均处理速度约为比赛时长 0.3× · 处理完成自动跳转回放页并生成分享卡片";
+const DEFAULT_HINT = "一段 20 多秒的进攻回合约 5 分钟出结构化清单 · 处理完成自动跳转回放页";
 
 const fileTab = document.querySelector("#tab-file");
 const urlTab = document.querySelector("#tab-url");
