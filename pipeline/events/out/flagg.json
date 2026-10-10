@@ -273,6 +273,19 @@
                   "of": 9,
                   "stars": 4.0
                 }
+              },
+              "profile": {
+                "player_id": 1631106,
+                "height_cm": 203.2,
+                "height_ft_in": "6-8",
+                "position": "Forward",
+                "position_zh": "前锋",
+                "draft_status": "drafted",
+                "draft_year": 2022,
+                "draft_round": 1,
+                "draft_overall_pick": 17,
+                "wingspan_cm": 218.44,
+                "line": "身高 6-8（203.2 cm） · 前锋 · 2022年第1轮第17顺位 · 臂展 218.44 cm"
               }
             },
             "shooter_season": {
@@ -407,6 +420,71 @@
                 "of": 12,
                 "stars": 1.5
               }
+            },
+            "player_profile": {
+              "player_id": 1642843,
+              "height_cm": 205.74,
+              "height_ft_in": "6-9",
+              "position": "Forward",
+              "position_zh": "前锋",
+              "draft_status": "drafted",
+              "draft_year": 2025,
+              "draft_round": 1,
+              "draft_overall_pick": 1,
+              "wingspan_cm": 213.36,
+              "line": "身高 6-9（205.74 cm） · 前锋 · 2025年第1轮第1顺位 · 臂展 213.36 cm"
+            },
+            "season_zone": {
+              "band": "near",
+              "label": "近框",
+              "shooter": {
+                "player_id": 1642843,
+                "fgm": 272,
+                "fga": 447,
+                "fg_pct": 0.6085011185682326
+              },
+              "defender_bands": [
+                {
+                  "band": "three",
+                  "label": "三分",
+                  "opponent_fgm": 81,
+                  "opponent_fga": 210,
+                  "opponent_fg_pct": 0.38571428571428573,
+                  "opponents_normal_fg_pct_official": 0.356,
+                  "diff_from_opponents_normal_official": 0.03
+                },
+                {
+                  "band": "other_two",
+                  "label": "其余两分",
+                  "opponent_fgm": 48,
+                  "opponent_fga": 145,
+                  "opponent_fg_pct": 0.3310344827586207
+                },
+                {
+                  "band": "near",
+                  "label": "近框",
+                  "opponent_fgm": 102,
+                  "opponent_fga": 153,
+                  "opponent_fg_pct": 0.6666666666666666,
+                  "opponents_normal_fg_pct_official": 0.641,
+                  "diff_from_opponents_normal_official": 0.026
+                }
+              ],
+              "defender": {
+                "player_id": 1631106,
+                "opponent_fgm": 102,
+                "opponent_fga": 153,
+                "opponent_fg_pct": 0.6666666666666666,
+                "opponents_normal_fg_pct_official": 0.641,
+                "diff_from_opponents_normal_official": 0.026
+              },
+              "lines": [
+                "对手命中率，越低越好",
+                "三分 38.6% · 其余两分 33.1% · 近框 66.7%（这一投）",
+                "这一投近框 66.7%（102/153）",
+                "对手在他面前比平时 64.1% 高 2.6 个百分点",
+                "投篮人同区近框 60.9%（272/447）"
+              ]
             }
           },
           "release": {

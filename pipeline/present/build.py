@@ -23,6 +23,7 @@ sys.path.insert(0, str(REPO / "lambdas"))
 from common import TEAM_ZH, timeline_from_stream  # noqa: E402
 from pipeline.enrich.deep_season import season_profile  # noqa: E402
 from pipeline.enrich.official import position_zh  # noqa: E402
+from pipeline.enrich.season_zones import decorate_shot  # noqa: E402
 from pipeline.present.freeze import pick, render_replay  # noqa: E402
 from pipeline.present.tracks import VOICE_NOTE  # noqa: E402
 
@@ -296,7 +297,7 @@ def _shots(stream: dict) -> list[dict]:
             if assist:
                 assist_name = display_name(assist.get("team") or "", str(assist.get("number") or ""), assist.get("name") or "")
             zone = ZONE_ZH.get(geom.get("shot_zone") or "", geom.get("shot_zone") or "")
-            shots.append({
+            shot = {
                 "t": round(float(ev.get("t") or 0), 3),
                 "name": name,
                 "team": team,
@@ -323,7 +324,16 @@ def _shots(stream: dict) -> list[dict]:
                 "season": official.get("shooter_season"),
                 "shooterRank": official.get("shooter_rank"),
                 "zoneChart": official.get("zone_chart"),
-            })
+            }
+            defender = shot.get("defender") or {}
+            decorate_shot(
+                shot,
+                shooter_id=official.get("player_id") or official.get("person_id"),
+                defender_id=defender.get("person_id"),
+                shooter_team=team,
+                defender_team=defender.get("team") or "",
+            )
+            shots.append(shot)
     return shots
 
 

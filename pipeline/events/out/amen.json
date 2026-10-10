@@ -118,7 +118,35 @@
             "xfg": 0.452,
             "video_url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/396/3129e311-644d-a310-72d5-bccc35e80d0c_1280x720.mp4",
             "thumbnail": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/396/3129e311-644d-a310-72d5-bccc35e80d0c_1280x720.jpg",
-            "court_half": "left"
+            "court_half": "left",
+            "player_id": 1641708,
+            "person_id": 1641708,
+            "player_profile": {
+              "player_id": 1641708,
+              "height_cm": 200.66,
+              "height_ft_in": "6-7",
+              "position": "Guard-Forward",
+              "position_zh": "后卫/前锋",
+              "draft_status": "drafted",
+              "draft_year": 2023,
+              "draft_round": 1,
+              "draft_overall_pick": 4,
+              "wingspan_cm": 213.36,
+              "line": "身高 6-7（200.66 cm） · 后卫/前锋 · 2023年第1轮第4顺位 · 臂展 213.36 cm"
+            },
+            "season_zone": {
+              "band": "other_two",
+              "label": "其余两分",
+              "shooter": {
+                "player_id": 1641708,
+                "fgm": 124,
+                "fga": 318,
+                "fg_pct": 0.389937106918239
+              },
+              "lines": [
+                "投篮人同区其余两分 39.0%（124/318）"
+              ]
+            }
           }
         }
       ],
