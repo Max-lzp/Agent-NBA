@@ -1,0 +1,85 @@
+# 不连 AWS 账号。
+# Python 单测只覆盖 agent/ 和 lambdas/ 里不打真实服务的用例。
+# cdk synth 用 cdk/cdk.context.json 里已经缓存的 us-east-1 可用区，
+# 账号号 382918437747 只用来命中这份缓存，不是凭证。
+name: ci
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install boto3 for Lambda import
+        run: python -m pip install --disable-pip-version-check 'boto3==1.35.99'
+      - name: Agent unit tests
+        working-directory: agent
+        env:
+          AWS_EC2_METADATA_DISABLED: "true"
+          AWS_DEFAULT_REGION: us-east-1
+        run: python -m unittest test_agent
+      - name: Lambda unit tests
+        working-directory: lambdas
+        env:
+          AWS_EC2_METADATA_DISABLED: "true"
+          AWS_DEFAULT_REGION: us-east-1
+        run: python -m unittest test_common test_analyze_agent test_p2 test_scoreboard
+      - name: Syntax check inference and pipeline
+        env:
+          AWS_EC2_METADATA_DISABLED: "true"
+        run: |
+          python - <<'PY'
+          import pathlib
+          import py_compile
+          import sys
+
+          roots = [pathlib.Path("inference"), pathlib.Path("pipeline")]
+          skip = {"__pycache__", ".venv", "venv", "work", "stubs"}
+          failed = []
+          count = 0
+          for root in roots:
+              for path in root.rglob("*.py"):
+                  if any(part in skip for part in path.parts):
+                      continue
+                  count += 1
+                  try:
+                      py_compile.compile(str(path), doraise=True)
+                  except py_compile.PyCompileError as exc:
+                      failed.append(str(exc))
+          print(f"py_compile {count} files")
+          if failed:
+              print("\n".join(failed))
+              sys.exit(1)
+          PY
+
+  cdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: cdk/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Synth CloudFormation
+        working-directory: cdk
+        env:
+          CDK_DEFAULT_ACCOUNT: "382918437747"
+          CDK_DEFAULT_REGION: us-east-1
+          AWS_REGION: us-east-1
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_EC2_METADATA_DISABLED: "true"
+        run: npm ci && npx cdk synth --quiet
