@@ -187,6 +187,42 @@ def build_slice(csv_dir: Path) -> dict:
     }
 
 
+def team_zones(doc: dict, team: str) -> dict | None:
+    """队内球员计数相加。防守是各人被记成防守人的对手出手之和，不是另一张球队表。"""
+    team = (team or "").upper()
+    if team not in TEAMS:
+        return None
+    players = [item for item in doc.get("players") or [] if item.get("team") == team]
+    if not players:
+        return None
+
+    def pack(side: str, made_key: str, attempt_key: str) -> dict:
+        zones = {}
+        for zone in ("near_six_ft", "other_two_point_ge_six_ft", "three_point"):
+            made = attempts = 0
+            for player in players:
+                block = (player.get(side) or {}).get(zone) or {}
+                if block.get(made_key) is None or block.get(attempt_key) is None:
+                    continue
+                made += int(block[made_key])
+                attempts += int(block[attempt_key])
+            pct = round(100 * made / attempts, 1) if attempts else None
+            zone_row = {"fgm": made, "fga": attempts, "fg_pct": pct}
+            if side == "defense":
+                zone_row["opponent_fgm"] = made
+                zone_row["opponent_fga"] = attempts
+                zone_row["opponent_fg_pct"] = pct
+            zones[zone] = zone_row
+        return zones
+
+    return {
+        "team": team,
+        "players": len(players),
+        "offense": pack("offense", "fgm", "fga"),
+        "defense": pack("defense", "opponent_fgm", "opponent_fga"),
+    }
+
+
 def load_slice() -> dict:
     global _CACHE
     if _CACHE is None:
