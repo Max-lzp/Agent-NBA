@@ -4,13 +4,13 @@ const TEAM_MARK = {
     name: "独行侠",
     jersey: "深色衣",
     swatch: "dark",
-    logo: "brands/dal.svg?v=1",
+    logo: "logos/1610612742.svg?v=1",
   },
   HOU: {
     name: "火箭",
     jersey: "白衣",
     swatch: "white",
-    logo: "brands/hou.svg?v=1",
+    logo: "logos/1610612745.svg?v=1",
   },
 };
 const HEADSHOTS = {
@@ -710,7 +710,7 @@ function fillSide(node, role, team, players) {
     return `<li>${face}<b>#${escapeHtml(player.jersey)}</b><span class="who"><strong>${escapeHtml(en)}</strong>${zh ? `<em>${escapeHtml(zh)}</em>` : ""}${honors}</span><i>${escapeHtml(pos)}</i></li>`;
   }).join("");
   const logo = mark.logo
-    ? `<img class="team-logo" alt="" src="${mark.logo}" width="28" height="28" loading="lazy" decoding="async" referrerpolicy="no-referrer">`
+    ? `<img class="team-logo" alt="" src="${mark.logo}" width="28" height="28" loading="lazy" decoding="async" onerror="this.remove()">`
     : "";
   const jersey = mark.jersey
     ? `<i class="jersey-swatch ${mark.swatch}" title="${escapeHtml(mark.jersey)}"></i>`
