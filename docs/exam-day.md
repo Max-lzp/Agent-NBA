@@ -110,3 +110,5 @@ python3 -m pipeline.present --clip exam
 | 白衣认错没自动改 | 加 `--white` 重跑（要重跑视觉） |
 | 片段跨了节 | 补全只用记分牌读到最多的那一节，另一节的官方记录不会并进来 |
 | 想调事件规则不想等视觉 | `--skip-vision` |
+
+云上成片超时、本机交卷和只烧记分牌见 [exam-fallback.md](exam-fallback.md)。
