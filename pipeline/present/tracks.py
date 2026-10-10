@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import time
@@ -360,17 +361,95 @@ def _transcribe(clip: str, wav: Path, bucket: str) -> dict:
     return json.loads(local.read_text(encoding="utf-8"))
 
 
-def _translate(text: str) -> str:
-    def once(chunk: str) -> str:
-        result = json.loads(_aws([
+# 术语表可选。没设 TRANSLATE_TERMINOLOGY 时，请求体和现在一样。
+# 表不存在或没有权限时去掉术语表再译一次；这次进程里随后的句子也不再带上，避免整段解说失败。
+_terminology_dropped = False
+
+
+def reset_terminology_fallback() -> None:
+    global _terminology_dropped
+    _terminology_dropped = False
+
+
+def translate_terminology_names() -> list[str]:
+    name = os.environ.get("TRANSLATE_TERMINOLOGY", "").strip()
+    if not name or _terminology_dropped:
+        return []
+    return [name]
+
+
+def _terminology_error(exc: BaseException) -> bool:
+    code = ""
+    response = getattr(exc, "response", None)
+    if isinstance(response, dict):
+        code = str((response.get("Error") or {}).get("Code") or "")
+    blob = f"{code}\n{exc}".lower()
+    if code in {
+        "ResourceNotFoundException",
+        "AccessDeniedException",
+        "UnauthorizedException",
+        "AccessDenied",
+        "UnauthorizedOperation",
+    }:
+        return True
+    if "resourcenotfoundexception" in blob or "accessdeniedexception" in blob:
+        return True
+    if "terminolog" not in blob:
+        return False
+    return any(hint in blob for hint in (
+        "not found", "does not exist", "doesn't exist", "no such",
+        "not authorized", "unauthorized", "access denied", "permission",
+        "forbidden", "invalid",
+    ))
+
+
+def translate_with_optional_terminology(call):
+    """call(names) 收到术语表名列表；不使用术语表时收到 None。"""
+    global _terminology_dropped
+    names = translate_terminology_names()
+    if not names:
+        return call(None)
+    try:
+        return call(names)
+    except (Exception, SystemExit) as exc:
+        if not _terminology_error(exc):
+            raise
+        _terminology_dropped = True
+        return call(None)
+
+
+def boto_translate_chunk(translate, chunk: str) -> str:
+    def call(names: list[str] | None) -> str:
+        kwargs = {
+            "Text": chunk,
+            "SourceLanguageCode": "en",
+            "TargetLanguageCode": "zh",
+        }
+        if names:
+            kwargs["TerminologyNames"] = list(names)
+        return translate.translate_text(**kwargs)["TranslatedText"]
+
+    return translate_with_optional_terminology(call)
+
+
+def cli_translate_chunk(chunk: str) -> str:
+    def call(names: list[str] | None) -> str:
+        args = [
             "translate", "translate-text",
             "--source-language-code", "en",
             "--target-language-code", "zh",
             "--text", chunk,
-        ]))
+        ]
+        if names:
+            args.extend(["--terminology-names", *names])
+        result = json.loads(_aws(args))
         return result["TranslatedText"]
 
-    return _translate_text(text, once)
+    return translate_with_optional_terminology(call)
+
+
+def _translate(text: str) -> str:
+    return _translate_text(text, cli_translate_chunk)
 
 
 def transcribe_job_name(clip: str, now: int) -> str:
@@ -539,10 +618,7 @@ def _transcribe_boto(clip: str, wav: Path, bucket: str, s3, transcribe, work: Pa
 
 def _speak_boto(text: str, dest: Path, polly, translate) -> None:
     chinese = prefer_broadcast(text, "") or _translate_text(
-        text,
-        lambda chunk: translate.translate_text(
-            Text=chunk, SourceLanguageCode="en", TargetLanguageCode="zh",
-        )["TranslatedText"],
+        text, lambda chunk: boto_translate_chunk(translate, chunk),
     )
     if len(chinese) > 3000:
         raise SystemExit("中文解说超过 Polly Neural 单次 3000 字")
