@@ -99,6 +99,8 @@ const CFG = window.DEEPCOURT_CONFIG || {};
 const EXAM_ONLY = CFG.examOnly !== false;
 const SAMPLE_CLIPS = CFG.sampleClips || ["flagg", "amen", "warm-probe", "rehearsal"];
 const HIDDEN_CLIPS = window.DEEPCOURT_HIDDEN || CFG.hiddenClips || [];
+// 暂时不展示的音轨（例如中文解说未定版时），按 config.js 的 hiddenTracks
+const HIDDEN_TRACKS = CFG.hiddenTracks || [];
 const MODES = ["laofan", "xinfan", "daikan"];
 
 // 训练片/样片：显式名单或片子 dataset 标注
@@ -291,6 +293,11 @@ function loadPack(pack) {
   state.active = nearestEventIndex(pack.anchor || 0);
   els.subhead.innerHTML = `Team 04 · ${pack.title || pack.clip}${pack.gameId ? " · 官方 " + pack.gameId : ""}`;
   const start = Number(pack.anchor) || 0;
+  if (pack.tracks) HIDDEN_TRACKS.forEach((k) => { delete pack.tracks[k]; });
+  if (pack.tracks && !pack.tracks[state.lang]) {
+    const other = state.lang === "zh" ? "en" : "zh";
+    if (pack.tracks[other]) state.lang = other;
+  }
   const tracked = pack.tracks && pack.tracks[state.lang];
   setReelSrc(tracked || (start > 0 ? `${pack.video}#t=${start}` : pack.video));
   syncLang();
