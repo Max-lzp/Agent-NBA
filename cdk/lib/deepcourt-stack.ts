@@ -408,8 +408,25 @@ function stageAgentBundle(outputDir: string, agentDir: string): void {
     fs.copyFileSync(path.join(agentDir, name), path.join(outputDir, name));
   }
   execFileSync('python3', [
-    '-m', 'pip', 'install', '--no-cache-dir', '--upgrade',
+    '-m', 'pip', 'install', '--no-cache-dir', '--upgrade', '--no-compile',
     '--target', outputDir,
     'boto3==1.35.99',
   ], { stdio: 'inherit' });
+  // AgentCore 拒收本机 Python 版本编出来的 .pyc，打包前全部清掉。
+  removePythonCache(outputDir);
+}
+
+function removePythonCache(dir: string): void {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === '__pycache__') {
+        fs.rmSync(full, { recursive: true, force: true });
+      } else {
+        removePythonCache(full);
+      }
+    } else if (entry.name.endsWith('.pyc')) {
+      fs.rmSync(full, { force: true });
+    }
+  }
 }
