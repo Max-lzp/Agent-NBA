@@ -208,6 +208,25 @@
     .intent-card li { margin: 0.4rem 0; }
     .intent-card a { overflow-wrap: anywhere; }
     .closing { margin-top: 0.95rem; }
+    #share-social { margin: 2.2rem 0 0.2rem; }
+    #share-social > h2 { margin-top: 0; }
+    .share-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin: 0.75rem 0 0.15rem;
+      padding: 0;
+      list-style: none;
+    }
+    .share-pills li {
+      margin: 0;
+      color: var(--cream);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.32rem 0.8rem;
+      font-size: 0.92rem;
+    }
     @media (min-width: 1100px) {
       .intent-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -299,8 +318,22 @@
     <p class="closing">我们相信，数据和 AI 不只是让专家看得更深，也能让新观众第一次就看懂、看进去。这就是 Deep Court 的初心。</p>
     </section>
 
+    <section id="share-social">
+      <h2>和社交媒体联动：一键分享精彩瞬间</h2>
+      <p>系统会自动截取播放器里当前这一帧。用户点击播放器下方的分享区，就能跳转到与 NBA 正式合作的 5 个官方平台的作品发布页，和其他球迷分享比赛的精彩瞬间。</p>
+      <ul class="share-pills" aria-label="分享平台">
+        <li>快手</li>
+        <li>哔哩哔哩</li>
+        <li>视频号</li>
+        <li>微博</li>
+        <li>抖音</li>
+      </ul>
+      <p class="note">五个入口都在 <code>web/game.html</code> 的分享区，用 <code>data-share</code> 区分：<code>kuaishou</code>、<code>bilibili</code>、<code>wechat</code>、<code>weibo</code>、<code>douyin</code>。由于各平台的开发者接口还在申请中，这次先做了分享入口，接口开通后即可直接发布。</p>
+    </section>
+
     <ul class="toc">
       <li><a href="#intent">初心</a></li>
+      <li><a href="#share-social">分享</a></li>
       <li><a href="#highlights">作品亮点</a></li>
       <li><a href="#watch">观看方式</a></li>
       <li><a href="#flow">管道</a></li>
