@@ -1,0 +1,435 @@
+{
+  "checked_on": "2026-10-10",
+  "roster_csv": "data/season/2025-26/priority_team_profiles_reviewed.csv",
+  "terminology_csv": "data/terminology/basketball-en-zh.csv",
+  "china_nba_cn": {
+    "verified": "队名。移动站火箭、独行侠球队页和球队列表当日能打开。",
+    "not_verified": "球员译名和主场馆。stats2 阵容与球员列表接口返回 HTTP 504，球员页没有数据。查不到的不编造官网译名，来源写在每条 name_source。"
+  },
+  "teams": [
+    {
+      "team": "HOU",
+      "name_en": "Houston Rockets",
+      "name_zh": "休斯顿火箭队",
+      "alias_zh": "火箭",
+      "china_nba_cn_verified": true,
+      "name_source": "https://m.china.nba.cn/rockets/ 页面 h2 为「休斯顿火箭队」；https://m.china.nba.cn/teams/teamlist.htm 简称为「火箭」。2026-10-10 打开。"
+    },
+    {
+      "team": "DAL",
+      "name_en": "Dallas Mavericks",
+      "name_zh": "达拉斯独行侠队",
+      "alias_zh": "独行侠",
+      "china_nba_cn_verified": true,
+      "name_source": "https://m.china.nba.cn/mavericks/ 页面 h2 为「达拉斯独行侠队」；球队列表简称为「独行侠」。2026-10-10 打开。"
+    }
+  ],
+  "arenas": [
+    {
+      "team": "HOU",
+      "name_en": "Toyota Center",
+      "name_zh": "丰田中心球馆",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 teamInfo 主场馆。china.nba.cn 火箭队页面当日未渲染场馆字段。"
+    },
+    {
+      "team": "DAL",
+      "name_en": "American Airlines Center",
+      "name_zh": "美航中心",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 teamInfo 主场馆。china.nba.cn 独行侠队页面当日未渲染场馆字段。"
+    }
+  ],
+  "players": [
+    {
+      "team": "HOU",
+      "player_id": "1628988",
+      "name_en": "Aaron Holiday",
+      "name_zh": "阿隆·霍勒迪",
+      "alias_zh": "霍勒迪",
+      "china_nba_cn_verified": false,
+      "name_source": "见 note。china.nba.cn 未打开球员页，也未进入腾讯体育当日 30 队名单。",
+      "note": "未在 china.nba.cn 查到。腾讯体育当日 30 队名单无此人。腾讯新闻把 Aaron Holiday 写成「阿隆·霍勒迪」或「阿隆-霍勒迪」，另有稿件作「阿龙-霍勒迪」。术语表用出现更多的「阿隆·霍勒迪」，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "1630578",
+      "name_en": "Alperen Sengun",
+      "name_zh": "阿尔佩伦·申京",
+      "alias_zh": "申京",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "1641708",
+      "name_en": "Amen Thompson",
+      "name_zh": "阿门·汤普森",
+      "alias_zh": "阿门",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "203991",
+      "name_en": "Clint Capela",
+      "name_zh": "克林特·卡佩拉",
+      "alias_zh": "卡佩拉",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "1627827",
+      "name_en": "Dorian Finney-Smith",
+      "name_zh": "多利安·芬尼-史密斯",
+      "alias_zh": "芬尼-史密斯",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "1642384",
+      "name_en": "Isaiah Crawford",
+      "name_zh": "以赛亚·克劳福德",
+      "alias_zh": "克劳福德",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "1631120",
+      "name_en": "JD Davison",
+      "name_zh": "JD.戴维森",
+      "alias_zh": "JD.戴维森",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "1631095",
+      "name_en": "Jabari Smith Jr.",
+      "name_zh": "贾巴里·史密斯二世",
+      "alias_zh": "小史密斯",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "1630256",
+      "name_en": "Jae'Sean Tate",
+      "name_zh": "杰肖恩·泰特",
+      "alias_zh": "泰特",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "201145",
+      "name_en": "Jeff Green",
+      "name_zh": "杰夫·格林",
+      "alias_zh": "格林",
+      "china_nba_cn_verified": false,
+      "name_source": "见 note。china.nba.cn 未打开球员页，也未进入腾讯体育当日 30 队名单。",
+      "note": "未在 china.nba.cn 查到。腾讯体育当日 30 队名单无此人。中文维基条目标题为「杰夫·格林」（Jeffrey Lynn Green）。不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "1629006",
+      "name_en": "Josh Okogie",
+      "name_zh": "约什·奥科吉",
+      "alias_zh": "奥科吉",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "201142",
+      "name_en": "Kevin Durant",
+      "name_zh": "凯文·杜兰特",
+      "alias_zh": "杜兰特",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "1642263",
+      "name_en": "Reed Sheppard",
+      "name_zh": "里德·谢泼德",
+      "alias_zh": "谢泼德",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "203500",
+      "name_en": "Steven Adams",
+      "name_zh": "斯蒂文·亚当斯",
+      "alias_zh": "亚当斯",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "1631106",
+      "name_en": "Tari Eason",
+      "name_zh": "塔里·伊森",
+      "alias_zh": "伊森",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "HOU",
+      "player_id": "1641803",
+      "name_en": "Tristen Newton",
+      "name_zh": "特里斯滕·牛顿",
+      "alias_zh": "牛顿",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1642358",
+      "name_en": "AJ Johnson",
+      "name_zh": "AJ.约翰逊",
+      "alias_zh": "约翰逊",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "203076",
+      "name_en": "Anthony Davis",
+      "name_zh": "安东尼·戴维斯",
+      "alias_zh": "戴维斯",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1630314",
+      "name_en": "Brandon Williams",
+      "name_zh": "布兰登·威廉姆斯",
+      "alias_zh": "威廉姆斯",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1628997",
+      "name_en": "Caleb Martin",
+      "name_zh": "凯莱布·马丁",
+      "alias_zh": "马丁",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1642843",
+      "name_en": "Cooper Flagg",
+      "name_zh": "库珀·弗拉格",
+      "alias_zh": "弗拉格",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1626156",
+      "name_en": "D'Angelo Russell",
+      "name_zh": "德安吉洛·拉塞尔",
+      "alias_zh": "拉塞尔",
+      "china_nba_cn_verified": false,
+      "name_source": "见 note。china.nba.cn 未打开球员页，也未进入腾讯体育当日 30 队名单。",
+      "note": "未在 china.nba.cn 查到。新浪体育 2026-09-30 标题使用「德安吉洛·拉塞尔」。不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1629655",
+      "name_en": "Daniel Gafford",
+      "name_zh": "丹尼尔·加福德",
+      "alias_zh": "加福德",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1641726",
+      "name_en": "Dereck Lively II",
+      "name_zh": "德雷克·莱夫利二世",
+      "alias_zh": "小莱夫利",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "203939",
+      "name_en": "Dwight Powell",
+      "name_zh": "德怀特·鲍威尔",
+      "alias_zh": "鲍威尔",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1630702",
+      "name_en": "Jaden Hardy",
+      "name_zh": "杰登·哈迪",
+      "alias_zh": "哈迪",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1630526",
+      "name_en": "Jeremiah Robinson-Earl",
+      "name_zh": "杰里迈亚·罗宾逊-厄尔",
+      "alias_zh": "罗宾逊-厄尔",
+      "china_nba_cn_verified": false,
+      "name_source": "见 note。china.nba.cn 未打开球员页，也未进入腾讯体育当日 30 队名单。",
+      "note": "未在 china.nba.cn 查到。腾讯新闻 2025-09-22 只写「罗宾逊-厄尔」。全名「杰里迈亚·罗宾逊-厄尔」见于转载通稿，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1642967",
+      "name_en": "John Poulakidas",
+      "name_zh": "约翰·普拉基达斯",
+      "alias_zh": "普拉基达斯",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "203114",
+      "name_en": "Khris Middleton",
+      "name_zh": "克里斯·米德尔顿",
+      "alias_zh": "米德尔顿",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "202691",
+      "name_en": "Klay Thompson",
+      "name_zh": "克莱·汤普森",
+      "alias_zh": "汤普森",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1628963",
+      "name_en": "Marvin Bagley III",
+      "name_zh": "马文·巴格利三世",
+      "alias_zh": "巴格利三世",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1631108",
+      "name_en": "Max Christie",
+      "name_zh": "马克斯·克里斯蒂",
+      "alias_zh": "克里斯蒂",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1642939",
+      "name_en": "Miles Kelly",
+      "name_zh": "迈尔斯·凯利",
+      "alias_zh": "凯利",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1630619",
+      "name_en": "Moussa Cisse",
+      "name_zh": "穆萨·西塞",
+      "alias_zh": "西塞",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1630230",
+      "name_en": "Naji Marshall",
+      "name_zh": "纳吉·马绍尔",
+      "alias_zh": "马绍尔",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1629023",
+      "name_en": "P.J. Washington",
+      "name_zh": "P.J.华盛顿",
+      "alias_zh": "华盛顿",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1642948",
+      "name_en": "Ryan Nembhard",
+      "name_zh": "瑞安·内姆哈德",
+      "alias_zh": "内姆哈德",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1641890",
+      "name_en": "Tyler Smith",
+      "name_zh": "泰勒·史密斯",
+      "alias_zh": "史密斯",
+      "china_nba_cn_verified": false,
+      "name_source": "见 note。china.nba.cn 未打开球员页，也未进入腾讯体育当日 30 队名单。",
+      "note": "未在 china.nba.cn 查到。腾讯体育当日 30 队名单无此英文名。转载的独行侠名单稿把雄鹿 2024 次轮、后签独行侠的 Tyler Smith 写成「泰勒·史密斯」。不是 china.nba.cn 页面原文。姓「史密斯」与贾巴里·史密斯二世撞车，术语表只收全名。"
+    },
+    {
+      "team": "DAL",
+      "player_id": "1626145",
+      "name_en": "Tyus Jones",
+      "name_zh": "泰鲁斯·琼斯",
+      "alias_zh": "琼斯",
+      "china_nba_cn_verified": false,
+      "name_source": "腾讯体育 matchweb.sports.qq.com/team/players cnName，2026-10-10",
+      "note": "未在 china.nba.cn 查到。2026-10-10 请求 china.nba.cn/stats2/team/roster.json 与 league/playerlist.json 返回 HTTP 504，球员页打不开。此译名是腾讯体育 team/players 的 cnName，英文名逐字匹配，不是 china.nba.cn 页面原文。"
+    }
+  ]
+}
