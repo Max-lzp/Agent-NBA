@@ -1,8 +1,8 @@
 """云上认人、事件清单和官方数据。
 
-认人用 Textract 读球衣号码，再对上桶里的名单。
+认人用 Qwen3 VL 对每条轨迹多帧投票。Rekognition 算第二票，Textract 只在 Qwen 调用失败时兜底。
 事件清单按球和记分牌跳动写成 structured JSON，交给已有的校验 Lambda。
-官方数据从媒体桶的 official/ 对上回合和预期命中率。
+官方数据从媒体桶的 official/ 对上回合和预期命中率。得分人、助攻人先钉，投票号码再补其余人。
 """
 
 from __future__ import annotations
@@ -10,14 +10,25 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import boto3
 import cv2
+from botocore.config import Config
 
 REGION = os.environ.get("AWS_REGION", "us-east-1")
 ROOT = Path("/tmp/official")
-MAX_CROPS = 12
+MODEL_ID = "qwen.qwen3-vl-235b-a22b"
+PROMPT = (
+    'This is a cropped frame of one basketball player from an NBA broadcast. '
+    'What jersey number is on this player\'s uniform, and what color is the jersey? '
+    'Reply ONLY as JSON: {"number":"<digits or unknown>","color":"<color>"}'
+)
+MIN_VOTES = 2
+FRAMES_PER_TRACK = 12
 SCORE_LAG_S = 8.0
 NAMES = {
     ("HOU", "0"): "霍利戴", ("HOU", "1"): "阿门", ("HOU", "2"): "芬尼史密斯",
@@ -35,14 +46,33 @@ TEAM_ZH = {"DAL": "独行侠", "HOU": "火箭"}
 
 def link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> dict:
     s3 = boto3.client("s3", region_name=REGION)
-    textract = boto3.client("textract", region_name=REGION)
     _download_official(s3, bucket)
     roster = _roster()
-    reads = _read_jerseys(textract, video, frames)
-    matches = [item for item in (_match(read, roster) for read in reads) if item]
+    started = time.time()
+    reads, votes, stats = _read_jerseys(video, frames)
+    game_id, plays, quality = _official_game(board.get("reads") or [])
+    pinned = _pin_official(plays, board, roster)
+    named = _apply_votes(votes, roster, pinned)
+    matches = _matches_from_tracks(named)
+    elapsed = round(time.time() - started, 1)
+    first_second = sorted({
+        item["nameZh"] for item in named
+        if item.get("nameZh") and any(t <= 1.0 for t, _box in item["boxes"])
+    })
     identity = {
         "jobId": job_id,
-        "service": "textract",
+        "service": "bedrock",
+        "model": MODEL_ID,
+        "bedrockCalls": stats["bedrockCalls"],
+        "rekognitionCalls": stats["rekognitionCalls"],
+        "textractCalls": stats["textractCalls"],
+        "identitySeconds": elapsed,
+        "firstSecond": first_second,
+        "pinned": pinned,
+        "votes": [
+            {key: value for key, value in item.items() if key != "boxes"}
+            for item in named
+        ],
         "reads": reads,
         "matches": matches,
     }
@@ -52,7 +82,6 @@ def link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> di
         Body=json.dumps(identity, ensure_ascii=False).encode(),
         ContentType="application/json",
     )
-    game_id, plays, quality = _official_game(board.get("reads") or [])
     stream = _stream(job_id, game_id, frames, board, matches, plays, quality)
     s3.put_object(
         Bucket=bucket,
@@ -63,8 +92,11 @@ def link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> di
     return {
         "events": _page_events(stream),
         "gameId": game_id,
-        "identityCount": len(identity["matches"]),
-        "textractCalls": len(reads),
+        "identityCount": len(first_second),
+        "bedrockCalls": stats["bedrockCalls"],
+        "textractCalls": stats["textractCalls"],
+        "identitySeconds": elapsed,
+        "firstSecond": first_second,
     }
 
 
@@ -103,45 +135,109 @@ def _roster() -> dict:
     return out
 
 
-def _read_jerseys(textract, video: Path, frames: list) -> list[dict]:
+def _read_jerseys(video: Path, frames: list) -> tuple[list[dict], list[dict], dict]:
+    tracks = _associate(frames)
+    chosen = []
     cap = cv2.VideoCapture(str(video))
-    reads = []
-    last_t = -1.0
     try:
-        for frame in frames:
-            if len(reads) >= MAX_CROPS:
-                break
-            players = frame.get("players") or []
-            if not players or frame.get("t", 0) - last_t < 0.4:
-                continue
-            box = max(players, key=lambda item: item[2] * item[3])
-            cap.set(cv2.CAP_PROP_POS_MSEC, float(frame["t"]) * 1000)
-            ok, image = cap.read()
-            if not ok:
-                continue
-            crop = _torso(image, box)
-            if crop is None:
-                continue
-            encoded, buf = cv2.imencode(".jpg", crop)
-            if not encoded:
-                continue
-            try:
-                response = textract.detect_document_text(Document={"Bytes": buf.tobytes()})
-            except Exception as exc:  # noqa: BLE001 — 一次读号失败不中断整段
-                reads.append({"t": frame["t"], "error": type(exc).__name__})
-                last_t = frame["t"]
-                continue
+        for track in tracks:
+            for stamp, box in _pick_frames(track, frames)[:FRAMES_PER_TRACK]:
+                cap.set(cv2.CAP_PROP_POS_MSEC, float(stamp) * 1000)
+                ok, image = cap.read()
+                if not ok:
+                    continue
+                crop = _torso(image, box)
+                if crop is None:
+                    continue
+                encoded, buf = cv2.imencode(".jpg", crop)
+                if not encoded:
+                    continue
+                chosen.append((track["id"], round(float(stamp), 3), buf.tobytes()))
+    finally:
+        cap.release()
+    config = Config(read_timeout=40, retries={"max_attempts": 1})
+    bedrock = boto3.client("bedrock-runtime", region_name=REGION, config=config)
+    rekognition = boto3.client("rekognition", region_name=REGION)
+    textract = boto3.client("textract", region_name=REGION)
+    stats = {"bedrockCalls": 0, "rekognitionCalls": 0, "textractCalls": 0}
+    reads = []
+    workers = min(12, max(1, len(chosen)))
+    with ThreadPoolExecutor(workers) as pool:
+        reads = list(pool.map(lambda item: _ask(bedrock, rekognition, textract, *item), chosen))
+    stats["bedrockCalls"] = len(reads)
+    stats["rekognitionCalls"] = sum(1 for read in reads if read.get("rekognitionCalled"))
+    stats["textractCalls"] = sum(1 for read in reads if read.get("textractCalled"))
+    by_track = {track["id"]: track for track in tracks}
+    votes = []
+    for track_id, group in _grouped(reads).items():
+        track = by_track.get(track_id) or {"id": track_id, "boxes": []}
+        number, ballots, color = _majority(group)
+        votes.append({
+            "id": track_id,
+            "boxes": track["boxes"],
+            "number": number,
+            "ballots": ballots,
+            "color": color,
+            "samples": len(group),
+        })
+    return reads, votes, stats
+
+
+def _ask(bedrock, rekognition, textract, track_id: int, stamp: float, payload: bytes) -> dict:
+    number, color, error = "", "", ""
+    textract_called = False
+    try:
+        response = bedrock.converse(
+            modelId=MODEL_ID,
+            messages=[{"role": "user", "content": [
+                {"image": {"format": "jpeg", "source": {"bytes": payload}}},
+                {"text": PROMPT},
+            ]}],
+            inferenceConfig={"maxTokens": 200, "temperature": 0},
+        )
+        text = " ".join(
+            block.get("text", "")
+            for block in response.get("output", {}).get("message", {}).get("content") or []
+        )
+        number, color = _parse_qwen(text)
+    except Exception as exc:  # noqa: BLE001 — Qwen 失败才落到 Textract
+        error = str(exc)[:500]
+        textract_called = True
+        try:
+            detected = textract.detect_document_text(Document={"Bytes": payload})
             lines = [
                 block.get("Text", "")
-                for block in response.get("Blocks") or []
+                for block in detected.get("Blocks") or []
                 if block.get("BlockType") == "LINE"
             ]
             number = _jersey_number(lines)
-            reads.append({"t": round(float(frame["t"]), 3), "lines": lines[:6], "number": number})
-            last_t = frame["t"]
-    finally:
-        cap.release()
-    return reads
+        except Exception as fallback:  # noqa: BLE001
+            error = f"{error} | textract {fallback}"[:500]
+    rek_number = ""
+    rek_called = False
+    try:
+        detected = rekognition.detect_text(Image={"Bytes": payload})
+        rek_called = True
+        words = [
+            item.get("DetectedText", "")
+            for item in detected.get("TextDetections") or []
+            if item.get("Type") == "WORD"
+        ]
+        rek_number = _jersey_number(words)
+    except Exception as exc:  # noqa: BLE001
+        rek_called = True
+        if not error:
+            error = f"rekognition {exc}"[:500]
+    return {
+        "t": stamp,
+        "track": track_id,
+        "number": number,
+        "rekognition": rek_number,
+        "color": color,
+        "error": error,
+        "textractCalled": textract_called,
+        "rekognitionCalled": rek_called,
+    }
 
 
 def _torso(image, box):
@@ -162,16 +258,218 @@ def _jersey_number(lines: list[str]) -> str:
     return ""
 
 
-def _match(read: dict, roster: dict) -> dict | None:
-    number = read.get("number") or ""
+def _associate(frames: list) -> list[dict]:
+    tracks: list[dict] = []
+    active: list[tuple[int, list, float]] = []
+    for frame in frames:
+        stamp = float(frame.get("t") or 0)
+        detections = [box for box in frame.get("players") or [] if box and box[2] * box[3] >= 40 * 80]
+        pairs = []
+        for index, (track_id, box, seen) in enumerate(active):
+            if stamp - seen > 0.75:
+                continue
+            for detect_index, detect in enumerate(detections):
+                overlap = _iou(box, detect)
+                if overlap >= 0.25:
+                    pairs.append((overlap, index, detect_index))
+        pairs.sort(reverse=True)
+        taken_tracks, taken_detections = set(), set()
+        refreshed = {}
+        for _overlap, index, detect_index in pairs:
+            if index in taken_tracks or detect_index in taken_detections:
+                continue
+            taken_tracks.add(index)
+            taken_detections.add(detect_index)
+            track_id = active[index][0]
+            tracks[track_id]["boxes"].append((stamp, detections[detect_index]))
+            refreshed[index] = (track_id, detections[detect_index], stamp)
+        nxt = [refreshed[index] if index in refreshed else item for index, item in enumerate(active) if index in refreshed or stamp - item[2] <= 0.75]
+        for detect_index, detect in enumerate(detections):
+            if detect_index in taken_detections:
+                continue
+            tracks.append({"id": len(tracks), "boxes": [(stamp, detect)]})
+            nxt.append((len(tracks) - 1, detect, stamp))
+        active = nxt
+    return [track for track in tracks if len(track["boxes"]) >= 6]
+
+
+def _pick_frames(track: dict, frames: list) -> list[tuple[float, list]]:
+    by_time = {round(float(frame.get("t") or 0), 3): frame.get("players") or [] for frame in frames}
+    ranked = []
+    for stamp, box in track["boxes"]:
+        area = box[2] * box[3]
+        others = [item for item in by_time.get(round(stamp, 3), []) if item is not box and item[:4] != box[:4]]
+        overlap = max((_iou(box, item) for item in others), default=0)
+        if area < 70 * 140 or overlap > 0.35:
+            continue
+        ranked.append((area * (1 - overlap), stamp, box))
+    ranked.sort(reverse=True)
+    picked = []
+    for _score, stamp, box in ranked:
+        if any(abs(stamp - previous) < 0.4 for previous, _box in picked):
+            continue
+        picked.append((stamp, box))
+        if len(picked) >= FRAMES_PER_TRACK:
+            break
+    if len(picked) < 10:
+        for _score, stamp, box in ranked:
+            if any(abs(stamp - previous) < 0.2 for previous, _box in picked):
+                continue
+            picked.append((stamp, box))
+            if len(picked) >= 10:
+                break
+    return picked
+
+
+def _majority(reads: list[dict]) -> tuple[str, int, str]:
+    ballots = []
+    for read in reads:
+        if read.get("number"):
+            ballots.append(read["number"])
+        if read.get("rekognition"):
+            ballots.append(read["rekognition"])
+    counts = Counter(ballots)
+    number, votes = ("", 0)
+    if counts:
+        number, votes = counts.most_common(1)[0]
+        second = counts.most_common(2)[1][1] if len(counts) > 1 else 0
+        if votes < MIN_VOTES or votes <= second:
+            number = ""
+    colors = Counter(_team_from_color(read.get("color") or "") for read in reads)
+    colors.pop("", None)
+    color = colors.most_common(1)[0][0] if colors else ""
+    return number, votes, color
+
+
+def _team_from_color(color: str) -> str:
+    text = color.lower()
+    if any(word in text for word in ("white", "白", "light")):
+        return "HOU"
+    if any(word in text for word in ("dark", "navy", "black", "blue", "深", "蓝", "黑")):
+        return "DAL"
+    return ""
+
+
+def _apply_votes(votes: list[dict], roster: dict, pinned: list[dict]) -> list[dict]:
+    pins = {(item["team"], item["number"]): item for item in pinned}
+    named = []
+    for vote in votes:
+        number = vote.get("number") or ""
+        pin_hits = [pin for pin in pinned if pin.get("number") == number]
+        found = (pin_hits[0]["team"], pin_hits[0]["nameZh"]) if number and len(pin_hits) == 1 else _lookup(number, vote.get("color") or "", roster)
+        item = dict(vote)
+        item["nameZh"] = ""
+        if found:
+            team, name = found
+            pin = pins.get((team, number))
+            item.update(team=team, rosterName=name, nameZh=NAMES.get((team, number), name), source="official" if pin else "qwen")
+        elif number:
+            item.update(team="", rosterName="", nameZh="", source="ambiguous")
+        else:
+            item.update(team="", rosterName="", nameZh="", source="")
+        named.append(item)
+    return named
+
+
+def _lookup(number: str, color_team: str, roster: dict):
     if not number:
         return None
-    hits = [
-        {"team": team, "number": number, "name": name, "t": read.get("t")}
-        for (team, num), name in roster.items()
-        if num == number
-    ]
+    hits = [(team, name) for (team, num), name in roster.items() if num == number]
+    if color_team:
+        sided = [hit for hit in hits if hit[0] == color_team]
+        if len(sided) == 1:
+            return sided[0]
     return hits[0] if len(hits) == 1 else None
+
+
+def _matches_from_tracks(named: list[dict]) -> list[dict]:
+    matches = []
+    seen = set()
+    for item in named:
+        if not item.get("nameZh"):
+            continue
+        for stamp, _box in item["boxes"]:
+            key = (round(float(stamp), 1), item["nameZh"])
+            if key in seen:
+                continue
+            seen.add(key)
+            matches.append({
+                "t": round(float(stamp), 3),
+                "team": item.get("team") or "",
+                "number": item.get("number") or "",
+                "name": item["nameZh"],
+            })
+    return matches
+
+
+def _pin_official(plays: list, board: dict, roster: dict) -> list[dict]:
+    reads = [read for read in board.get("reads") or [] if read.get("clock")]
+    clocks = [value for value in (_clock_seconds(read.get("clock")) for read in reads) if value is not None]
+    if not clocks:
+        return []
+    period = _period_num(reads[0].get("period"))
+    lo, hi = min(clocks) - 3, max(clocks) + 3
+    by_last = {}
+    for (team, number), name in roster.items():
+        by_last.setdefault(name.lower(), []).append((team, number))
+    pinned = []
+    seen = set()
+
+    def add(text: str, team_hint: str, role: str) -> None:
+        last = re.sub(r"[^A-Za-z]", "", (text or "").split()[-1] if text else "").lower()
+        hits = [hit for hit in by_last.get(last, []) if not team_hint or hit[0] == team_hint]
+        if len(hits) != 1:
+            return
+        team, number = hits[0]
+        if (team, number) in seen:
+            return
+        seen.add((team, number))
+        pinned.append({
+            "team": team,
+            "number": number,
+            "nameZh": NAMES.get((team, number), last),
+            "role": role,
+            "source": "official",
+        })
+
+    for play in plays:
+        if play.get("period") != period or play.get("clock") is None or not (lo <= play["clock"] <= hi):
+            continue
+        if play.get("kind") == "shot":
+            add(play.get("player") or "", play.get("team") or "", "scorer")
+        if play.get("assist"):
+            add(play["assist"], play.get("team") or "", "assist")
+    return pinned
+
+
+def _grouped(reads: list[dict]) -> dict[int, list[dict]]:
+    groups: dict[int, list[dict]] = {}
+    for read in reads:
+        groups.setdefault(read["track"], []).append(read)
+    return groups
+
+
+def _parse_qwen(text: str) -> tuple[str, str]:
+    match = re.search(r"\{.*\}", text, re.S)
+    if not match:
+        return "", ""
+    try:
+        data = json.loads(match.group(0))
+    except json.JSONDecodeError:
+        return "", ""
+    raw = str(data.get("number") or "").strip()
+    number = "" if raw.lower() == "unknown" else _jersey_number([raw])
+    return number, str(data.get("color") or "")
+
+
+def _iou(a, b) -> float:
+    ax, ay, aw, ah = [float(value) for value in a[:4]]
+    bx, by, bw, bh = [float(value) for value in b[:4]]
+    x1, y1 = max(ax, bx), max(ay, by)
+    x2, y2 = min(ax + aw, bx + bw), min(ay + ah, by + bh)
+    inter = max(0.0, x2 - x1) * max(0.0, y2 - y1)
+    union = aw * ah + bw * bh - inter
+    return inter / union if union else 0.0
 
 
 def _official_game(reads: list) -> tuple[str, list, dict]:
@@ -278,7 +576,7 @@ def _holder_events(frames, matches, away, home) -> list[dict]:
                 "t": round(float(frame["t"]), 3),
                 "type": "receive",
                 "actor": actor,
-                "source": "textract" if who else "cv",
+                "source": "qwen" if who else "cv",
                 "confidence": 0.7 if who else 0.4,
             }
         else:
@@ -287,7 +585,7 @@ def _holder_events(frames, matches, away, home) -> list[dict]:
                 "type": "pass",
                 "actor": previous,
                 "target": actor,
-                "source": "textract" if who else "cv",
+                "source": "qwen" if who else "cv",
                 "confidence": 0.7 if who else 0.4,
             }
         events.append(event)

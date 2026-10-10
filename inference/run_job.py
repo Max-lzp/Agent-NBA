@@ -48,6 +48,17 @@ def main() -> None:
     local_video = Path("/tmp/video.mp4")
     board = _scoreboard(local_video)
     linked = _link(job_id, local_video, frames, board, bucket_name)
+    if os.environ.get("SKIP_PUBLISH") == "1":
+        print(json.dumps({
+            "jobId": job_id,
+            "frames": len(frames),
+            "publish": "skipped",
+            "gameId": linked.get("gameId"),
+            "bedrockCalls": linked.get("bedrockCalls"),
+            "identitySeconds": linked.get("identitySeconds"),
+            "firstSecond": linked.get("firstSecond"),
+        }, ensure_ascii=False))
+        return
     film = Path("/tmp/broadcast.mp4")
     _render(
         local_video,

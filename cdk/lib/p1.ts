@@ -125,6 +125,14 @@ export function addP1(
   props.webBucket.grantPut(jobRole, 'styles.css');
   props.mediaBucket.grantReadWrite(jobRole, 'commentary/asr/*');
   jobRole.addToPolicy(new iam.PolicyStatement({
+    actions: ['bedrock:InvokeModel'],
+    resources: ['arn:aws:bedrock:us-east-1::foundation-model/qwen.qwen3-vl-235b-a22b'],
+  }));
+  jobRole.addToPolicy(new iam.PolicyStatement({
+    actions: ['rekognition:DetectText'],
+    resources: ['*'],
+  }));
+  jobRole.addToPolicy(new iam.PolicyStatement({
     actions: [
       'transcribe:StartTranscriptionJob',
       'transcribe:GetTranscriptionJob',
