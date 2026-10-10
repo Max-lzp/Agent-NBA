@@ -2,6 +2,12 @@
 
 ## 官方门户数据入口核查（2026-10-10）
 
+### 后续 NBA Stats 拉取成功
+
+当前 stats.nba.com 的 commonteamroster、leaguedashplayerstats、playercareerstats 已返回 HTTP 200，证据在 `pipeline/vision/rosters/sources/2025-26-official-sources.json`。前面的代理失败记录是历史状态，不再代表这些 Stats 请求的现状。
+
+已核验 HOU 17 人、DAL 24 人的 ID/GP/GS/精确总分钟。字段口径：commonteamroster 的 PLAYER_ID、PLAYER、NUM、POSITION 用于名单快照；leaguedashplayerstats 使用 Regular Season + PerMode=Totals + TeamID，GP 为该队赛季出场，MIN 为赛季总分钟（小数）；该接口没有 GS，补查 playercareerstats 的 SeasonTotalsRegularSeason，按 SEASON_ID 和 TEAM_ID 取 GS。两队 GS 总和均为 410。快照和统计并集不能证明赛季登记历史完整，from/to 与历史号码仍待官方历史记录，不生成带猜测日期的正式名单。
+
 Codex 已读取官方门户 `/portal` 页面及其页面资源。“NBA data downloads”在当前版本提供以下入口，而非直接提供 CSV 字段表：
 
 - NBA 比赛页：<https://www.nba.com/games>

@@ -2,6 +2,19 @@
 
 分支：`feat/team04-rosters-xfg`。这是接入框架；正式名单与真实模型结果仍待数据，不声称任务 A/B 已完全验收。
 
+## 2026-10-10 官方统计更新
+
+stats.nba.com 现在可访问，已提交 `pipeline/vision/rosters/sources/2025-26-official-sources.json`（完整接口响应、URL、抓取时间及 SHA-256）与 `2025-26-verified-totals.csv`。火箭 17 人、独行侠 24 人的候选名单已取得真实 ID/GP/GS/总分钟，两队 GS 各合计 410。GP/MIN 来自球队过滤的 leaguedashplayerstats；GS 来自 playercareerstats 的 2025-26、对应球队行，因为 leaguedashplayerstats 不提供 GS。career MIN 为整数，校验其与精确总分钟的差不超过 1 分钟；输出保留 leaguedash 的精度。
+
+```bash
+python3 pipeline/vision/rosters/fetch_nba_sources.py \
+  --output pipeline/vision/rosters/sources/2025-26-official-sources.json
+```
+
+候选是 commonteamroster 快照与该队赛季统计的并集，不宣称覆盖所有未出场且赛季中已离队的登记人员。球队过滤统计返回的 TEAM_ID/TEAM_ABBREVIATION 可能仍指球员最新所属队（如 Davis），所以不能据此丢弃已离队球员；脚本通过 career 的赛季-球队行核对 GP、GS、MIN。
+
+零出场者（VanVleet、Irving）由官方名单快照及两份完整出场统计中无当季出场行共同确认，未将网络失败或缺失值直接改为零。当前还缺完整历史登记日期/号码/位置；John Poulakidas 的快照号码为空、两名球员显示 21 号，不能直接把快照当时段名单。待这些字段核验后，用 verified-totals.csv 和真实 registrations.csv 生成目标 2025-26.json。详细待核验字段逐人保存在 sources JSON 的 candidates 中。
+
 ## 名单输入与生成
 
 请从门户、api.nba.cn 或团队已核验导出中提供两张 CSV，保存源标识和抓取日期：
