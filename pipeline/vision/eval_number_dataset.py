@@ -108,10 +108,10 @@ def eval_clip(clip_dir: Path, truth: dict) -> dict:
 
 
 def _run(job):
-    d_name, out_path = job
+    d_name, out_path, truth = job
     out_file = Path(out_path)
     try:
-        res = eval_clip(FRAMES / d_name, _TRUTH[d_name])
+        res = eval_clip(FRAMES / d_name, truth)
     except Exception as e:  # 单个剪辑失败不拖垮全局
         res = {"clip": d_name, "error": f"{type(e).__name__}: {e}", "frames": []}
     out_file.write_text(json.dumps(res, ensure_ascii=False))
@@ -125,10 +125,9 @@ def main() -> None:
     args = ap.parse_args()
 
     labels = [json.loads(l) for l in (FRAMES / "_labels.jsonl").read_text().splitlines()]
-    global _TRUTH
-    _TRUTH = {}
+    truth_by_clip = {}
     for r in labels:
-        _TRUTH.setdefault(r["clip"], r)
+        truth_by_clip.setdefault(r["clip"], r)
     clip_dirs = sorted(p for p in FRAMES.iterdir() if p.is_dir())
     if args.clips:
         clip_dirs = [p for p in clip_dirs if p.name in set(args.clips)]
@@ -140,7 +139,7 @@ def main() -> None:
         if out_file.exists():
             done += 1
         else:
-            todo.append((d.name, str(out_file)))
+            todo.append((d.name, str(out_file), truth_by_clip[d.name]))
     print(f"剪辑 {len(clip_dirs)}：已完成 {done}，待跑 {len(todo)}", flush=True)
 
     import multiprocessing as mp
