@@ -42,7 +42,7 @@
     <ol>
       <li>收片：浏览器经 CloudFront、API Gateway、Lambda 把视频直传到 S3，任务记在 DynamoDB。本地命令也可以直接读文件。</li>
       <li>追踪和记分牌：考试片交给 Batch，机器是保持开着的 c7i.48xlarge。同一台机器读记分牌，再用 ffmpeg 把比分烧进成片，直接放进网页桶。训练片仍可以在本机用 MPS 出片。记分牌检测边长限制在 640。</li>
-      <li>认人、事件和官方数据：考试片在同一台机器上把轨迹帧交给 Qwen3 VL 读号码和球衣颜色，多数票定人；Rekognition 算第二票。号码只在这一刻场上的同队 5 人里对，同一个名字只留一条轨迹，并从这条轨迹的第一帧挂到结尾。分得出队但没有名字的人，标签只写 Agent detecting，颜色用队色；分不出队的不挂。官方逐回合的得分人、助攻人先钉。按持球写出接球和传球；从 S3 的官方逐回合对上是哪一场，比分跳动时补上命中、助攻和预期命中率。清单写到 <code>structured/</code>。训练片的领防、脱手帧、分差效率和队内排名仍在本机。</li>
+      <li>认人、事件和官方数据：考试片在同一台机器上把轨迹帧交给 Qwen3 VL 读号码和球衣颜色，多数票定人；Rekognition 算第二票。裁判先排除。号码只在球衣颜色那一队这一刻的场上 5 人里对，同一个名字只留一条轨迹，并从这条轨迹的第一帧挂到结尾。分得出队但没有名字的人，标签只写 Agent detecting，颜色用队色；分不出队的不挂。官方逐回合的得分人、助攻人先钉。按持球写出接球和传球；从 S3 的官方逐回合对上是哪一场，比分跳动时补上命中、助攻和预期命中率。清单写到 <code>structured/</code>。训练片的领防、脱手帧、分差效率和队内排名仍在本机。</li>
       <li>回放时，进球后画面跳回出手那一帧，定格 5 秒：投篮人脚下画红圈，领防人脚下画黄色虚线圈，领防名签贴在他躯干旁、背向投篮人一侧；卡片写投篮人和领防人的队内排名星级（定格卡不再烧比分条）；认出领防人才写他的名字、本场对位和赛季场均。右栏是投篮人的分区热区图，红圈标出这一投，并写出这个位置的预期命中率。</li>
       <li>清单放到 S3。Lambda 调 Bedrock AgentCore 校验，页面事件写入 DynamoDB。</li>
       <li>成片之后才做音轨。英文是原声。中文把这条原声转写、译成中文，用 Polly Neural 知语按原句时间合成。播放器上自己选。探测片的中文音轨已经能播。</li>
@@ -56,7 +56,7 @@
         <tr><td>收片、任务</td><td>CloudFront、API Gateway、Lambda、S3、DynamoDB</td><td>主路径</td></tr>
         <tr><td>追踪</td><td>Batch、EC2 c7i.48xlarge、EBS、ECR、S3</td><td>已接通。192 vCPU 保持开着，镜像已烤好</td></tr>
         <tr><td>记分牌</td><td>同一台 c7i.48xlarge 上的 RapidOCR</td><td>已接通</td></tr>
-        <tr><td>认人</td><td>Bedrock Qwen3 VL、Rekognition DetectText、S3 逐回合和 identity/</td><td>已接通。探测片第 1 秒写出 3 个名字，都在场上 10 人里。同一个名字只留一条轨迹。分得出队但没有名字的人挂 Agent detecting</td></tr>
+        <tr><td>认人</td><td>Bedrock Qwen3 VL、Rekognition DetectText、S3 逐回合和 identity/</td><td>已接通。探测片第 1 秒写出 2 个名字，都在场上 10 人里，裁判不挂标签。同一个名字只留一条轨迹，球衣颜色要和队一致。分得出队但没有名字的人挂 Agent detecting</td></tr>
         <tr><td>事件清单</td><td>S3 structured/、Lambda、Bedrock AgentCore、DynamoDB</td><td>已接通。探测片 3 条事件已写入。领防仍在本地</td></tr>
         <tr><td>官方数据</td><td>S3 official/ 逐回合和 shot quality</td><td>已接通。探测片对上 0022500356。这 5 秒没有比分跳动，没有出手行</td></tr>
         <tr><td>校验清单</td><td>Lambda、Bedrock AgentCore、DynamoDB、CloudWatch Logs</td><td>主路径</td></tr>
