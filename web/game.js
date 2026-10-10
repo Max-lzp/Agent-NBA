@@ -520,6 +520,8 @@ function drawNames() {
     window.DeepFreeze.drawMarks(ctx, state.freeze.shot, scale, ratio);
     return;
   }
+  // 成片里已经烧进了名签；网页不再叠第二层，避免重影（config.js webNames: true 可恢复）
+  if (CFG.webNames !== true) return;
   ctx.font = `${Math.round(13 * ratio)}px MiSans, "PingFang SC", sans-serif`;
   ctx.textBaseline = "bottom";
   const t = els.reel.currentTime || 0;

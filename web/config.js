@@ -7,6 +7,8 @@ window.DEEPCOURT_CONFIG = {
   examOnly: true,
   // 这些片段视为训练片/样片，examOnly 时在回放页隐藏（只隐藏，不删数据文件）
   // 中文解说待新版成片确认后再放回：删掉这一行即可
+  // 名签只用成片里烧进去的那一层，网页不再叠画
+  webNames: false,
   hiddenTracks: ["zh"],
   sampleClips: ["flagg", "amen", "warm-probe", "rehearsal"],
 };
