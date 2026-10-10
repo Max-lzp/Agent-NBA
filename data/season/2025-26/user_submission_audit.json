@@ -1,0 +1,278 @@
+{
+  "coverage": {
+    "HOU": {
+      "official_appeared": 16,
+      "uploaded": 16,
+      "missing_ids": [],
+      "extra_ids": []
+    },
+    "DAL": {
+      "official_appeared": 23,
+      "uploaded": 23,
+      "missing_ids": [],
+      "extra_ids": []
+    }
+  },
+  "players": [
+    {
+      "scope": "HOU",
+      "player_id": 201142,
+      "player_name": "Kevin Durant",
+      "findings": []
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1630578,
+      "player_name": "Alperen Sengun",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1641708,
+      "player_name": "Amen Thompson",
+      "findings": []
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1631095,
+      "player_name": "Jabari Smith Jr.",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1642263,
+      "player_name": "Reed Sheppard",
+      "findings": []
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1631106,
+      "player_name": "Tari Eason",
+      "findings": []
+    },
+    {
+      "scope": "HOU",
+      "player_id": 203500,
+      "player_name": "Steven Adams",
+      "findings": []
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1629006,
+      "player_name": "Josh Okogie",
+      "findings": []
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1627827,
+      "player_name": "Dorian Finney-Smith",
+      "findings": []
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1628988,
+      "player_name": "Aaron Holiday",
+      "findings": []
+    },
+    {
+      "scope": "HOU",
+      "player_id": 203991,
+      "player_name": "Clint Capela",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1641803,
+      "player_name": "Tristen Newton",
+      "findings": []
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1630256,
+      "player_name": "Jae'Sean Tate",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1631120,
+      "player_name": "JD Davison",
+      "findings": []
+    },
+    {
+      "scope": "HOU",
+      "player_id": 1642384,
+      "player_name": "Isaiah Crawford",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    },
+    {
+      "scope": "HOU",
+      "player_id": 201145,
+      "player_name": "Jeff Green",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1642843,
+      "player_name": "Cooper Flagg",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 203076,
+      "player_name": "Anthony Davis",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1629023,
+      "player_name": "P.J. Washington",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1630230,
+      "player_name": "Naji Marshall",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1631108,
+      "player_name": "Max Christie",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1630314,
+      "player_name": "Brandon Williams",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    },
+    {
+      "scope": "DAL",
+      "player_id": 202691,
+      "player_name": "Klay Thompson",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1629655,
+      "player_name": "Daniel Gafford",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1628963,
+      "player_name": "Marvin Bagley III",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    },
+    {
+      "scope": "DAL",
+      "player_id": 203114,
+      "player_name": "Khris Middleton",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1642948,
+      "player_name": "Ryan Nembhard",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1642967,
+      "player_name": "John Poulakidas",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1626156,
+      "player_name": "D'Angelo Russell",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1626145,
+      "player_name": "Tyus Jones",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1641726,
+      "player_name": "Dereck Lively II",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1628997,
+      "player_name": "Caleb Martin",
+      "findings": [
+        "wingspan_differs_from_official_combine"
+      ]
+    },
+    {
+      "scope": "DAL",
+      "player_id": 203939,
+      "player_name": "Dwight Powell",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1630619,
+      "player_name": "Moussa Cisse",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1641890,
+      "player_name": "Tyler Smith",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1630702,
+      "player_name": "Jaden Hardy",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1630526,
+      "player_name": "Jeremiah Robinson-Earl",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1642358,
+      "player_name": "AJ Johnson",
+      "findings": []
+    },
+    {
+      "scope": "DAL",
+      "player_id": 1642939,
+      "player_name": "Miles Kelly",
+      "findings": [
+        "uploaded_wingspan_not_independently_verified"
+      ]
+    }
+  ]
+}
