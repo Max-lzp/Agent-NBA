@@ -1,0 +1,644 @@
+{
+  "jobId": "exam",
+  "gameId": "0022500356",
+  "live_note": "",
+  "runs": [
+    {
+      "mode": "simulate",
+      "total": 20,
+      "passed": 9,
+      "content": 9,
+      "tools": 20,
+      "zh": 20,
+      "zh_total": 12,
+      "traps": 4,
+      "traps_passed": 4,
+      "rows": [
+        {
+          "ok": true,
+          "elapsed_s": 0.006,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official"
+          ],
+          "answer": {
+            "zh": "克里斯蒂三分出手命中。",
+            "en": "Max Christie makes the shot.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json"
+            ]
+          },
+          "error": "",
+          "id": "zh-shooter",
+          "lang": "zh",
+          "trap": false,
+          "question": "这段回放里是谁出手？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": true,
+            "pass": true
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.006,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official"
+          ],
+          "answer": {
+            "zh": "克里斯蒂三分出手命中。",
+            "en": "Max Christie makes the shot.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json"
+            ]
+          },
+          "error": "",
+          "id": "zh-result",
+          "lang": "zh",
+          "trap": false,
+          "question": "这些出手的结果是什么？进了还是不中？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": false,
+            "pass": false
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.007,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official"
+          ],
+          "answer": {
+            "zh": "数据里没有。",
+            "en": "The tools do not have that.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json"
+            ]
+          },
+          "error": "",
+          "id": "zh-defender",
+          "lang": "zh",
+          "trap": false,
+          "question": "这回合谁在防守出手的人？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": false,
+            "pass": false
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.005,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official"
+          ],
+          "answer": {
+            "zh": "预期命中率 30%。",
+            "en": "The expected make rate is 30 percent.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json"
+            ]
+          },
+          "error": "",
+          "id": "zh-xfg",
+          "lang": "zh",
+          "trap": false,
+          "question": "这段里每次出手的预期命中率是多少？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": false,
+            "pass": false
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.01,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official",
+            "read_season",
+            "read_season"
+          ],
+          "answer": {
+            "zh": "小史密斯命中率 55.4%。小史密斯对手其余两分命中率 45.6%。小史密斯对手三分命中率 36.7%。史密斯命中率 68.4%。史密斯对手其余两分命中率 55.6%。史密斯对手三分命中率 54.5%。",
+            "en": "Jabari Smith Jr. defensive make rate is 55.4. Jabari Smith Jr. defensive other two-point percentage is 45.6. Jabari Smith Jr. defensive three-point percentage is 36.7. Tyler Smith defensive make rate is 68.4. Tyler Smith defensive other two-point percentage is 55.6. Tyler Smith defensive three-point percentage is 54.5.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json",
+              "season:2025-26:HOU:Jabari Smith Jr.",
+              "season:2025-26:DAL:Tyler Smith"
+            ]
+          },
+          "error": "",
+          "id": "zh-smith-d",
+          "lang": "zh",
+          "trap": false,
+          "question": "小史密斯本赛季的防守数据怎么样？近筐和三分分别防成什么样？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": true,
+            "pass": true
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.007,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official",
+            "read_season"
+          ],
+          "answer": {
+            "zh": "克里斯蒂三分命中率 40.4%。",
+            "en": "Max Christie three-point percentage is 40.4.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json",
+              "season:2025-26:DAL:Max Christie"
+            ]
+          },
+          "error": "",
+          "id": "zh-christie-3",
+          "lang": "zh",
+          "trap": false,
+          "question": "克里斯蒂本赛季三分命中率是多少？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": true,
+            "pass": true
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.006,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official",
+            "read_season",
+            "read_season"
+          ],
+          "answer": {
+            "zh": "数据里没有。",
+            "en": "The tools do not have that.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json",
+              "season:2025-26"
+            ]
+          },
+          "error": "",
+          "id": "zh-team-off",
+          "lang": "zh",
+          "trap": false,
+          "question": "火箭和独行侠本赛季进攻三区（近框、其余两分、三分）的命中率分别是多少？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": false,
+            "pass": false
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.006,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official",
+            "read_season",
+            "read_season"
+          ],
+          "answer": {
+            "zh": "数据里没有。",
+            "en": "The tools do not have that.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json",
+              "season:2025-26"
+            ]
+          },
+          "error": "",
+          "id": "zh-team-def",
+          "lang": "zh",
+          "trap": false,
+          "question": "火箭和独行侠本赛季防守三区时，对手的命中率分别是多少？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": false,
+            "pass": false
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.005,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official"
+          ],
+          "answer": {
+            "zh": "数据里没有。",
+            "en": "The tools do not have that.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json"
+            ]
+          },
+          "error": "",
+          "id": "zh-score",
+          "lang": "zh",
+          "trap": false,
+          "question": "这段回放里的比分是怎么走的？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": false,
+            "pass": false
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.005,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official"
+          ],
+          "answer": {
+            "zh": "数据里没有。",
+            "en": "The tools do not have that.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json"
+            ]
+          },
+          "error": "",
+          "id": "zh-final",
+          "lang": "zh",
+          "trap": false,
+          "question": "这场比赛的最终比分是多少？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": false,
+            "pass": false
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.009,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official",
+            "read_season",
+            "read_season"
+          ],
+          "answer": {
+            "zh": "数据里没有臂展。",
+            "en": "The tools do not have a wingspan.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json",
+              "season:2025-26:HOU:Jabari Smith Jr.",
+              "season:2025-26:DAL:Tyler Smith"
+            ]
+          },
+          "error": "",
+          "id": "zh-wingspan",
+          "lang": "zh",
+          "trap": true,
+          "question": "小史密斯的臂展是多少？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": true,
+            "pass": true
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.007,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official",
+            "read_season"
+          ],
+          "answer": {
+            "zh": "数据里没有。",
+            "en": "The tools do not have that.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json",
+              "season:2025-26:DAL:Max Christie"
+            ]
+          },
+          "error": "",
+          "id": "zh-salary",
+          "lang": "zh",
+          "trap": true,
+          "question": "克里斯蒂的年薪是多少？",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": true,
+            "pass": true
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.005,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official"
+          ],
+          "answer": {
+            "zh": "克里斯蒂三分出手命中。",
+            "en": "Max Christie makes the shot.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json"
+            ]
+          },
+          "error": "",
+          "id": "en-shot",
+          "lang": "en",
+          "trap": false,
+          "question": "Who shot in this clip, and what was the result?",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": false,
+            "pass": false
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.005,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official"
+          ],
+          "answer": {
+            "zh": "数据里没有。",
+            "en": "The tools do not have that.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json"
+            ]
+          },
+          "error": "",
+          "id": "en-defender",
+          "lang": "en",
+          "trap": false,
+          "question": "Who was the defender on those shots?",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": false,
+            "pass": false
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.005,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official"
+          ],
+          "answer": {
+            "zh": "预期命中率 30%。",
+            "en": "The expected make rate is 30 percent.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json"
+            ]
+          },
+          "error": "",
+          "id": "en-xfg",
+          "lang": "en",
+          "trap": false,
+          "question": "What is the expected make rate for each shot in this clip?",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": false,
+            "pass": false
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.007,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official",
+            "read_season"
+          ],
+          "answer": {
+            "zh": "小史密斯命中率 55.4%。小史密斯对手其余两分命中率 45.6%。小史密斯对手三分命中率 36.7%。",
+            "en": "Jabari Smith Jr. defensive make rate is 55.4. Jabari Smith Jr. defensive other two-point percentage is 45.6. Jabari Smith Jr. defensive three-point percentage is 36.7.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json",
+              "season:2025-26:HOU:Jabari Smith Jr."
+            ]
+          },
+          "error": "",
+          "id": "en-smith",
+          "lang": "en",
+          "trap": false,
+          "question": "What are Jabari Smith Jr.'s defensive shooting numbers this season?",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": true,
+            "pass": true
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.007,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official",
+            "read_season"
+          ],
+          "answer": {
+            "zh": "克里斯蒂三分命中率 40.4%。",
+            "en": "Max Christie three-point percentage is 40.4.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json",
+              "season:2025-26:DAL:Max Christie"
+            ]
+          },
+          "error": "",
+          "id": "en-christie",
+          "lang": "en",
+          "trap": false,
+          "question": "What is Max Christie's season three-point percentage?",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": true,
+            "pass": true
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.005,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official"
+          ],
+          "answer": {
+            "zh": "数据里没有。",
+            "en": "The tools do not have that.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json"
+            ]
+          },
+          "error": "",
+          "id": "en-score",
+          "lang": "en",
+          "trap": false,
+          "question": "What was the score during this clip?",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": false,
+            "pass": false
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.005,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official"
+          ],
+          "answer": {
+            "zh": "数据里没有。",
+            "en": "The tools do not have that.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json"
+            ]
+          },
+          "error": "",
+          "id": "en-distance",
+          "lang": "en",
+          "trap": true,
+          "question": "How far away was the closest defender on the three?",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": true,
+            "pass": true
+          }
+        },
+        {
+          "ok": true,
+          "elapsed_s": 0.005,
+          "tools": [
+            "read_manifest",
+            "read_identity",
+            "read_official",
+            "read_official",
+            "read_season"
+          ],
+          "answer": {
+            "zh": "数据里没有。",
+            "en": "The tools do not have that.",
+            "sources": [
+              "structured/exam.json",
+              "identity/exam.json",
+              "official/2025-26/games/0022500356_playbyplay.json",
+              "season:2025-26"
+            ]
+          },
+          "error": "",
+          "id": "en-next",
+          "lang": "en",
+          "trap": true,
+          "question": "What was the result of the Mavericks' next game?",
+          "checks": {
+            "tools": true,
+            "zh": true,
+            "content": true,
+            "pass": true
+          }
+        }
+      ]
+    }
+  ]
+}

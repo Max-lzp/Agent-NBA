@@ -30,6 +30,14 @@ def attach(source: Path, picture: Path, work: Path, media_bucket: str, clip: str
     )
 
 
+def attach_script(source: Path, picture: Path, work: Path, clip: str, lines: list[dict]) -> dict:
+    import boto3
+
+    region = os.environ.get("AWS_REGION", "us-east-1")
+    polly = boto3.session.Session().client("polly", region_name=region)
+    return _tracks().dub_script(source, picture, work, clip=clip, lines=lines, polly=polly)
+
+
 def _tracks():
     lib = Path(__file__).resolve().with_name("commentary.py")
     if lib.is_file():

@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DEEP COURT · 产品首页</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=31">
 </head>
 <body>
+  <a class="readme-fab" href="/readme" aria-label="打开作品说明 Read Me">Read Me</a>
   <div class="court court-tr"></div>
   <div class="court court-bl"></div>
   <main class="page">
@@ -36,7 +37,7 @@
         <input id="url" type="url" placeholder="https://www.nba.com/game/dal-vs-hou-0022400556" aria-label="视频 URL">
         <button class="go" id="go" type="button">开始分析 →</button>
       </div>
-      <p class="hint" id="hint">平均处理速度约为比赛时长 0.3× · 处理完成自动跳转回放页并生成分享卡片</p>
+      <p class="hint" id="hint">一段 20 多秒的进攻回合约 5 分钟出结构化清单 · 处理完成自动跳转回放页</p>
     </section>
 
     <h2>为什么好用</h2>
@@ -73,7 +74,7 @@
     </div>
 
     <h2 id="arch-title">技术架构</h2>
-    <p class="arch-lead">录像不进应用服务器。浏览器经 CloudFront 进来，直传到 S3；分析编排在 AgentCore，事件写入 DynamoDB，回放页再按任务号取回。</p>
+    <p class="arch-lead">录像不进应用服务器。浏览器经 CloudFront 直传到 S3；事件只来自结构化清单，不让模型看图编事件。Bedrock AgentCore 负责校验清单、写入 DynamoDB，回放页再按任务号取回。</p>
     <ol class="pipe" aria-labelledby="arch-title">
       <li>
         <span class="step">01</span>
@@ -88,17 +89,17 @@
       <li>
         <span class="step">03</span>
         <b>理解</b>
-        <span>AgentCore 调 Bedrock：画面用 Qwen3-VL，事件用 Claude。</span>
+        <span>同一台 c7i.48xlarge 做追踪、记分牌识别、Qwen3 VL 认人，对上官方逐回合，写出结构化清单。</span>
       </li>
       <li>
         <span class="step">04</span>
-        <b>成片</b>
-        <span>同一台 c7i.48xlarge 跟踪、读记分牌并合成，成片直传网页桶。</span>
+        <b>校验</b>
+        <span>清单上传 S3，Lambda 调 Bedrock AgentCore 校验，事件写入 DynamoDB。</span>
       </li>
       <li>
         <span class="step">05</span>
         <b>回放</b>
-        <span>DynamoDB 里的事件画到时间线。中文解说和英文原声可以自己选。</span>
+        <span>事件画到时间线，成片打开即看，中文解说和英文原声可以自己选。</span>
       </li>
     </ol>
 
@@ -120,39 +121,39 @@
         <article>
           <h3>理解与编排</h3>
           <ul>
-            <li><b>AWS Lambda</b><span>建任务、分析、查询、解说</span></li>
-            <li><b>Bedrock AgentCore</b><span>分析运行时 DeepCourtAnalyst</span></li>
-            <li><b>Amazon Bedrock</b><span>Qwen3-VL 235B · Claude Sonnet 4.6</span></li>
+            <li><b>AWS Lambda</b><span>建任务、校验、查询、解说</span></li>
+            <li><b>Bedrock AgentCore</b><span>校验运行时 DeepCourtAnalyst</span></li>
+            <li><b>Amazon Bedrock</b><span>Qwen3 VL 认人 · Claude 短解说，不生成事件</span></li>
             <li><b>Amazon CloudWatch</b><span>日志、仪表盘、错误与限流告警</span></li>
           </ul>
         </article>
         <article>
-          <h3>跟踪与成片</h3>
+          <h3>追踪与认人</h3>
           <ul>
             <li><b>AWS Batch</b><span>c7i.48xlarge，192 vCPU，保持开着</span></li>
-            <li><b>Amazon EC2 · EBS</b><span>跟踪实例与加密系统盘</span></li>
-            <li><b>Amazon ECR</b><span>跟踪镜像 deepcourt-tracker</span></li>
-            <li><b>Textract · MediaConvert</b><span>记分牌文字，叠加层合成 1080p</span></li>
+            <li><b>Amazon EC2 · EBS</b><span>追踪实例与加密系统盘</span></li>
+            <li><b>Amazon ECR</b><span>追踪镜像 deepcourt-tracker</span></li>
+            <li><b>Rekognition · MediaConvert</b><span>认人第二票读号码 · 成片转码模板</span></li>
           </ul>
         </article>
         <article>
           <h3>解说与密钥</h3>
           <ul>
+            <li><b>Transcribe · Translate</b><span>英文原声转写并译成中文</span></li>
             <li><b>Amazon Polly</b><span>中文解说，Neural 知语</span></li>
             <li><b>AWS X-Ray</b><span>按任务号看处理段</span></li>
             <li><b>Secrets Manager</b><span>飞书、GitHub、快手密钥</span></li>
-            <li><b>Cost Explorer</b><span>按 project 标签看花费</span></li>
           </ul>
         </article>
       </div>
     </div>
-    <p class="tech-note">画面侧用 Ultralytics YOLO11 检测、ByteTrack 跟踪、FFmpeg 合成。整套基础设施用 AWS CDK（TypeScript）写成一个栈，权限按函数拆开，密钥不进仓库。</p>
+    <p class="tech-note">画面侧用 Ultralytics YOLO11 检测、ByteTrack 跟踪、本地 RapidOCR 读记分牌、FFmpeg 合成。整套基础设施用 AWS CDK（TypeScript）写成一个栈，权限按函数拆开，密钥不进仓库。</p>
     <footer class="foot">
-      <span class="foot-links"><span id="host">deepcourt.team04.cloudfront.net</span><a href="game.html">播放器样例</a><a href="/readme">作品说明</a><a href="arch.html">架构与开源合规</a></span>
+      <span class="foot-links"><span id="host">d2vzd2batw1eqe.cloudfront.net</span><a href="game.html">播放器样例</a><a href="/readme">作品说明</a><a href="arch.html">架构与开源合规</a></span>
       <b>TEAM 04 · 2026.10.09</b>
     </footer>
   </main>
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script src="config.js?v=2"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import * as cdk from 'aws-cdk-lib/core';
 import * as batch from 'aws-cdk-lib/aws-batch';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
@@ -5,12 +6,15 @@ import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as ecrAssets from 'aws-cdk-lib/aws-ecr-assets';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as mediaconvert from 'aws-cdk-lib/aws-mediaconvert';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import { buildTrackerImageEnabled } from './orchestration';
+import { BASKETBALL_TERMINOLOGY_NAME, basketballTerminologyArn, importBasketballTerminology } from './terminology';
 
 const TRACK_BOOTSTRAP = [
   'import os, boto3, runpy',
@@ -53,7 +57,13 @@ export function addP1(
     analyzeFn: lambda.Function;
     code: lambda.Code;
   },
-): void {
+): {
+  queue: batch.IJobQueue;
+  jobDefinition: batch.IJobDefinition;
+  dashboard: cloudwatch.Dashboard;
+  jobRole: iam.IRole;
+  executionRole: iam.IRole;
+} {
   const repo = new ecr.Repository(stack, 'TrackerRepo', {
     repositoryName: 'deepcourt-tracker',
     imageScanOnPush: true,
@@ -142,6 +152,14 @@ export function addP1(
     ],
     resources: ['*'],
   }));
+  // 服务授权参考里 TranslateText 的资源类型是可选的 terminology / parallel-data，不是必填。
+  // 不带术语表的回退请求没有术语表这条资源，Resource 仍要按 * 保留在上面的语句里。
+  // 带上术语表时另要 GetTerminology。这一条限定到本表 ARN（官方格式带 /LATEST）。
+  // TranslateText 再授一次同一 ARN，带表的授权请求能对上这条资源。
+  jobRole.addToPolicy(new iam.PolicyStatement({
+    actions: ['translate:GetTerminology', 'translate:TranslateText'],
+    resources: [basketballTerminologyArn(stack)],
+  }));
   jobRole.addToPolicy(new iam.PolicyStatement({
     actions: ['cloudfront:CreateInvalidation'],
     resources: [`arn:aws:cloudfront::${stack.account}:distribution/${props.distribution.distributionId}`],
@@ -155,10 +173,14 @@ export function addP1(
   });
   repo.grantPull(executionRole);
 
+  // 默认仍指向已经烤好的 :ready，TrackJob / GpuCompute / TrackQueue 的逻辑 ID 不动。
+  // 干净账号没有这个标签时：-c buildTrackerImage=true，从仓库根目录的 inference/Dockerfile 构建。
+  const image = trackerImage(stack, repo, executionRole);
+  const terminology = importBasketballTerminology(stack);
   const jobDef = new batch.EcsJobDefinition(stack, 'TrackJob', {
     jobDefinitionName: 'deepcourt-track',
     container: new batch.EcsEc2ContainerDefinition(stack, 'TrackContainer', {
-      image: ecs.ContainerImage.fromEcrRepository(repo, 'ready'),
+      image,
       cpu: 180,
       memory: cdk.Size.gibibytes(340),
       jobRole,
@@ -170,11 +192,14 @@ export function addP1(
         DISTRIBUTION_ID: props.distribution.distributionId,
         OMP_NUM_THREADS: '180',
         MKL_NUM_THREADS: '180',
+        TRANSLATE_TERMINOLOGY: BASKETBALL_TERMINOLOGY_NAME,
       },
     }),
     retryAttempts: 1,
   });
+  jobDef.node.addDependency(terminology);
 
+  // 没有事件源。自动提交只在 orchestration.ts 的状态机里。留下这个函数，避免改掉已经部署的逻辑 ID。
   const submitFn = new lambda.Function(stack, 'SubmitTrack', {
     runtime: lambda.Runtime.PYTHON_3_12,
     handler: 'submit_track.handler.handler',
@@ -349,4 +374,33 @@ export function addP1(
   new cdk.CfnOutput(stack, 'ConvertRoleArn', { value: convertRole.roleArn });
   new cdk.CfnOutput(stack, 'AnalyzeErrorAlarmName', { value: errorAlarm.alarmName });
   new cdk.CfnOutput(stack, 'BedrockThrottleAlarmName', { value: throttleAlarm.alarmName });
+  return { queue, jobDefinition: jobDef, dashboard, jobRole, executionRole };
+}
+
+function trackerImage(stack: cdk.Stack, repo: ecr.IRepository, executionRole: iam.IRole): ecs.ContainerImage {
+  if (!buildTrackerImageEnabled(stack)) {
+    return ecs.ContainerImage.fromEcrRepository(repo, 'ready');
+  }
+  const asset = new ecrAssets.DockerImageAsset(stack, 'TrackerImage', {
+    directory: path.join(__dirname, '../..'),
+    file: 'inference/Dockerfile',
+    platform: ecrAssets.Platform.LINUX_AMD64,
+    exclude: [
+      '.git',
+      'cdk/node_modules',
+      'cdk/cdk.out',
+      'cdk/dist',
+      'data',
+      'pipeline/vision/.venv',
+      'pipeline/vision/work',
+      'pipeline/vision/models',
+      'pipeline/vision/results',
+      'web/assets',
+      '**/*.mp4',
+      '**/*.pt',
+      '**/__pycache__',
+    ],
+  });
+  asset.repository.grantPull(executionRole);
+  return ecs.ContainerImage.fromDockerImageAsset(asset);
 }

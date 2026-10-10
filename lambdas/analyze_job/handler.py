@@ -1,6 +1,7 @@
-"""结构化清单落到 structured/{jobId}.json 后，交给 AgentCore 取回校验，再写入事件表。
+"""结构化清单落到 structured/{jobId}.json 后，交给 AgentCore 分析师，再写入事件表。
 
-原始视频上传只把任务标成「等待本地追踪」；事件只来自本地 CV 管线的清单，不再让模型看图生成。
+分析师冷启动或调用失败时，仍由这里直接读清单写事件。清单校验失败则任务标为失败，不把坏清单写进页面。
+原始视频上传只把任务标成「等待本地追踪」；事件只来自清单，不让模型看图编事件。
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from urllib.parse import unquote_plus
 import boto3
 from boto3.dynamodb.conditions import Key
 
+import agent_client
 import common
 
 JOBS_TABLE = os.environ["JOBS_TABLE"]
@@ -45,6 +47,9 @@ def handler(event, _context):
         stream, runtime = _call_agent(job_id, key)
         if stream is None:
             stream, runtime = _read_stream(key), "lambda"
+            problems = _manifest_problems(stream)
+            if problems:
+                raise ValueError("清单校验未通过：" + "；".join(problems))
         events = common.timeline_from_stream(stream)
         _replace_events(job_id, events)
         _update_job(
@@ -94,31 +99,47 @@ def _read_stream(key: str) -> dict:
     return json.loads(_s3.get_object(Bucket=MEDIA_BUCKET, Key=key)["Body"].read())
 
 
+def _manifest_problems(stream) -> list[str]:
+    if not isinstance(stream, dict):
+        return ["清单不是 JSON 对象"]
+    problems = []
+    if stream.get("version") != "0.1":
+        problems.append("version 应为 0.1")
+    possessions = stream.get("possessions")
+    if not isinstance(possessions, list) or not possessions:
+        return problems + ["possessions 为空"]
+    for poss in possessions:
+        if poss.get("offense_team") not in {"HOU", "DAL"}:
+            problems.append(f"{poss.get('possession_id')} 进攻方不是 HOU/DAL")
+        if not isinstance(poss.get("events"), list):
+            problems.append(f"{poss.get('possession_id')} 缺少 events")
+    return problems
+
+
 def _call_agent(job_id: str, key: str) -> tuple[dict | None, str]:
-    if not AGENT_RUNTIME_ARN:
+    # 三次读取加起来留在 240 秒的 Lambda 超时里面，剩下的时间写 DynamoDB。
+    data, error = agent_client.invoke_runtime(
+        AGENT_RUNTIME_ARN,
+        {"jobId": job_id, "bucket": MEDIA_BUCKET, "key": key},
+        job_id=job_id,
+        kind="pipeline",
+        region=REGION,
+        read_timeout=70,
+        attempts=3,
+        budget=200,
+    )
+    if data is None:
+        if error:
+            print(json.dumps({"jobId": job_id, "agentError": error[:400]}, ensure_ascii=False))
         return None, ""
-    client = boto3.client("bedrock-agentcore", region_name=REGION)
-    session_id = (job_id.replace("-", "") + ("0" * 40))[:40]
-    try:
-        resp = client.invoke_agent_runtime(
-            agentRuntimeArn=AGENT_RUNTIME_ARN,
-            runtimeSessionId=session_id,
-            payload=json.dumps({"jobId": job_id, "bucket": MEDIA_BUCKET, "key": key}).encode("utf-8"),
-            qualifier="DEFAULT",
-        )
-    except Exception as exc:  # noqa: BLE001 — Agent 未就绪时由 Lambda 直接读清单
-        print(json.dumps({"jobId": job_id, "agentError": str(exc)[:400]}))
-        return None, ""
-    raw = resp.get("response")
-    if hasattr(raw, "read"):
-        raw = raw.read()
-    if isinstance(raw, (bytes, bytearray)):
-        raw = raw.decode("utf-8")
-    data = json.loads(raw)
-    if not isinstance(data, dict):
-        return None, ""
-    if not data.get("ok"):
+    if data.get("reason") == "invalid_manifest":
         raise ValueError(f"清单校验未通过：{data.get('error') or '未知原因'}")
+    if not data.get("ok") or data.get("stream") is None:
+        print(json.dumps({
+            "jobId": job_id,
+            "agentError": str(data.get("error") or "分析师没有交还清单")[:400],
+        }, ensure_ascii=False))
+        return None, ""
     return data.get("stream"), str(data.get("runtime") or "bedrock-agentcore")
 
 

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import time
@@ -213,7 +214,7 @@ COMMENTARY_ZH = {
     "He has played very hard tonight.":
         "他今晚打得很猛。",
     "Eason in a one-on-one against Marshall drives Marshall defended well so he forced him to pass it to Durant outside.":
-        "伊森一对一打马歇尔，杀进去，马歇尔防住了，逼他把球交到外线的杜兰特。",
+        "伊森一对一打马绍尔，杀进去，马绍尔防住了，逼他把球交到外线的杜兰特。",
     "Here comes Thompson off one foot at the end of the shot clock hits a jumper at the free throw line.":
         "进攻时间结束前，阿门单脚起跳，罚球线跳投命中。",
 }
@@ -360,17 +361,95 @@ def _transcribe(clip: str, wav: Path, bucket: str) -> dict:
     return json.loads(local.read_text(encoding="utf-8"))
 
 
-def _translate(text: str) -> str:
-    def once(chunk: str) -> str:
-        result = json.loads(_aws([
+# 术语表可选。没设 TRANSLATE_TERMINOLOGY 时，请求体和现在一样。
+# 表不存在或没有权限时去掉术语表再译一次；这次进程里随后的句子也不再带上，避免整段解说失败。
+_terminology_dropped = False
+
+
+def reset_terminology_fallback() -> None:
+    global _terminology_dropped
+    _terminology_dropped = False
+
+
+def translate_terminology_names() -> list[str]:
+    name = os.environ.get("TRANSLATE_TERMINOLOGY", "").strip()
+    if not name or _terminology_dropped:
+        return []
+    return [name]
+
+
+def _terminology_error(exc: BaseException) -> bool:
+    code = ""
+    response = getattr(exc, "response", None)
+    if isinstance(response, dict):
+        code = str((response.get("Error") or {}).get("Code") or "")
+    blob = f"{code}\n{exc}".lower()
+    if code in {
+        "ResourceNotFoundException",
+        "AccessDeniedException",
+        "UnauthorizedException",
+        "AccessDenied",
+        "UnauthorizedOperation",
+    }:
+        return True
+    if "resourcenotfoundexception" in blob or "accessdeniedexception" in blob:
+        return True
+    if "terminolog" not in blob:
+        return False
+    return any(hint in blob for hint in (
+        "not found", "does not exist", "doesn't exist", "no such",
+        "not authorized", "unauthorized", "access denied", "permission",
+        "forbidden", "invalid",
+    ))
+
+
+def translate_with_optional_terminology(call):
+    """call(names) 收到术语表名列表；不使用术语表时收到 None。"""
+    global _terminology_dropped
+    names = translate_terminology_names()
+    if not names:
+        return call(None)
+    try:
+        return call(names)
+    except (Exception, SystemExit) as exc:
+        if not _terminology_error(exc):
+            raise
+        _terminology_dropped = True
+        return call(None)
+
+
+def boto_translate_chunk(translate, chunk: str) -> str:
+    def call(names: list[str] | None) -> str:
+        kwargs = {
+            "Text": chunk,
+            "SourceLanguageCode": "en",
+            "TargetLanguageCode": "zh",
+        }
+        if names:
+            kwargs["TerminologyNames"] = list(names)
+        return translate.translate_text(**kwargs)["TranslatedText"]
+
+    return translate_with_optional_terminology(call)
+
+
+def cli_translate_chunk(chunk: str) -> str:
+    def call(names: list[str] | None) -> str:
+        args = [
             "translate", "translate-text",
             "--source-language-code", "en",
             "--target-language-code", "zh",
             "--text", chunk,
-        ]))
+        ]
+        if names:
+            args.extend(["--terminology-names", *names])
+        result = json.loads(_aws(args))
         return result["TranslatedText"]
 
-    return _translate_text(text, once)
+    return translate_with_optional_terminology(call)
+
+
+def _translate(text: str) -> str:
+    return _translate_text(text, cli_translate_chunk)
 
 
 def transcribe_job_name(clip: str, now: int) -> str:
@@ -507,6 +586,72 @@ def dub_mp4s(
     return meta
 
 
+BED_VOLUME = 0.12  # 原片只留现场环境声：原解说压到很低，不和配音抢
+EN_VOICE_ID = "Matthew"
+
+
+def dub_script(source: Path, picture: Path, work: Path, *, clip: str, lines: list[dict], polly) -> dict:
+    """按事件时间轴的解说稿配两条音轨。原片音轨压低当底，配音一句句铺在各自的时刻。"""
+    if not lines:
+        raise SystemExit(f"{clip} 没有解说稿")
+    work.mkdir(parents=True, exist_ok=True)
+    duration = media_duration(picture)
+    files, scripts = {}, {}
+    for lang, voice, code in (("zh", VOICE_ID, "cmn-CN"), ("en", EN_VOICE_ID, "en-US")):
+        placed = []
+        for index, line in enumerate(lines):
+            text = (line.get(lang) or "").strip()
+            if not text:
+                continue
+            speech = work / f"{lang}-line-{index}.mp3"
+            audio = polly.synthesize_speech(Engine=ENGINE, LanguageCode=code, VoiceId=voice,
+                                            OutputFormat="mp3", Text=text, TextType="text")
+            speech.write_bytes(audio["AudioStream"].read())
+            nxt = next((float(row["t"]) for row in lines[index + 1:] if (row.get(lang) or "").strip()), duration)
+            placed.append((speech, float(line["t"]), max(0.6, min(nxt, duration) - float(line["t"]) - 0.05)))
+        track = work / f"{lang}.m4a"
+        _mix_over(source, placed, duration, track)
+        out = work / f"{lang}.mp4"
+        _remux(picture, track, out)
+        files[lang] = out
+        scripts[lang] = ("" if lang == "zh" else " ").join((row.get(lang) or "").strip() for row in lines)
+    return {
+        "scriptEn": scripts["en"],
+        "scriptZh": scripts["zh"],
+        "tracks": {"zh": f"assets/{clip}-zh.mp4", "en": f"assets/{clip}-en.mp4"},
+        "voice": "中文和英文解说按事件时间轴写稿，Amazon Polly 配音，原片声音压低只留现场环境声。",
+        "files": files,
+    }
+
+
+def _mix_over(source: Path, lines: list[tuple[Path, float, float]], duration_s: float, dest: Path) -> None:
+    cmd = [
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-f", "lavfi", "-t", f"{duration_s:.3f}", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100",
+        "-i", str(source),
+    ]
+    filters = [
+        "[0:a]aformat=channel_layouts=stereo[a0]",
+        f"[1:a]aformat=channel_layouts=stereo,volume={BED_VOLUME},atrim=end={duration_s:.3f}[bed]",
+    ]
+    labels = ["[a0]", "[bed]"]
+    for index, (speech, start_s, slot_s) in enumerate(lines, start=2):
+        rate = playback_rate(media_duration(speech), slot_s)
+        tempo = f"atempo={rate:.4f}," if rate > 1.01 else ""
+        cmd.extend(["-itsoffset", f"{max(0.0, start_s):.3f}", "-i", str(speech)])
+        filters.append(f"[{index}:a]aformat=channel_layouts=stereo,{tempo}atrim=duration={slot_s:.3f}[a{index}]")
+        labels.append(f"[a{index}]")
+    filters.append(f"{''.join(labels)}amix=inputs={len(labels)}:duration=first:dropout_transition=0:normalize=0[out]")
+    cmd.extend([
+        "-filter_complex", ";".join(filters),
+        "-map", "[out]",
+        "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-ac", "2",
+        str(dest),
+    ])
+    _run(cmd)
+    _assert_playable(dest, duration_s)
+
+
 def _transcribe_boto(clip: str, wav: Path, bucket: str, s3, transcribe, work: Path) -> dict:
     key = f"commentary/asr/{clip}.wav"
     s3.upload_file(str(wav), bucket, key, ExtraArgs={"ContentType": "audio/wav"})
@@ -539,10 +684,7 @@ def _transcribe_boto(clip: str, wav: Path, bucket: str, s3, transcribe, work: Pa
 
 def _speak_boto(text: str, dest: Path, polly, translate) -> None:
     chinese = prefer_broadcast(text, "") or _translate_text(
-        text,
-        lambda chunk: translate.translate_text(
-            Text=chunk, SourceLanguageCode="en", TargetLanguageCode="zh",
-        )["TranslatedText"],
+        text, lambda chunk: boto_translate_chunk(translate, chunk),
     )
     if len(chinese) > 3000:
         raise SystemExit("中文解说超过 Polly Neural 单次 3000 字")

@@ -98,13 +98,156 @@
     return "官方记录";
   }
 
+  const POS_ZH = {
+    Guard: "后卫", Forward: "前锋", Center: "中锋",
+    "Guard-Forward": "后卫/前锋", "Forward-Guard": "前锋/后卫",
+    "Forward-Center": "前锋/中锋", "Center-Forward": "中锋/前锋",
+  };
+
+  function formatPct(value) {
+    if (value === null || value === undefined || value === "") return "";
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "";
+    return `${(number * 100).toFixed(1)}%`;
+  }
+
+  function attempts(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function shownPct(pct, fga) {
+    const taken = attempts(fga);
+    if (taken === null || taken <= 0) return "";
+    return formatPct(pct);
+  }
+
+  function countText(fgm, fga) {
+    const makes = attempts(fgm);
+    const taken = attempts(fga);
+    if (makes === null || taken === null || taken <= 0) return "";
+    const trim = (number) => (Number.isInteger(number) ? String(number) : String(number));
+    return `${trim(makes)}/${trim(taken)}`;
+  }
+
+  function bandOf(shot) {
+    const zone = shot.zoneKey || shot.shot_zone || "";
+    const threes = { top3: 1, corner3_l: 1, corner3_r: 1, wing3_l: 1, wing3_r: 1 };
+    const twos = { restricted: 1, paint: 1, midrange: 1 };
+    const value = attempts(shot.value);
+    if (value === 3 || threes[zone]) return "three";
+    const distance = attempts(shot.distance != null ? shot.distance : shot.distance_ft);
+    if (distance !== null) {
+      if (distance < 6) return "near";
+      if (value === 2 || twos[zone]) return "other_two";
+      return null;
+    }
+    if (zone === "restricted") return "near";
+    if (zone === "midrange") return "other_two";
+    return null;
+  }
+
+  function cmText(value) {
+    const number = attempts(value);
+    if (number === null || number <= 0) return "";
+    return `${number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "")} cm`;
+  }
+
+  function positiveInt(value) {
+    const number = attempts(value);
+    return Number.isInteger(number) && number > 0 ? number : null;
+  }
+
+  function draftText(profile) {
+    if (!profile) return "";
+    if (profile.draft_status === "undrafted") return "落选";
+    const year = positiveInt(profile.draft_year);
+    const round = positiveInt(profile.draft_round);
+    const pick = positiveInt(profile.draft_overall_pick);
+    let text = year ? `${year}年` : "";
+    if (round && pick) text += `第${round}轮第${pick}顺位`;
+    else if (round) text += `第${round}轮`;
+    else if (pick) text += `第${pick}顺位`;
+    return text;
+  }
+
+  function profileLine(profile) {
+    if (!profile) return "";
+    const parts = [];
+    const feet = profile.height_ft_in || "";
+    const cm = cmText(profile.height_cm);
+    if (feet && cm) parts.push(`身高 ${feet}（${cm}）`);
+    else if (feet) parts.push(`身高 ${feet}`);
+    else if (cm) parts.push(`身高 ${cm}`);
+    const position = profile.position_zh || POS_ZH[profile.position] || "";
+    if (position) parts.push(position);
+    const draft = draftText(profile);
+    if (draft) parts.push(draft);
+    const span = cmText(profile.wingspan_cm);
+    if (span) parts.push(`臂展 ${span}`);
+    return parts.join(" · ");
+  }
+
+  function diffPhrase(band, row) {
+    if (band === "other_two" || !row) return "";
+    const diff = row.diff_from_opponents_normal_official;
+    if (diff === null || diff === undefined || diff === "") return "";
+    const number = Number(diff);
+    if (!Number.isFinite(number)) return "";
+    const points = Math.abs(number * 100);
+    const normal = formatPct(row.opponents_normal_fg_pct_official);
+    const direction = number < 0 ? "低" : "高";
+    const base = normal ? `平时 ${normal}` : "平时";
+    if (points.toFixed(1) === "0.0") return `对手在他面前与${base}持平`;
+    if (normal) return `对手在他面前比平时 ${normal} ${direction} ${points.toFixed(1)} 个百分点`;
+    return `对手在他面前比平时${direction} ${points.toFixed(1)} 个百分点`;
+  }
+
+  function zoneHtml(zone) {
+    if (!zone || !zone.band) return "";
+    const bands = zone.defender_bands || [];
+    let html = "";
+    if (bands.length) {
+      const cells = bands.map((band) => {
+        const pct = shownPct(band.opponent_fg_pct, band.opponent_fga);
+        const count = countText(band.opponent_fgm, band.opponent_fga);
+        const zero = attempts(band.opponent_fga) === 0;
+        const value = pct || (zero ? "无出手" : "");
+        const on = band.band === zone.band ? "is-shot" : "";
+        const sub = [count, band.band === zone.band ? "这一投" : ""].filter(Boolean).join(" · ");
+        return `<span class="${on}"><b>${band.label}</b>${value}${sub ? `<small>${sub}</small>` : ""}</span>`;
+      }).join("");
+      html += `<p class="zone-note">对手命中率，越低越好</p><div class="bands">${cells}</div>`;
+    }
+    const current = zone.defender || {};
+    const pct = shownPct(current.opponent_fg_pct, current.opponent_fga);
+    const count = countText(current.opponent_fgm, current.opponent_fga);
+    if (!bands.length && current.player_id && !pct && !count) {
+      html += `<p>这一投${zone.label || ""}没有可用的对手命中率</p>`;
+    }
+    const phrase = diffPhrase(zone.band, current);
+    if (phrase) html += `<p class="zone-diff">${phrase}</p>`;
+    const shooter = zone.shooter || {};
+    const shooterPct = shownPct(shooter.fg_pct, shooter.fga);
+    const shooterCount = countText(shooter.fgm, shooter.fga);
+    if (shooterPct || shooterCount) {
+      html += `<p>投篮人同区${zone.label || ""}${shooterPct ? ` ${shooterPct}` : ""}${shooterCount ? `（${shooterCount}）` : ""}</p>`;
+    }
+    return html;
+  }
+
   function cardHtml(pack, shot, left) {
     const wrap = (line) => (line.startsWith("<p") ? line : `<p>${line}</p>`);
     const offense = offenseLines(shot).map(wrap).join("");
-    const defense = defenseLines(shot).map(wrap).join("");
+    const defense = defenseLines(shot);
+    const lead = defense.slice(0, 1).map(wrap).join("");
+    const rest = defense.slice(1).map(wrap).join("");
+    const shooterBio = profileLine(shot.shooterProfile);
+    const defenderBio = profileLine(shot.defender && shot.defender.profile);
     return `<div class="freeze-head"><b>出手瞬间</b><span>定格 ${Math.ceil(left / 1000)} 秒</span></div>
-      <h3><i class="dot red"></i>${shot.name} #${shot.number}<small>${shooterSource(shot)}</small></h3>${offense}
-      <h3><i class="dot gold"></i>防守</h3>${defense}`;
+      <h3><i class="dot red"></i>${shot.name} #${shot.number}<small>${shooterSource(shot)}</small></h3>${shooterBio ? `<p class="bio">${shooterBio}</p>` : ""}${offense}
+      <h3><i class="dot gold"></i>防守</h3>${lead}${defenderBio ? `<p class="bio">${defenderBio}</p>` : ""}${rest}${zoneHtml(shot.seasonZone)}`;
   }
 
   function ellipse(ctx, box, scale, ratio, color, fill, dashed) {
@@ -219,5 +362,8 @@
     return svg + caption;
   }
 
-  window.DeepFreeze = { FREEZE_MS, candidates, goalTime, cardHtml, drawMarks, heatmap };
+  window.DeepFreeze = {
+    FREEZE_MS, candidates, goalTime, cardHtml, drawMarks, heatmap,
+    formatPct, shownPct, bandOf, profileLine, zoneHtml, diffPhrase,
+  };
 })();

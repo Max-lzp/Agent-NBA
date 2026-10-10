@@ -13,13 +13,16 @@
 浏览器打开 CloudFront
   → index.html 选视频或粘贴 URL
   → POST /api/jobs（CloudFront 转到 API Gateway）
-  → Lambda create_job 写 DynamoDB JobsTable，返回 S3 预签名 PUT
-  → 浏览器把视频直传到 S3 raw/{jobId}/
-  → S3 事件触发 Lambda analyze_job，任务状态 PENDING → TRACKING（等待本地追踪）
-  → 本地 CV 管线（YOLO + ByteTrack、号码 OCR、记分牌 OCR、事件流引擎）产出结构化清单
-  → 清单上传到 S3 structured/{jobId}.json，再次触发 analyze_job
-  → analyze_job 调用 Bedrock AgentCore Runtime（DeepCourtAnalyst），Agent 取回并校验清单
-  → 清单转成页面事件写入 DynamoDB EventsTable，状态 ANALYZING → DONE / FAILED
+  → Lambda create_job 写 DynamoDB JobsTable，返回 S3 预签名 PUT（不启动状态机）
+  → 浏览器把视频直传到 S3 raw/{jobId}/文件名
+  → EventBridge 只把这一次对象创建交给 Step Functions deepcourt-film
+  → 状态机把任务写成 TRACKING，Batch SubmitJob 等到追踪、记分牌、成片和音轨结束
+  → 状态机调用 analyze_job；structured/ 不再发 S3 通知
+  → analyze_job 调用 Bedrock AgentCore Runtime（DeepCourtAnalyst）。分析师校验清单，并用 Bedrock Converse 写解说
+  → 解说写到 S3 analysis/{jobId}.json。清单转成页面事件写入 DynamoDB EventsTable
+  → 运行时冷启动或调用失败时，analyze_job 仍直接读清单写事件
+  → 状态机核对成片和 replay/clips.js，失效这一支片子的 CloudFront 路径，任务写成 DONE
+  → 失败时写成 FAILED 并记下步骤
   → game.html?jobId= 轮询 GET /jobs/{id} 与 GET /jobs/{id}/events，时间线可点，暂停展开防守压力盒
 ```
 
@@ -32,15 +35,17 @@ URL 模式不经过 S3：create_job 只把任务标成 TRACKING，等本地追�
 | 服务 | 代码位置 | 为什么是它 |
 | --- | --- | --- |
 | CDK / CloudFormation | `cdk/` | 硬性要求。一个栈 `Team04DeepCourt`，避免跨栈导出互相卡死。部署到本队账号时不挂主办方权限边界；只有再部署回已关闭的共享账号才挂 `NBAHackathonParticipantBoundary`。标签 `team=04` `stage=prod` `project=deepcourt`。 |
-| IAM | CDK `grant*` 与 Agent 角色 | create 只能写 Jobs 表和 `raw/*`；get 只能读 Jobs 和 `raw/*`；list 只能读 Events；analyze 读 `structured/*`、写 Events、调 AgentCore；Agent 角色只读 `structured/*`。 |
-| S3 | `MediaBucket` 前缀 `raw/`（原始视频）、`structured/`（结构化清单），`WebBucket` | 视频不经应用服务器，浏览器拿预签名地址直传。网页桶不公开，只给 CloudFront OAC。 |
+| IAM | CDK `grant*` 与 Agent 角色 | create 只能写 Jobs 表和 `raw/*`；get 只能读 Jobs 和 `raw/*`；list 只能读 Events；analyze 读 `structured/*`、写 Events、调 AgentCore；问分析师的 Lambda 读 `analysis/*` 并调 AgentCore；Agent 角色读 `structured/*`、`official/*`、`identity/*`，写 `analysis/*`，并可 InvokeModel / Converse 调用 Claude Sonnet 4.6 的 global 推理配置和底层模型。 |
+| S3 | `MediaBucket` 前缀 `raw/`（原始视频）、`structured/`（结构化清单）、`official/`、`identity/`、`analysis/`（分析师解说），`WebBucket` | 视频不经应用服务器，浏览器拿预签名地址直传。网页桶不公开，只给 CloudFront OAC。解说由分析师写回媒体桶，页面经 `GET /agent/analysis/{jobId}` 读取。 |
 | DynamoDB | `JobsTable`（PK jobId），`EventsTable`（PK jobId，SK `TS#序号`） | 任务状态机和事件列表分开，回放页按 jobId 查询。 |
-| Lambda | `lambdas/create_job` `analyze_job` `get_job` `list_events` | 四个入口对应建任务、分析、读状态、读事件。日志进 CloudWatch Logs，保留 7 天。 |
-| API Gateway | `JobsApi` REST：`POST /jobs`，`GET /jobs/{id}`，`GET /jobs/{id}/events` | 和组委会样例一样用 REST API。浏览器不直连执行地址，走 CloudFront 的 `/api/*`。 |
+| Lambda | `lambdas/create_job` `analyze_job` `get_job` `list_events` `ask_agent` | 建任务、分析、读状态、读事件、问分析师。日志进 CloudWatch Logs，保留 7 天。 |
+| API Gateway | `JobsApi` REST：`POST /jobs`，`GET /jobs/{id}`，`GET /jobs/{id}/events`，`POST /agent/ask`，`GET /agent/analysis/{jobId}` | 和组委会样例一样用 REST API。浏览器不直连执行地址，走 CloudFront 的 `/api/*`。 |
 | Bedrock | `lambdas/commentary` | 事件接口可以用 Claude 写短解说，不参与生成事件。页面上的中文音轨不走这里，见 pipeline-map 第 10 步。 |
-| Bedrock AgentCore | `AWS::BedrockAgentCore::Runtime` `DeepCourtAnalyst` | 硬性要求：分析编排跑在 AgentCore，而不是笔记本上的循环。Lambda 用 `bedrock-agentcore:InvokeAgentRuntime` 调用它；Agent 负责取回、校验结构化清单，不调模型；Agent 不可用时 Lambda 直接读清单，页面不会停在 ANALYZING。 |
+| Bedrock AgentCore | `AWS::BedrockAgentCore::Runtime` `DeepCourtAnalyst` | 硬性要求：分析师跑在 AgentCore，而不是笔记本上的循环。运行时用 Bedrock Converse 调 `global.anthropic.claude-sonnet-4-6`，自己决定查清单、官方逐回合、赛季三区还是认人结果，再把解说写到 `analysis/`。Lambda 用 `bedrock-agentcore:InvokeAgentRuntime` 调用它。运行时不可用时 Lambda 直接读清单，页面不会停在 ANALYZING。 |
 | CloudFront | `Site` | 硬性要求的作品链接。默认行为是网页桶，函数把 `/readme` 指到 `readme.html`；`/api/*` 转到 API Gateway，函数去掉 `/api` 前缀。 |
 | CloudWatch Logs | 每个 Lambda 的日志组 | 分析日志带 jobId，排错不用进机器。仪表盘留到 P1。 |
+| Step Functions | `cdk/lib/orchestration.ts` 状态机 `deepcourt-film` | 标准工作流把收片、Batch、校验和发布串成一条。DynamoDB、Batch、Lambda、S3、CloudFront 用服务直连，不另包一层提交作业的 Lambda。失败把 Jobs 写成 FAILED。 |
+| EventBridge | 同一文件，规则 `deepcourt-raw-upload` | 只有媒体桶 `raw/` 的对象创建会启动状态机。`create_job` 不调用它，避免上传前后各交一次 Batch。 |
 | STS | 角色信任策略 | Lambda 信任 `lambda.amazonaws.com`，Agent 信任 `bedrock-agentcore.amazonaws.com`。部署身份用 profile `team04`。 |
 
 区域只使用 `us-east-1`。当前栈 `Team04DeepCourt` 建在参赛账号 `382918437747`（profile `nba`）。本队 SSO 账号 `405496568869`（profile `team04`）不再作为部署目标。主办方共享账号 `278477606068` 已关闭。
@@ -51,15 +56,15 @@ URL 模式不经过 S3：create_job 只把任务标成 TRACKING，等本地追�
 
 ## P1（代码在同一栈。有没有建出来以 pipeline-map.md 为准）
 
-上下文 `enableP1=false` 可以整段跳过。GPU 配额或 Batch 服务角色卡住时，用这个开关先把 P0 部署出去。跟踪作业不由 `analyze_job` 调用。
+上下文 `enableP1=false` 可以整段跳过。GPU 配额或 Batch 服务角色卡住时，用这个开关先把 P0 部署出去。跟踪作业不由 `analyze_job` 调用。默认由状态机提交；`-c enableOrchestration=false` 时不接这条自动路径。
 
 | 服务 | 代码位置 | 为什么是它 |
 | --- | --- | --- |
 | ECR | `TrackerRepo` `deepcourt-tracker` | 跟踪镜像的仓库。镜像定义在 `inference/`，推送要等账号恢复。 |
-| Batch + EC2 + EBS | `GpuCompute` c7i.48xlarge，启动模板 gp3 1000GB，队列 `deepcourt-track` | G/VT 配额为 0，跟踪改用标准配额里最大的 CPU 实例（192 vCPU，环境上限 256）。最低 vCPU 保持 192，下一支片子不用等开机。镜像由这台机器烤进 ECR。`submit_track` 单独提交作业。 |
+| Batch + EC2 + EBS | `GpuCompute` c7i.48xlarge，启动模板 gp3 1000GB，队列 `deepcourt-track` | G/VT 配额为 0，跟踪改用标准配额里最大的 CPU 实例（192 vCPU，环境上限 256）。最低 vCPU 保持 192，下一支片子不用等开机。默认镜像仍是 ECR `deepcourt-tracker:ready`。自动提交在状态机里；`submit_track` 没有事件源，留着是为了不改已经部署的函数。 |
 | Textract | `lambdas/ocr_scoreboard` | 读记分牌帧上的比分、节次、时钟。解析失败置信度记 0。 |
 | MediaConvert | 模板 `deepcourt-render-template` | 把 PNG 叠加层合成 1080p MP4，写到 `rendered/`。 |
-| CloudWatch | 仪表盘 `deepcourt-overview`，两条告警 | 看分析吞吐、延迟、Bedrock 限流。告警先不接通知。 |
+| CloudWatch | 仪表盘 `deepcourt-overview`，两条告警 | 看分析吞吐、延迟、Bedrock 限流，以及状态机执行成功、失败和耗时。告警先不接通知。 |
 
 ## P2（代码在同一栈，尚未部署）
 

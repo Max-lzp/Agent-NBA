@@ -1,3 +1,5 @@
+# 构建上下文是仓库根目录：docker build -f inference/Dockerfile .
+# CDK -c buildTrackerImage=true 用这份文件。主机上的扁平 bootstrap/bake/ 不要直接换上来。
 FROM public.ecr.aws/docker/library/python:3.12-slim
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -8,12 +10,12 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/track
-COPY requirements.txt ./
+COPY inference/requirements.txt ./
 RUN python3 -m pip install --no-cache-dir -r requirements.txt \
   && python3 -c "from rapidocr_onnxruntime import RapidOCR; RapidOCR(det_limit_side_len=640)"
-COPY track.py run_job.py dub.py ./
-COPY scoreboard.py clips.json ./vision/
-COPY web/game.html web/game.js ./web/
-COPY models/ ./models/
+COPY inference/track.py inference/run_job.py inference/dub.py ./
+COPY pipeline/vision/scoreboard.py inference/clips.json ./vision/
+COPY web/game.html web/game.js web/styles.css ./web/
 
+# 权重不进镜像。作业从 s3://$MEDIA_BUCKET/bootstrap/models/ 拉取。
 CMD ["python3", "/opt/track/run_job.py"]
