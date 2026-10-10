@@ -4,13 +4,13 @@ const TEAM_MARK = {
     name: "独行侠",
     jersey: "深色衣",
     swatch: "dark",
-    logo: "https://cdn.nba.com/logos/nba/1610612742/global/L/logo.svg",
+    logo: "brands/dal.svg?v=1",
   },
   HOU: {
     name: "火箭",
     jersey: "白衣",
     swatch: "white",
-    logo: "https://cdn.nba.com/logos/nba/1610612745/global/L/logo.svg",
+    logo: "brands/hou.svg?v=1",
   },
 };
 const HEADSHOTS = {
