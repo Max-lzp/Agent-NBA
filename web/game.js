@@ -109,6 +109,7 @@ const state = {
   watch: params.get("watch") === "date" ? "date" : "commentary",
   lang: initialLang(),
   switchingTrack: null,
+  currentSrc: "",
 };
 
 init();
@@ -164,6 +165,12 @@ function init() {
     rearmFreeze(els.reel.currentTime);
     state.active = nearestEventIndex(els.reel.currentTime);
     render();
+  });
+  els.reel.addEventListener("canplay", () => setStageStatus(null));
+  els.reel.addEventListener("playing", () => setStageStatus(null));
+  els.reel.addEventListener("error", () => { if (state.currentSrc) setStageStatus("error"); });
+  if (els.stage) els.stage.addEventListener("click", (event) => {
+    if (event.target.closest("#stage-retry")) retryVideo();
   });
   window.addEventListener("resize", resizeCanvas);
   if (els.events) els.events.addEventListener("click", (event) => {
@@ -224,7 +231,7 @@ function loadPack(pack) {
   els.subhead.innerHTML = `Team 04 · ${pack.title || pack.clip}${pack.gameId ? " · 官方 " + pack.gameId : ""}`;
   const start = Number(pack.anchor) || 0;
   const tracked = pack.tracks && pack.tracks[state.lang];
-  els.reel.src = tracked || (start > 0 ? `${pack.video}#t=${start}` : pack.video);
+  setReelSrc(tracked || (start > 0 ? `${pack.video}#t=${start}` : pack.video));
   syncLang();
   if (els.foot) {
     els.foot.textContent = pack.gameId
@@ -247,6 +254,8 @@ function loadPack(pack) {
 function renderSwitcher() {
   if (!els.switcher) return;
   const names = Object.keys(clips);
+  const section = document.querySelector("#more-clips");
+  if (section) section.hidden = names.length <= 1;
   els.switcher.innerHTML = names.map((name) => {
     const on = name === clipName ? " on" : "";
     const label = `${clips[name].title || name}`;
@@ -254,6 +263,29 @@ function renderSwitcher() {
     const lang = state.lang === "en" ? "&lang=en" : "&lang=zh";
     return `<a class="clip${on}" href="game.html?clip=${encodeURIComponent(name)}${watch}${lang}">${label}</a>`;
   }).join("");
+}
+
+function setReelSrc(src) {
+  state.currentSrc = src || "";
+  setStageStatus(src ? "loading" : null);
+  els.reel.src = src || "";
+}
+
+function setStageStatus(mode) {
+  const box = document.querySelector("#stage-status");
+  if (!box) return;
+  if (!mode) { box.hidden = true; box.innerHTML = ""; return; }
+  box.hidden = false;
+  box.innerHTML = mode === "loading"
+    ? `<span class="spin" aria-hidden="true"></span><p>视频加载中…</p>`
+    : `<p>视频加载失败</p><button type="button" id="stage-retry">重试</button>`;
+}
+
+function retryVideo() {
+  if (!state.currentSrc) return;
+  setStageStatus("loading");
+  if (els.reel.getAttribute("src") !== state.currentSrc) els.reel.src = state.currentSrc;
+  els.reel.load();
 }
 
 function resizeCanvas() {
@@ -544,7 +576,7 @@ function setLang(next) {
   history.replaceState(null, "", url);
   const playing = !els.reel.paused && !state.freeze;
   state.switchingTrack = { t: els.reel.currentTime || 0, playing };
-  els.reel.src = tracks[next];
+  setReelSrc(tracks[next]);
   syncLang();
   renderSwitcher();
 }
@@ -730,7 +762,7 @@ async function pollJob() {
     try {
       const job = await getJson(`/jobs/${encodeURIComponent(jobId)}`);
       els.subhead.textContent = `${statusText(job.status)} · ${job.gameMeta || job.filename || jobId}`;
-      if (job.playbackUrl && els.reel.src !== job.playbackUrl) els.reel.src = job.playbackUrl;
+      if (job.playbackUrl && state.currentSrc !== job.playbackUrl) setReelSrc(job.playbackUrl);
       if (job.status === "DONE" || job.status === "FAILED") {
         const listed = await getJson(`/jobs/${encodeURIComponent(jobId)}/events`);
         state.events = (listed.events || []).map((event) => ({
