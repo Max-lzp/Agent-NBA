@@ -26,8 +26,8 @@ RESULTS = VISION / "results" / "local"
 sys.path.insert(0, str(VISION))
 sys.path.insert(0, str(VENDOR))
 
-from jersey_ocr import JerseyNumberReader, number_crops  # noqa: E402
-from roster_map import lookup  # noqa: E402
+from jersey_ocr import JerseyNumberReader, RapidJerseyReader, number_crops  # noqa: E402
+from roster_map import lookup_number  # noqa: E402
 from team_color import jersey_color, stable_color  # noqa: E402
 
 
@@ -109,17 +109,26 @@ def identify_tracks(frames, tracks, game_id: str, color_map: dict, reader: Jerse
         if reader is not None:
             crops = number_crops([frame for frame, _ in pairs], [bbox for _, bbox in pairs])
             jersey, conf, votes = reader.vote(crops)
-        found = lookup(game_id, team, jersey)
+        jersey = jersey if votes >= 2 or (votes == 1 and conf >= 0.95) else None
+        found = lookup_number(game_id, jersey, color, color_map) if jersey else {}
+        if found.get("name") and not found.get("dnp"):
+            team = found.get("team") or team
+            source = "ocr"
+            name = found["name"]
+        else:
+            source = "ocr_unmatched" if jersey else "missing_key"
+            name = None
         identified[track_id] = {
             "track_id": int(track_id),
+            "role": "player",
             "team": team,
             "jersey_color": color,
             "jersey": jersey,
             "jersey_conf": round(conf, 3),
             "jersey_votes": votes,
-            "name": found["name"],
-            "identity_source": found["source"],
-            "dnp": found.get("dnp", False),
+            "name": name,
+            "identity_source": source,
+            "dnp": False,
             "samples": len(pairs),
         }
     return identified
@@ -137,6 +146,44 @@ def possession_events(times, possession, identified, passes, interceptions):
                 {"type": "interception", "t": times[index], "actor": name, "track_id": holder}
             )
     return events
+
+
+def summarize_refs(ref_tracks) -> list[dict]:
+    counts: dict[int, int] = defaultdict(int)
+    for frame in ref_tracks:
+        for track_id in frame:
+            counts[int(track_id)] += 1
+    rows = []
+    for track_id, samples in counts.items():
+        rows.append(
+            {
+                "track_id": track_id,
+                "role": "referee",
+                "team": None,
+                "jersey_color": None,
+                "jersey": None,
+                "jersey_conf": 0.0,
+                "jersey_votes": 0,
+                "name": None,
+                "identity_source": "referee",
+                "dnp": False,
+                "samples": samples,
+            }
+        )
+    return rows
+
+
+def component_meta() -> dict:
+    items = json.loads((VISION / "components.json").read_text(encoding="utf-8"))
+    item = next(entry for entry in items if entry["id"] == "basketball_analysis")
+    return {
+        "id": item["id"],
+        "label": item["label"],
+        "repo": item["repo"],
+        "license": item["license"],
+        "role": item["role"],
+        "note": item["note"],
+    }
 
 
 def hard_tracks(identified) -> list[dict]:
@@ -163,12 +210,19 @@ def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_second
     player_tracker, ball_tracker, court_detector = load_detectors()
     print(f"{clip_id}: player detect", flush=True)
     player_tracks = player_tracker.get_object_tracks(frames, read_from_stub=False, stub_path=None)
+    ref_tracks = player_tracker.ref_tracks
+    print(
+        f"{clip_id}: refs={sum(len(frame) for frame in ref_tracks)} "
+        f"suppressed_player_boxes={player_tracker.suppressed_players}",
+        flush=True,
+    )
     print(f"{clip_id}: ball detect", flush=True)
     ball_tracks = ball_tracker.get_object_tracks(frames, read_from_stub=False, stub_path=None)
     # 上游 25px 按约 24fps 的相邻帧。抽帧后一帧跨过 stride 张原帧，阈值按同样倍数放宽。
     ball_tracks = ball_tracker.remove_wrong_detections(
         ball_tracks, maximum_allowed_distance=25 * stride
     )
+    write_ball_raw(clip_id, times, effective_fps, ball_tracks)
     ball_tracks = ball_tracker.interpolate_ball_positions(ball_tracks)
     print(f"{clip_id}: court keypoints", flush=True)
     court_keypoints = court_detector.get_court_keypoints(frames, read_from_stub=False, stub_path=None)
@@ -199,8 +253,11 @@ def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_second
     interceptions = pass_detector.detect_interceptions(possession, assignment)
     events = possession_events(times, possession, identified, passes, interceptions)
 
+    referees = summarize_refs(ref_tracks)
     timeline = []
-    for index, (t, track, ball, holder) in enumerate(zip(times, player_tracks, ball_tracks, possession)):
+    for index, (t, track, refs, ball, holder) in enumerate(
+        zip(times, player_tracks, ref_tracks, ball_tracks, possession)
+    ):
         players = []
         for track_id, info in track.items():
             identity = identified.get(track_id, {})
@@ -208,10 +265,23 @@ def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_second
             players.append(
                 {
                     "track_id": int(track_id),
+                    "role": "player",
                     "bbox": [round(x1), round(y1), round(x2 - x1), round(y2 - y1)],
                     "team": identity.get("team"),
                     "jersey": identity.get("jersey"),
                     "name": identity.get("name"),
+                }
+            )
+        for track_id, info in refs.items():
+            x1, y1, x2, y2 = info["bbox"]
+            players.append(
+                {
+                    "track_id": int(track_id),
+                    "role": "referee",
+                    "bbox": [round(x1), round(y1), round(x2 - x1), round(y2 - y1)],
+                    "team": None,
+                    "jersey": None,
+                    "name": None,
                 }
             )
         ball_bbox = ball.get(1, {}).get("bbox")
@@ -237,16 +307,17 @@ def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_second
         "clip": clip_id,
         "game_id": clip["game_id"],
         "video": clip["video"],
+        "component": component_meta(),
         "source_note": (
-            "local basketball_analysis weights; jersey OCR on"
+            "local basketball_analysis weights; Ref kept; rapidocr jersey vote; no per-frame Qwen"
             if reader is not None
-            else "local basketball_analysis weights; jersey OCR weights absent"
-        ) + "; no per-frame Qwen",
+            else "local basketball_analysis weights; Ref kept; jersey OCR absent; no per-frame Qwen"
+        ),
         "device": "mps" if torch.backends.mps.is_available() else "cpu",
         "sampled_fps": round(effective_fps, 3),
         "frame_count": len(frames),
         "duration_sec": times[-1] if times else 0,
-        "players": sorted(identified.values(), key=lambda item: -item["samples"]),
+        "players": sorted(list(identified.values()) + referees, key=lambda item: -item["samples"]),
         "named_players": sorted({info["name"] for info in named}),
         "hard_tracks": hard_tracks(identified),
         "events": events,
@@ -255,18 +326,36 @@ def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_second
     }
 
 
+def write_ball_raw(clip_id: str, times: list[float], effective_fps: float, ball_tracks: list[dict]) -> None:
+    """插值前的球：哪些抽帧是真检测到的。与 ball_raw.py 同格式，省掉第二遍球检测。"""
+    frames = []
+    for t, track in zip(times, ball_tracks):
+        det = track.get(1) or {}
+        ball = ({"bbox": [round(v) for v in det["bbox"]], "conf": round(det.get("conf", 0.5), 3)}
+                if det.get("bbox") else None)
+        frames.append({"t": t, "ball": ball})
+    hits = sum(1 for f in frames if f["ball"])
+    out = RESULTS / f"{clip_id}.ball_raw.json"
+    out.write_text(json.dumps({"clip": clip_id, "sampled_fps": round(effective_fps, 3), "frames": frames},
+                              ensure_ascii=False), encoding="utf-8")
+    print(f"{clip_id}: {hits}/{len(frames)} 帧真检测到球 ({hits / max(len(frames), 1):.0%})", flush=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="本地检测、跟踪、号码识别")
-    parser.add_argument("--clip", choices=["flagg", "amen", "all"], default="all")
+    clips = json.loads((VISION / "clips.json").read_text(encoding="utf-8"))
+    parser.add_argument("--clip", choices=[*clips, "all"], default="all")
     parser.add_argument("--fps", type=float, default=8.0)
     parser.add_argument("--max-seconds", type=float, default=None)
     args = parser.parse_args()
-    clips = json.loads((VISION / "clips.json").read_text(encoding="utf-8"))
     jersey_path = MODELS / "jersey_numbers.pt"
-    reader = JerseyNumberReader(jersey_path) if jersey_path.is_file() else None
-    if reader is None:
-        print("没有 jersey_numbers.pt，本轮只跑检测跟踪，号码留空", flush=True)
-    targets = ["flagg", "amen"] if args.clip == "all" else [args.clip]
+    if jersey_path.is_file():
+        reader = JerseyNumberReader(jersey_path)
+        print(f"号码读取器 YOLO {jersey_path.name}", flush=True)
+    else:
+        reader = RapidJerseyReader()
+        print("号码读取器 RapidOCR", flush=True)
+    targets = list(clips) if args.clip == "all" else [args.clip]
     RESULTS.mkdir(parents=True, exist_ok=True)
     for clip_id in targets:
         document = analyze_clip(clip_id, clips[clip_id], args.fps, reader, args.max_seconds)

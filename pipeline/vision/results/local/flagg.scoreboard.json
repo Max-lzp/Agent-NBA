@@ -1,0 +1,1242 @@
+{
+ "clip": "flagg",
+ "sampled_fps": 2.997,
+ "away": "DAL",
+ "home": "HOU",
+ "detected_away": "DAL",
+ "detected_home": "HOU",
+ "detected_reads": 63,
+ "reads": [
+  {
+   "t": 0.0,
+   "period": "4TH",
+   "clock": "1:52",
+   "shot_clock": 21.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1294,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 0.334,
+   "period": "4TH",
+   "clock": "1:51",
+   "shot_clock": 21.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1291,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 0.667,
+   "period": "4TH",
+   "clock": "1:51",
+   "shot_clock": 21.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1291,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 1.001,
+   "period": "4TH",
+   "clock": "1:51",
+   "shot_clock": 20.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1290,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 1.335,
+   "period": "4TH",
+   "clock": "1:50",
+   "shot_clock": 20.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 1.668,
+   "period": "4TH",
+   "clock": "1:50",
+   "shot_clock": 20.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 2.002,
+   "period": "4TH",
+   "clock": "1:50",
+   "shot_clock": 19.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 2.336,
+   "period": "4TH",
+   "clock": "1:49",
+   "shot_clock": 19.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 2.669,
+   "period": "4TH",
+   "clock": "1:49",
+   "shot_clock": 19.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 3.003,
+   "period": "4TH",
+   "clock": "1:49",
+   "shot_clock": 18.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 3.337,
+   "period": "4TH",
+   "clock": "1:48",
+   "shot_clock": 18.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 3.67,
+   "period": "4TH",
+   "clock": "1:48",
+   "shot_clock": 18.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 4.004,
+   "period": "4TH",
+   "clock": "1:48",
+   "shot_clock": 17.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 4.338,
+   "period": "4TH",
+   "clock": "1:47",
+   "shot_clock": 17.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 4.671,
+   "period": "4TH",
+   "clock": "1:47",
+   "shot_clock": 17.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 5.005,
+   "period": "4TH",
+   "clock": "1:47",
+   "shot_clock": 16.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 5.339,
+   "period": "4TH",
+   "clock": "1:46",
+   "shot_clock": 16.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 5.672,
+   "period": "4TH",
+   "clock": "1:46",
+   "shot_clock": 16.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 6.006,
+   "period": "4TH",
+   "clock": "1:46",
+   "shot_clock": 15.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 6.34,
+   "period": "4TH",
+   "clock": "1:45",
+   "shot_clock": 15.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 6.673,
+   "period": "4TH",
+   "clock": "1:45",
+   "shot_clock": 15.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 7.007,
+   "period": "4TH",
+   "clock": "1:45",
+   "shot_clock": 14.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 7.341,
+   "period": "4TH",
+   "clock": "1:44",
+   "shot_clock": 14.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 7.674,
+   "period": "4TH",
+   "clock": "1:44",
+   "shot_clock": 14.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 8.008,
+   "period": "4TH",
+   "clock": "1:44",
+   "shot_clock": 13.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 8.342,
+   "period": "4TH",
+   "clock": "1:43",
+   "shot_clock": 13.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 8.675,
+   "period": "4TH",
+   "clock": "1:43",
+   "shot_clock": 13.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 9.009,
+   "period": "4TH",
+   "clock": "1:43",
+   "shot_clock": 12.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 9.343,
+   "period": "4TH",
+   "clock": "1:42",
+   "shot_clock": 12.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1294,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 9.676,
+   "period": "4TH",
+   "clock": "1:42",
+   "shot_clock": 12.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1294,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 10.01,
+   "period": "4TH",
+   "clock": "1:42",
+   "shot_clock": 11.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 10.344,
+   "period": "4TH",
+   "clock": "1:41",
+   "shot_clock": 11.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1290,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 10.677,
+   "period": "4TH",
+   "clock": "1:41",
+   "shot_clock": 11.0,
+   "scores": null,
+   "clock_xy": [
+    1290,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 11.011,
+   "period": "4TH",
+   "clock": "1:41",
+   "shot_clock": 10.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1290,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 11.345,
+   "period": "4TH",
+   "clock": "1:40",
+   "shot_clock": 10.0,
+   "scores": null,
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 11.678,
+   "period": "4TH",
+   "clock": "1:40",
+   "shot_clock": 10.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 12.012,
+   "period": "4TH",
+   "clock": "1:40",
+   "shot_clock": 9.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 12.346,
+   "period": "4TH",
+   "clock": "1:39",
+   "shot_clock": 9.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 12.679,
+   "period": "4TH",
+   "clock": "1:39",
+   "shot_clock": 9.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 13.013,
+   "period": "4TH",
+   "clock": "1:39",
+   "shot_clock": 8.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 13.347,
+   "period": "4TH",
+   "clock": "1:38",
+   "shot_clock": 8.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 13.68,
+   "period": "4TH",
+   "clock": "1:38",
+   "shot_clock": 8.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 14.014,
+   "period": "4TH",
+   "clock": "1:38",
+   "shot_clock": 7.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 14.348,
+   "period": "4TH",
+   "clock": "1:37",
+   "shot_clock": 7.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 14.681,
+   "period": "4TH",
+   "clock": "1:37",
+   "shot_clock": 7.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 15.015,
+   "period": "4TH",
+   "clock": "1:37",
+   "shot_clock": 6.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 15.349,
+   "period": "4TH",
+   "clock": "1:36",
+   "shot_clock": 6.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 15.682,
+   "period": "4TH",
+   "clock": "1:36",
+   "shot_clock": 6.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 16.016,
+   "period": "4TH",
+   "clock": "1:36",
+   "shot_clock": 5.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 16.35,
+   "period": "4TH",
+   "clock": "1:35",
+   "shot_clock": 5.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 16.683,
+   "period": "4TH",
+   "clock": "1:35",
+   "shot_clock": 5.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 17.017,
+   "period": "4TH",
+   "clock": "1:35",
+   "shot_clock": 4.7,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 17.351,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 4.3,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 17.684,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 4.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 18.018,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 24.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 18.352,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 24.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 18.685,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 24.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 19.019,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 24.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 19.353,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 24.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 19.686,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 24.0,
+   "scores": [
+    103,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 20.02,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 24.0,
+   "scores": null,
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": null,
+   "region": "bottom"
+  },
+  {
+   "t": 20.354,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 24.0,
+   "scores": null,
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": null,
+   "region": "bottom"
+  },
+  {
+   "t": 20.687,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 24.0,
+   "scores": [
+    105,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 21.021,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 24.0,
+   "scores": [
+    105,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    171
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  },
+  {
+   "t": 21.355,
+   "period": "4TH",
+   "clock": "1:34",
+   "shot_clock": 24.0,
+   "scores": [
+    105,
+    107
+   ],
+   "clock_xy": [
+    1293,
+    170
+   ],
+   "teams": [
+    "DAL",
+    "HOU"
+   ],
+   "region": "bottom"
+  }
+ ],
+ "ticks": [
+  {
+   "t_sec": 20.687,
+   "team": "DAL",
+   "delta": 2,
+   "t_reset": 18.018
+  }
+ ],
+ "resets": [
+  {
+   "t_sec": 18.018,
+   "value": 24.0
+  }
+ ]
+}

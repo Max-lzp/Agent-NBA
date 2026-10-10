@@ -1,0 +1,20 @@
+---
+description: 数据管道或 AWS 服务有变化时，同步全景图和作品页 /readme
+alwaysApply: true
+---
+
+# 数据管道全景要跟着改
+
+全景的唯一正文是 `docs/pipeline-map.md`。作品页同一段在 `web/readme.html` 的「数据管道」。`docs/architecture.md` 只解释服务为什么在，不单独记状态。
+
+改了管道步骤，或某一步用的 AWS 服务、账号、主路径变了，同一次改动里改这两处：
+
+- `docs/pipeline-map.md`：流程图、步骤表、状态
+- `web/readme.html`：评委能看懂的步骤和同一张服务表
+
+状态只用这几个词：主路径、已接通、本地、配额挡住、部署中。探测过一次但主路径没换，写成已接通，不要写成主路径。
+
+```text
+不好：Textract 已经接进记分牌主路径，全景仍写「本地 RapidOCR」。
+要改：pipeline-map.md 第 3 步和 readme.html 记分牌那一行一起改成主路径。
+```

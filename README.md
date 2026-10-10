@@ -36,13 +36,18 @@ ffmpeg 预渲染增强成片（保底：打开即看，不点任何交互也成�
 aws sso login --profile team04
 aws sts get-caller-identity --profile team04 --region us-east-1
 
-# 1. 本地构建
-cd cdk && npm install && npm run build && npx cdk synth
+# 1. 本地构建（不离开仓库根目录）
+(cd cdk && npm install && npm run build && npx cdk synth)
 
-# 2. 构建通过并推到 Git 之后，再部署。
-#    本队账号若提示找不到 bootstrap，再执行：
-#    npx cdk bootstrap aws://405496568869/us-east-1 --profile team04
-npx cdk deploy Team04DeepCourt --profile team04
+# 2. 评委成片 + 部署。先生成回放，再部署。
+#    根路径打开的是回放页 game.html（给评委）。
+#    全队协作台在 /hub.html（现状、回放、GitHub、正式提交链接），不要把 hub 当提交页。
+#    上传页仍在 /index.html。部署后把 CloudFront 根 URL 写进 web/config.js 的 submitUrl。
+#    GPU 配额为 0，不带 Batch。Polly 未开通时解说留在本地成片里，不带 P2。
+#    账号还不能登录时，脚本会停在本地成片，不报部署失败。
+sh scripts/publish.sh
+#    若只要手动部署：
+#    cd cdk && npx cdk deploy Team04DeepCourt -c enableP1=false -c enableP2=false --profile team04
 
 # 3. 验收闭环（把 <api> 换成栈输出 ApiUrl，不要带末尾多余空格）
 curl -sS -X POST "<api>jobs" -H 'content-type: application/json' \
@@ -77,6 +82,7 @@ repo/
 ├── README.md            ← 项目名/队名/一句话价值主张/一键部署步骤（评分要件，主人：A）
 ├── docs/
 │   ├── architecture.md  ← 架构说明（决赛技术分 18 分的素材库，主人：A）
+│   ├── pipeline-map.md  ← 数据管道全景：每一步用哪个 AWS 服务。和 web/readme.html 一起改
 │   ├── data-notes.md    ← 深度数据格式、字段口径、对齐方案（主人：B）
 │   └── decisions.md     ← 关键决策记录（主人：呈现线）
 ├── cdk/                 ← 基础设施

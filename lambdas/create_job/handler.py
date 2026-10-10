@@ -1,4 +1,4 @@
-"""POST /jobs：写入 DynamoDB，并返回 S3 预签名上传地址。"""
+"""POST /jobs：写入 DynamoDB，并返回 S3 预签名上传地址。链接任务等本地追踪产出结构化清单。"""
 
 from __future__ import annotations
 
@@ -11,12 +11,10 @@ import common
 
 JOBS_TABLE = os.environ["JOBS_TABLE"]
 MEDIA_BUCKET = os.environ["MEDIA_BUCKET"]
-ANALYZE_FUNCTION_NAME = os.environ.get("ANALYZE_FUNCTION_NAME", "")
 REGION = os.environ.get("AWS_REGION", "us-east-1")
 
 _dynamodb = boto3.resource("dynamodb", region_name=REGION)
 _s3 = boto3.client("s3", region_name=REGION)
-_lambda = boto3.client("lambda", region_name=REGION)
 
 
 def handler(event, _context):
@@ -35,11 +33,14 @@ def handler(event, _context):
         return common.json_response(400, {"error": "sourceUrl 必须是 http(s) 链接"})
 
     job_id = common.new_job_id()
+    from trace_job import annotate
+    annotate(job_id)
     now = common.iso_now()
     key = common.object_key(job_id, filename) if filename else ""
+    status = "PENDING" if key else "TRACKING"
     item = {
         "jobId": job_id,
-        "status": "PENDING",
+        "status": status,
         "gameMeta": game_meta,
         "filename": common.safe_filename(filename) if filename else "",
         "sourceUrl": source_url,
@@ -59,19 +60,13 @@ def handler(event, _context):
             ExpiresIn=3600,
         )
         upload_headers = {"Content-Type": content_type}
-    elif ANALYZE_FUNCTION_NAME:
-        _lambda.invoke(
-            FunctionName=ANALYZE_FUNCTION_NAME,
-            InvocationType="Event",
-            Payload=json.dumps({"jobId": job_id, "mode": "url"}).encode("utf-8"),
-        )
 
     print(json.dumps({"jobId": job_id, "msg": "job created", "hasUpload": bool(upload_url)}))
     return common.json_response(
         201,
         {
             "jobId": job_id,
-            "status": "PENDING",
+            "status": status,
             "uploadUrl": upload_url,
             "uploadHeaders": upload_headers,
             "key": key,

@@ -1,0 +1,32 @@
+{
+  "version": "1.4",
+  "build": 5,
+  "rule": "每次改视觉回放台，version 末位加一，build 加一，标题和这里一起改。",
+  "history": [
+    {
+      "version": "1.0",
+      "build": 1,
+      "note": "回放台开始标版本和 build。这一版已有组件切换、裁判虚线、RapidOCR 姓名。"
+    },
+    {
+      "version": "1.1",
+      "build": 2,
+      "note": "加上 Qwen3 VL 和 Claude Sonnet 两个整段抽帧组件。事件多了出手和篮板。"
+    },
+    {
+      "version": "1.2",
+      "build": 3,
+      "note": "加上 Kimi K3 整段抽帧组件。用 Bedrock API Key 调用，不走比赛账号 IAM。"
+    },
+    {
+      "version": "1.3",
+      "build": 4,
+      "note": "K3 · low 作为组件标签。检查点还在写时就能切换，已返回的帧会补进回放。"
+    },
+    {
+      "version": "1.4",
+      "build": 5,
+      "note": "接上结构化事件流。回合色带、事件列出双方和置信度，画面按快照标持球、对位和协防。"
+    }
+  ]
+}

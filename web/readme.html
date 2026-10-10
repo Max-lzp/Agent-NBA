@@ -6,7 +6,10 @@
   <title>Team 04 · Deep Court 作品说明</title>
   <style>
     body { margin: 0; background: #14110E; color: #F3EDE2; font: 18px/1.6 sans-serif; }
-    main { max-width: 42rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    main { max-width: 52rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 0.6rem 0 0; }
+    th, td { text-align: left; vertical-align: top; padding: 0.35rem 0.45rem; border-bottom: 1px solid #3a342c; }
+    th { color: #A3988A; font-weight: 600; }
     h1 { font-size: 1.8rem; line-height: 1.25; margin: 0 0 0.4rem; }
     h2 { font-size: 1.15rem; margin: 2rem 0 0.4rem; }
     p, li { color: #F3EDE2; }
@@ -19,26 +22,51 @@
   <main>
     <p class="muted">NBA × AWS Broadcast Code 12 · Team 04</p>
     <h1>Deep Court</h1>
-    <p>让每一次出手被重新讲述一遍。把比赛录像变成可交互的深度回放：事件落在时间线上，数据长在画面上。</p>
+    <p>让每一次出手被重新讲述一遍。打开这个域名就是成片回放，不用选文件，也不用等分析跑完。</p>
 
     <h2>作品亮点</h2>
     <ol>
-      <li>回放页按时间码列出出手、篮板、失误等事件。点某一条，画面和数据一起跳到那个回合。</li>
-      <li>暂停时展开防守压力等深度数据。默认画面自己能看懂，展开层是越看越有，不是不点就不懂。</li>
-      <li>视频经 S3 预签名直传，不经过应用服务器。上传完成后自动分析，状态从等待、分析中到完成或失败。</li>
-      <li>分析跑在 Amazon Bedrock AgentCore。有画面时用 Qwen3 VL 看帧，否则用 Claude Sonnet 写结构化事件；一个模型失败就换另一个。</li>
-      <li>任务和事件分表存在 DynamoDB。页面通过 CloudFront 同源调用 API Gateway，背后是四支 Lambda：建任务、分析、读状态、读事件。</li>
-      <li>整套资源用 AWS CDK 定义，角色挂参赛权限边界，权限收到各自的表和 S3 前缀。</li>
+      <li>比分条跟着记分牌走：节次、比赛钟、客队和主队比分。出手后约三秒弹出这一球的预期命中率、区域和距离。</li>
+      <li>人名标在球衣号码对得上、而且票数够的轨迹上。对不上的人不编名字。</li>
+      <li>暂停后展开官方逐回合原文、助攻和当时场上的十个人。半场图上的点用官方坐标。</li>
+      <li>中文解说由程序根据这些事件写成，已经混进成片。当前声音是本机中文语音；Amazon Polly 开通后只换声音，不改词。</li>
     </ol>
 
-    <h2>这条链路怎么走</h2>
-    <p>浏览器打开站点 → <code>POST /api/jobs</code> 建任务并拿到上传地址 → 视频进 S3 <code>raw/</code> → Lambda 调 AgentCore → 事件写入 DynamoDB → <code>game.html?jobId=</code> 轮询并画出时间线。</p>
-    <p class="muted">数字解说和社媒一键分享还在做，播放器上标着即将推出。本页只说明已经接上的部分。</p>
+    <h2>数字从哪来</h2>
+    <p>事件不由模型看图编造。记分牌读出节次、比赛钟和比分；追踪给出人和框；官方逐回合补上投篮人、助攻和预期命中率（xFG）。AgentCore 只取回并校验这份清单。</p>
+    <p>决策反差是二次加工，不是另一套数据：预期命中率低于四成却进了，标成英雄球；高于六成却没进，标成可惜。其余出手只显示预期命中率本身。</p>
+    <p>引力和胜率摆幅没有逐回合来源，画面上不出现。</p>
+
+    <h2>数据管道</h2>
+    <p>本地追踪写出结构化清单，上传到 S3 <code>structured/</code>。Lambda 调 Bedrock AgentCore 校验；Agent 不可用时 Lambda 直接读清单，回放不会停住。页面通过 CloudFront 打开成片。上传入口在 <a href="/index.html">/index.html</a>，只给我们自己用。</p>
+    <ol>
+      <li>收片：浏览器经 CloudFront、API Gateway、Lambda 把视频直传到 S3，任务记在 DynamoDB。本地命令也可以直接读文件。</li>
+      <li>追踪和记分牌：YOLO、ByteTrack、RapidOCR 在本地跑。记分牌不走 Textract。</li>
+      <li>事件清单在本地生成，再用本地的官方逐回合数据补出手人、助攻和预期命中率。独行侠的出手还会按当时分差，带上 2025-26 赛季效率。</li>
+      <li>清单放到 S3。Lambda 调 Bedrock AgentCore 校验，页面事件写入 DynamoDB。</li>
+      <li>CloudFront 打开回放。两句解说可以交给 Bedrock 写；现在混进成片的声音仍是本机中文语音。Polly 已接通，还没替换这段声音。</li>
+    </ol>
+    <table>
+      <thead>
+        <tr><th>步骤</th><th>AWS 服务</th><th>状态</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>收片、任务</td><td>CloudFront、API Gateway、Lambda、S3、DynamoDB</td><td>主路径</td></tr>
+        <tr><td>追踪</td><td>无。计划用 ECR、Batch、EC2、EBS</td><td>本地。GPU 配额为 0，实例没开</td></tr>
+        <tr><td>记分牌、认人、事件、官方数据</td><td>无。Textract 只做过探测</td><td>本地</td></tr>
+        <tr><td>校验清单</td><td>Lambda、Bedrock AgentCore、DynamoDB、CloudWatch Logs</td><td>主路径</td></tr>
+        <tr><td>回放</td><td>CloudFront、S3、API Gateway、Lambda</td><td>主路径</td></tr>
+        <tr><td>解说</td><td>Bedrock、Polly、S3</td><td>成片仍用本机语音</td></tr>
+        <tr><td>成片</td><td>无。MediaConvert 模板已建</td><td>本地 ffmpeg。还没提交转码作业</td></tr>
+        <tr><td>观测和密钥</td><td>CloudWatch、X-Ray、Secrets Manager、Cost Explorer</td><td>已接通。密钥是空占位</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">和仓库里的 <code>docs/pipeline-map.md</code> 是同一张图。训练片是组委会发放的火箭、独行侠录像。考试片发布后再按同一条命令重跑，并在这里补上出处。</p>
 
     <h2>页面</h2>
     <ul>
-      <li><a href="/">首页</a>：上传或粘贴视频，给我们自己生产用。</li>
-      <li><a href="/game.html">回放页</a>：带 <code>jobId</code> 时显示该次分析的事件。</li>
+      <li><a href="/">回放页</a>：成片、人名、时间线和半场落点。页面上有 Team 04。</li>
+      <li><a href="/index.html">上传页</a>：生产用，不是提交链接。</li>
       <li>本页路径是 <code>/readme</code>。</li>
     </ul>
     <p class="muted">Team 04 · Deep Court</p>

@@ -8,6 +8,88 @@ from pathlib import Path
 
 VISION = Path(__file__).resolve().parent
 ROSTER = json.loads((VISION / "roster.json").read_text(encoding="utf-8"))
+ROSTERS = VISION / "rosters"
+DEFAULT_SEASON = "2025-26"
+_seasons: dict[str, dict] = {}
+
+
+def season_roster(season: str = DEFAULT_SEASON) -> dict:
+    if season not in _seasons:
+        _seasons[season] = json.loads((ROSTERS / f"{season}.json").read_text(encoding="utf-8"))
+    return _seasons[season]
+
+
+def _season_rows(season: str, number: str, date: str | None) -> list[dict]:
+    rows = []
+    for team, block in season_roster(season)["teams"].items():
+        for index, player in enumerate(block["players"]):
+            if normalize_jersey(player["jersey"]) != number:
+                continue
+            if date and player.get("since") and date < player["since"]:
+                continue
+            if date and player.get("until") and date > player["until"]:
+                continue
+            rows.append({**player, "team": team, "_order": index})
+    return rows
+
+
+def _by_playing_time(row: dict) -> tuple:
+    minutes = row.get("minutes")
+    games = row.get("games")
+    return (minutes if minutes is not None else -1, games if games is not None else -1, -row["_order"])
+
+
+def identify(jersey, team: str | None = None, color: str | None = None,
+             color_to_team: dict | None = None, game_id: str | None = None,
+             season: str = DEFAULT_SEASON) -> dict:
+    """号码 → 球员。队伍先看 team，再看球衣颜色。
+
+    这场有出场名单时只在出场的人里挑；有 on_court（片段里在场的人，来自官方换人记录）时只在场上的人里挑。
+    两队同号且队伍不明时按上场时间取人，confidence 降到 0.6。
+    """
+    number = normalize_jersey(jersey)
+    game = ROSTER["games"].get(game_id) if game_id else None
+    team = (team or "").upper() or (color_to_team or {}).get(color or "")
+    base = {"name": None, "team": team or None, "jersey": number, "dnp": False, "confidence": 0.0}
+    if not number:
+        return {**base, "source": "missing_key"}
+
+    rows = _season_rows(season, number, game.get("date") if game else None)
+    if game:
+        # 按号码比：官方 boxscore 的短名（Thompson）和赛季名单的叫法（Amen / Klay）不一定一样
+        active = [r for r in rows if number in game["active"].get(r["team"], {})]
+        if active:
+            rows = active
+        elif rows and all(number in game["dnp"].get(r["team"], {}) for r in rows):
+            return {**base, "source": "dnp", "dnp": True}
+        court = game.get("on_court")
+        if court:
+            rows = [r for r in rows if number in court.get(r["team"], [])]
+            if not rows:
+                return {**base, "source": "not_on_court"}
+    if team:
+        same_team = [r for r in rows if r["team"] == team]
+        if not same_team and len(rows) == 1:
+            # 颜色常被灯光带偏，号码只在另一队出现时信号码。
+            only = rows[0]
+            return {**base, "name": only["name"], "team": only["team"],
+                    "source": "season_number_over_color", "confidence": 0.7}
+        rows = same_team
+    if not rows:
+        return {**base, "source": "not_in_roster"}
+
+    rows.sort(key=_by_playing_time, reverse=True)
+    best = rows[0]
+    if team:
+        source, confidence = ("season_team", 0.9) if len(rows) == 1 else ("season_team_minutes", 0.75)
+    else:
+        source, confidence = ("season_unique", 0.85) if len(rows) == 1 else ("season_minutes", 0.6)
+    found = {**base, "name": best["name"], "team": best["team"], "source": source, "confidence": confidence}
+    if best.get("player_id"):
+        found["player_id"] = best["player_id"]
+    if len(rows) > 1:
+        found["candidates"] = [f"{r['team']} {r['name']}" for r in rows]
+    return found
 
 
 def normalize_jersey(value) -> str | None:
@@ -27,6 +109,8 @@ def lookup_number(game_id: str, jersey, color: str | None = None, color_to_team:
     """号码能唯一对上出场名单时直接用。两队同号才看球衣颜色。"""
     game = ROSTER["games"].get(game_id)
     number = normalize_jersey(jersey)
+    if game is None and number:
+        return identify(number, color=color, color_to_team=color_to_team)
     if game is None or not number:
         return {"name": None, "source": "missing_key", "dnp": False, "jersey": number, "team": None}
     active_hits = []

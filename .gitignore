@@ -8,3 +8,7 @@ __pycache__/
 cdk/node_modules/
 cdk/cdk.out/
 cdk/dist/
+pipeline/vision/.env.local
+pipeline/present/work/
+# 评委成片走 CloudFront / 本机生成，不进仓库
+web/assets/*-broadcast.mp4

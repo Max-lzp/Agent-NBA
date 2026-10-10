@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DeepCourt Event Stream",
+  "description": "事件流结构化文件 v0.1：逐事件 + 关键帧采样。全队中间合同，冻结后改动需全队同步。",
+  "type": "object",
+  "required": ["version", "job_id", "video", "possessions", "meta"],
+  "$defs": {
+    "player_ref": {
+      "type": "object",
+      "required": ["team", "number"],
+      "properties": {
+        "team": {"type": "string", "description": "队伍缩写，如 HOU / DAL"},
+        "number": {"type": "string", "description": "球衣号码字符串，与 roster.json 一致（'00' 保留前导零）"},
+        "name": {"type": "string", "description": "roster 短名"},
+        "track_id": {"type": "integer", "description": "追踪器内部 ID，full 模式必填"}
+      },
+      "additionalProperties": false
+    },
+    "geometry": {
+      "type": "object",
+      "properties": {
+        "x_ft": {"type": "number", "description": "球场横坐标（英尺），篮筐原点"},
+        "y_ft": {"type": "number", "description": "球场纵坐标（英尺），篮筐原点"},
+        "def_dist_ft": {"type": "number", "description": "最近防守人距离（英尺），calibration=none 时缺席"},
+        "def_dist_qual": {"type": "string", "enum": ["tight", "one_step", "two_plus"], "description": "定性档位兜底"},
+        "shot_zone": {"type": "string", "description": "restricted / paint / midrange / corner3_l / corner3_r / wing3_l / wing3_r / top3"},
+        "nearest_defender": {"$ref": "#/$defs/player_ref"}
+      },
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object",
+      "required": ["event_id", "t", "type", "actor", "confidence", "source"],
+      "properties": {
+        "event_id": {"type": "string", "description": "形如 P01-E3"},
+        "t": {"type": "number", "description": "视频时间秒"},
+        "type": {"type": "string", "enum": ["receive", "pass", "turnover", "screen_set", "screen_use", "dribble_handoff", "shot", "rebound", "scoreboard_sync"]},
+        "actor": {"$ref": "#/$defs/player_ref"},
+        "target": {"$ref": "#/$defs/player_ref", "description": "传球接球人 / 掩护对象防守人"},
+        "geometry": {"$ref": "#/$defs/geometry"},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "source": {"type": "string", "enum": ["cv", "vlm", "manual", "official"]},
+        "official": {"type": "object", "description": "pipeline/enrich 对上的官方逐回合记录：action_number / period / clock_s / made / value / shot_type / distance_ft / assist / xfg（投篮质量 0–1）/ defender / video_url / thumbnail（官方这一球的视频）/ side（投篮人左右）/ side_basis / court_half（电视画面左右半场）/ description"}
+      },
+      "additionalProperties": false
+    },
+    "keyframe": {
+      "type": "object",
+      "required": ["t", "why", "calibration", "positions"],
+      "properties": {
+        "t": {"type": "number"},
+        "why": {"type": "string", "description": "触发快照的事件类型"},
+        "calibration": {"type": "string", "enum": ["fresh", "stale", "none"]},
+        "positions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["player", "role", "confidence"],
+            "properties": {
+              "player": {"$ref": "#/$defs/player_ref"},
+              "role": {"type": "string", "enum": ["ballhandler", "on_ball_defender", "help_defender", "off_ball"]},
+              "x_ft": {"type": "number"},
+              "y_ft": {"type": "number"},
+              "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "possession": {
+      "type": "object",
+      "required": ["possession_id", "t_start", "t_end", "offense_team", "events", "keyframes"],
+      "properties": {
+        "possession_id": {"type": "string", "description": "形如 P01"},
+        "t_start": {"type": "number"},
+        "t_end": {"type": "number"},
+        "offense_team": {"type": "string"},
+        "events": {"type": "array", "items": {"$ref": "#/$defs/event"}},
+        "keyframes": {"type": "array", "items": {"$ref": "#/$defs/keyframe"}},
+        "official": {"type": "object", "description": "pipeline/enrich：period / clock_start_s / clock_end_s / score_start / score_end"},
+        "tactics": {
+          "type": "array",
+          "description": "④ 战术识别的产出，几何候选 + Claude 措辞",
+          "items": {
+            "type": "object",
+            "required": ["action", "confidence", "source"],
+            "properties": {
+              "action": {
+                "type": "string",
+                "description": "闭集，定义见 playbook.json。一个进攻回合只填一个。",
+                "enum": [
+                  "transition", "drag", "high_pick_and_roll", "wing_pick_and_roll",
+                  "pick_and_pop", "spain_pnr", "dribble_handoff", "zoom",
+                  "pin_down", "stagger", "flare", "elevator", "floppy",
+                  "iverson_cut", "back_screen", "backdoor", "give_and_go",
+                  "iso", "post_up", "halfcourt_generic"
+                ]
+              },
+              "label_zh": {"type": "string", "description": "Claude 措辞后的中文标签"},
+              "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+              "source": {"type": "string", "enum": ["rule", "llm_arbitrated", "fallback_class"]}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "version": {"const": "0.1"},
+    "job_id": {"type": "string"},
+    "video": {
+      "type": "object",
+      "required": ["duration_s", "fps"],
+      "properties": {
+        "source": {"type": "string"},
+        "game_id": {"type": "string", "description": "对应 roster.json 的 games key"},
+        "duration_s": {"type": "number"},
+        "fps": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "possessions": {"type": "array", "items": {"$ref": "#/$defs/possession"}},
+    "official": {"type": "object", "description": "pipeline/enrich：game_id / files / period / clock_window_s / 对上与补入统计 / 片段内官方记录 plays"},
+    "meta": {
+      "type": "object",
+      "required": ["mode", "generator", "created_at"],
+      "properties": {
+        "mode": {"type": "string", "enum": ["full", "vlm"], "description": "full=追踪管线；vlm=P0 抽帧降级"},
+        "generator": {"type": "string"},
+        "created_at": {"type": "string"},
+        "notes": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

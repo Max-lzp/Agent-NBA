@@ -1,0 +1,47 @@
+{
+  "season": "2025-26",
+  "source": "种子：pipeline/vision/roster.json 两场训练视频的 ESPN box score 并集。games / minutes 待用 nba_api 整季数据替换",
+  "fetched_at": "2026-10-07",
+  "teams": {
+    "HOU": {
+      "team_id": 1610612745,
+      "name": "Houston Rockets",
+      "players": [
+        {"jersey": "1", "name": "Amen", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "7", "name": "Durant", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "10", "name": "Smith", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "17", "name": "Eason", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "28", "name": "Sengun", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "2", "name": "Finney-Smith", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "30", "name": "Capela", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "20", "name": "Okogie", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "15", "name": "Sheppard", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "8", "name": "Tate", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "0", "name": "Holiday", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "32", "name": "Green", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "27", "name": "Crawford", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "4", "name": "Davison", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null}
+      ]
+    },
+    "DAL": {
+      "team_id": 1610612742,
+      "name": "Dallas Mavericks",
+      "players": [
+        {"jersey": "32", "name": "Flagg", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "00", "name": "Christie", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "21", "name": "Gafford", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "25", "name": "Washington", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "13", "name": "Marshall", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "16", "name": "Martin", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "31", "name": "Klay", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "10", "name": "Williams", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "9", "name": "Nembhard", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "3", "name": "Davis", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "7", "name": "Powell", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "30", "name": "Cisse", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "5", "name": "Russell", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null},
+        {"jersey": "1", "name": "Hardy", "full_name": null, "player_id": null, "position": null, "games": null, "minutes": null, "since": null, "until": null}
+      ]
+    }
+  }
+}

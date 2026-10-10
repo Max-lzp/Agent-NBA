@@ -96,6 +96,106 @@ def detect_yolov8n(frames):
     return tracks, balls
 
 
+def class_id(names: dict, *candidates: str) -> int | None:
+    wanted = {name.lower() for name in candidates}
+    for index, name in names.items():
+        if str(name).lower() in wanted:
+            return int(index)
+    return None
+
+
+def detection_map(tracked, offset: int = 0) -> dict:
+    frame = {}
+    if tracked is None or tracked.tracker_id is None:
+        return frame
+    for xyxy, track_id in zip(tracked.xyxy, tracked.tracker_id):
+        if track_id is None:
+            continue
+        frame[int(track_id) + offset] = {"bbox": [float(v) for v in xyxy]}
+    return frame
+
+
+def drop_overlapping(players: dict, refs: dict, threshold: float = 0.45) -> dict:
+    if not refs:
+        return players
+    kept = {}
+    for track_id, info in players.items():
+        box = info["bbox"]
+        if any(iou(box, ref["bbox"]) >= threshold for ref in refs.values()):
+            continue
+        kept[track_id] = info
+    return kept
+
+
+def iou(a, b) -> float:
+    ax1, ay1, ax2, ay2 = a
+    bx1, by1, bx2, by2 = b
+    inter = max(0.0, min(ax2, bx2) - max(ax1, bx1)) * max(0.0, min(ay2, by2) - max(ay1, by1))
+    if inter <= 0:
+        return 0.0
+    area_a = max(0.0, ax2 - ax1) * max(0.0, ay2 - ay1)
+    area_b = max(0.0, bx2 - bx1) * max(0.0, by2 - by1)
+    union = area_a + area_b - inter
+    return inter / union if union > 0 else 0.0
+
+
+def detect_ebard(frames):
+    import supervision as sv
+    from ultralytics import YOLO
+
+    weights = VISION / "models" / "BODD_yolov8n_0001.pt"
+    if not weights.is_file():
+        raise SystemExit(f"还没有 {weights.name}")
+    model = YOLO(str(weights))
+    player_cls = class_id(model.names, "player")
+    ref_cls = class_id(model.names, "referee", "ref")
+    ball_cls = class_id(model.names, "basketball", "ball")
+    if player_cls is None or ref_cls is None:
+        raise SystemExit(f"E-BARD 类名对不上: {model.names}")
+    player_tracker = sv.ByteTrack()
+    ref_tracker = sv.ByteTrack()
+    batch = 8
+    detections = []
+    for start in range(0, len(frames), batch):
+        detections.extend(
+            model.predict(
+                frames[start : start + batch],
+                conf=0.25,
+                imgsz=704,
+                verbose=False,
+            )
+        )
+        print(f"ebard {min(start + batch, len(frames))}/{len(frames)}", flush=True)
+    player_tracks = []
+    ref_tracks = []
+    balls = []
+    for detection in detections:
+        parsed = sv.Detections.from_ultralytics(detection)
+        if parsed.class_id is None or len(parsed) == 0:
+            player_tracks.append({})
+            ref_tracks.append({})
+            balls.append(None)
+            player_tracker.update_with_detections(parsed)
+            ref_tracker.update_with_detections(parsed)
+            continue
+        players = detection_map(player_tracker.update_with_detections(parsed[parsed.class_id == player_cls]))
+        refs = detection_map(
+            ref_tracker.update_with_detections(parsed[parsed.class_id == ref_cls]),
+            offset=10_000,
+        )
+        player_tracks.append(drop_overlapping(players, refs))
+        ref_tracks.append(refs)
+        if ball_cls is None:
+            balls.append(None)
+            continue
+        ball_dets = parsed[parsed.class_id == ball_cls]
+        if len(ball_dets) == 0 or ball_dets.confidence is None:
+            balls.append(None)
+        else:
+            balls.append(ball_dets.xyxy[int(ball_dets.confidence.argmax())])
+    return player_tracks, ref_tracks, balls
+
+
 def timeline_from_tracks(frames, times, tracks, balls, color_map) -> list[dict]:
     rows = []
     for frame, t, tracked, ball in zip(frames, times, tracks, balls):
@@ -112,6 +212,7 @@ def timeline_from_tracks(frames, times, tracks, balls, color_map) -> list[dict]:
                         "bbox": xywh(box),
                         "team": color_map.get(color) if color else None,
                         "jersey_color": color,
+                        "role": "player",
                         "jersey": None,
                         "name": None,
                     }
@@ -130,16 +231,82 @@ def timeline_from_tracks(frames, times, tracks, balls, color_map) -> list[dict]:
     return rows
 
 
+def timeline_from_roles(frames, times, player_tracks, ref_tracks, balls, color_map, possession) -> list[dict]:
+    rows = []
+    for frame, t, players, refs, ball, holder in zip(
+        frames, times, player_tracks, ref_tracks, balls, possession
+    ):
+        people = []
+        for track_id, info in players.items():
+            box = info["bbox"]
+            color = jersey_color(frame, box)
+            people.append(
+                {
+                    "track_id": int(track_id),
+                    "role": "player",
+                    "bbox": xywh(box),
+                    "team": color_map.get(color) if color else None,
+                    "jersey_color": color,
+                    "jersey": None,
+                    "name": None,
+                }
+            )
+        for track_id, info in refs.items():
+            people.append(
+                {
+                    "track_id": int(track_id),
+                    "role": "referee",
+                    "bbox": xywh(info["bbox"]),
+                    "team": None,
+                    "jersey_color": None,
+                    "jersey": None,
+                    "name": None,
+                }
+            )
+        rows.append(
+            {
+                "t": t,
+                "players": people,
+                "ball": xywh(ball) if ball is not None else None,
+                "ball_handler_track": None if holder == -1 else int(holder),
+                "ball_handler": None,
+                "court_keypoints": 0,
+            }
+        )
+    return rows
+
+
+def possess(player_tracks, balls, effective_fps: float) -> list[int]:
+    from ball_aquisition import BallAquisitionDetector
+
+    ball_tracks = []
+    for ball in balls:
+        if ball is None:
+            ball_tracks.append({})
+        else:
+            ball_tracks.append({1: {"bbox": [float(v) for v in ball]}})
+    detector = BallAquisitionDetector()
+    detector.min_frames = max(3, round(11 * effective_fps / 24))
+    return detector.detect_ball_possession(player_tracks, ball_tracks)
+
+
 def run_clip(engine: str, clip_id: str, target_fps: float) -> None:
     clip = CLIPS[clip_id]
     video = (ROOT / clip["video"]).resolve()
     frames, times, effective_fps, _stride = read_sampled(video, target_fps)
     print(f"{engine} {clip_id}: {len(frames)} frames", flush=True)
+    color_map = clip["jersey_color_to_team"]
     if engine == "yolov8n_coco":
         tracks, balls = detect_yolov8n(frames)
+        timeline = timeline_from_tracks(frames, times, tracks, balls, color_map)
+    elif engine == "ebard_yolov8n":
+        player_tracks, ref_tracks, balls = detect_ebard(frames)
+        holders = possess(player_tracks, balls, effective_fps)
+        timeline = timeline_from_roles(
+            frames, times, player_tracks, ref_tracks, balls, color_map, holders
+        )
     else:
         raise SystemExit(f"还没有实现 {engine}")
-    color_map = clip["jersey_color_to_team"]
     doc = {
         "clip": clip_id,
         "game_id": clip["game_id"],
@@ -152,7 +319,7 @@ def run_clip(engine: str, clip_id: str, target_fps: float) -> None:
         "players": [],
         "named_players": [],
         "events": [],
-        "timeline": timeline_from_tracks(frames, times, tracks, balls, color_map),
+        "timeline": timeline,
     }
     out = RESULTS / f"{clip_id}.{engine}.json"
     out.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -173,7 +340,7 @@ def stamp_basketball() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="跑对照检测器")
-    parser.add_argument("--engine", choices=["yolov8n_coco"], default="yolov8n_coco")
+    parser.add_argument("--engine", choices=["yolov8n_coco", "ebard_yolov8n"], default="ebard_yolov8n")
     parser.add_argument("--clip", choices=["flagg", "amen", "all"], default="all")
     parser.add_argument("--fps", type=float, default=8.0)
     parser.add_argument("--stamp-only", action="store_true")

@@ -6,7 +6,7 @@
     "license": "MIT",
     "runtime_license": "Ultralytics AGPL-3.0",
     "role": "篮球专用检测、ByteTrack、球、传球/抢断",
-    "note": "任务书里的管线主干。框、球和事件来自这份预训练权重。球衣颜色按这一帧的下摆判断。号码 OCR 的权重没下载到，姓名基本是空的。",
+    "note": "任务书里的管线主干。框、球和事件来自这份预训练权重。Ref 类单独成轨迹，和球员框重叠时算裁判，不参与分队和持球。号码用 RapidOCR 对躯干裁切投票，对上出场名单才写姓名。",
     "file": "{clip}.json"
   },
   {
@@ -28,5 +28,45 @@
     "role": "任务书里的备选检测器，COCO 预训练",
     "note": "用来替换 Ultralytics 的检测器。同样不是篮球微调。和上面两版对着看框是否套住人。",
     "file": "{clip}.rfdetr.json"
+  },
+  {
+    "id": "ebard_yolov8n",
+    "label": "E-BARD YOLOv8n",
+    "repo": "https://github.com/GabrieleGiudic/E-BARD",
+    "license": "CC-BY-4.0",
+    "runtime_license": "Ultralytics AGPL-3.0",
+    "role": "NBA 画面微调：球员、裁判、球、篮筐",
+    "note": "2024-25 NBA 画面上的四类检测。裁判是单独一类。球比 basketball_analysis 弱，用来对裁判，不替换持球。号码和主干共用 RapidOCR 投票，对上名单才写姓名。",
+    "file": "{clip}.ebard_yolov8n.json"
+  },
+  {
+    "id": "qwen3_vl",
+    "label": "Qwen3 VL",
+    "repo": "https://aws.amazon.com/bedrock/",
+    "license": "Amazon Bedrock",
+    "runtime_license": "Amazon Bedrock",
+    "role": "整段抽帧交给千问，单独出框、号码和事件",
+    "note": "不跟本地检测混用。按回放台同样的采样把每一帧交给 qwen.qwen3-vl-235b-a22b，只收 JSON。用来对准确率。",
+    "file": "{clip}.qwen3_vl.json"
+  },
+  {
+    "id": "claude_sonnet",
+    "label": "Claude Sonnet 4.6",
+    "repo": "https://aws.amazon.com/bedrock/",
+    "license": "Amazon Bedrock",
+    "runtime_license": "Amazon Bedrock",
+    "role": "整段抽帧交给 Sonnet，单独出框、号码和事件",
+    "note": "和千问同一套提示、同一套采样。模型 ID global.anthropic.claude-sonnet-4-6。用来对准确率。",
+    "file": "{clip}.claude_sonnet.json"
+  },
+  {
+    "id": "kimi_k3",
+    "label": "K3 · low",
+    "repo": "https://www.kimi.com/code/docs/en/kimi-code/models",
+    "license": "Kimi Code",
+    "runtime_license": "Kimi Code",
+    "role": "整段抽帧交给 K3，推理档 low，单独出框、号码和事件",
+    "note": "和千问同一套提示、同一套采样。模型 k3，推理档 low。检查点还在写的时候，回放台直接读已返回的帧。",
+    "file": "{clip}.kimi_k3.json"
   }
 ]

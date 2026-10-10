@@ -13,9 +13,9 @@ import * as s3assets from 'aws-cdk-lib/aws-s3-assets';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 import { Construct } from 'constructs';
+import { addP1 } from './p1';
+import { addP2 } from './p2';
 
-const VISION_MODEL = 'qwen.qwen3-vl-235b-a22b';
-const TEXT_MODEL = 'global.anthropic.claude-sonnet-4-6';
 
 /**
  * P0 放在一个栈里：S3、DynamoDB、Lambda、API Gateway、Bedrock 权限、
@@ -67,30 +67,18 @@ export class DeepCourtStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
-    const bedrockInvoke = new iam.PolicyStatement({
-      actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
-      resources: [
-        `arn:aws:bedrock:*::foundation-model/${VISION_MODEL}`,
-        'arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-4-6',
-        `arn:aws:bedrock:*:${cdk.Aws.ACCOUNT_ID}:inference-profile/${TEXT_MODEL}`,
-      ],
-    });
-
     const code = lambda.Code.fromAsset(lambdaDir, {
-      exclude: ['**/__pycache__/**', '**/*.pyc', 'test_common.py'],
+      exclude: ['**/__pycache__/**', '**/*.pyc', 'test_*.py'],
     });
 
     const analyzeFn = this.pyFunction('AnalyzeJob', 'analyze_job.handler.handler', code, {
       JOBS_TABLE: jobs.tableName,
       EVENTS_TABLE: events.tableName,
       MEDIA_BUCKET: mediaBucket.bucketName,
-      VISION_MODEL,
-      TEXT_MODEL,
     }, 120, 1024, 1024);
     const createFn = this.pyFunction('CreateJob', 'create_job.handler.handler', code, {
       JOBS_TABLE: jobs.tableName,
       MEDIA_BUCKET: mediaBucket.bucketName,
-      ANALYZE_FUNCTION_NAME: analyzeFn.functionName,
     }, 20, 256);
     const getFn = this.pyFunction('GetJob', 'get_job.handler.handler', code, {
       JOBS_TABLE: jobs.tableName,
@@ -106,10 +94,8 @@ export class DeepCourtStack extends cdk.Stack {
     events.grantReadWriteData(analyzeFn);
     events.grantReadData(listFn);
     mediaBucket.grantPut(createFn, 'raw/*');
-    mediaBucket.grantRead(analyzeFn, 'raw/*');
+    mediaBucket.grantRead(analyzeFn, 'structured/*');
     mediaBucket.grantRead(getFn, 'raw/*');
-    analyzeFn.grantInvoke(createFn);
-    analyzeFn.addToRolePolicy(bedrockInvoke);
 
     const agentAsset = new s3assets.Asset(this, 'AgentCode', {
       path: path.join(repoRoot, 'agent'),
@@ -119,18 +105,14 @@ export class DeepCourtStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('bedrock-agentcore.amazonaws.com'),
       description: 'Deep Court AgentCore runtime',
     });
-    agentRole.addToPolicy(bedrockInvoke);
     agentAsset.grantRead(agentRole);
+    mediaBucket.grantRead(agentRole, 'structured/*');
 
     const runtime = new agentcore.CfnRuntime(this, 'AnalystRuntime', {
       agentRuntimeName: 'DeepCourtAnalyst',
-      description: 'Deep Court event analyst. Qwen3 VL reads frames, Claude writes the event JSON.',
+      description: 'Deep Court orchestrator. Fetches and validates the CV event stream; no model writes events.',
       roleArn: agentRole.roleArn,
       networkConfiguration: { networkMode: 'PUBLIC' },
-      environmentVariables: {
-        VISION_MODEL,
-        TEXT_MODEL,
-      },
       agentRuntimeArtifact: {
         codeConfiguration: {
           runtime: 'PYTHON_3_12',
@@ -160,13 +142,21 @@ export class DeepCourtStack extends cdk.Stack {
       new s3n.LambdaDestination(analyzeFn),
       { prefix: 'raw/' },
     );
+    mediaBucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED,
+      new s3n.LambdaDestination(analyzeFn),
+      { prefix: 'structured/', suffix: '.json' },
+    );
 
     const api = new apigw.LambdaRestApi(this, 'JobsApi', {
       handler: createFn,
       proxy: false,
       description: 'Deep Court jobs API',
       endpointTypes: [apigw.EndpointType.REGIONAL],
-      deployOptions: { stageName: 'prod' },
+      deployOptions: {
+        stageName: 'prod',
+        tracingEnabled: this.node.tryGetContext('enableP2') !== 'false',
+      },
       defaultCorsPreflightOptions: {
         allowOrigins: apigw.Cors.ALL_ORIGINS,
         allowMethods: ['GET', 'POST', 'OPTIONS'],
@@ -208,7 +198,7 @@ export class DeepCourtStack extends cdk.Stack {
     const webOrigin = origins.S3BucketOrigin.withOriginAccessControl(webBucket);
     const distribution = new cloudfront.Distribution(this, 'Site', {
       comment: 'Deep Court Team 04',
-      defaultRootObject: 'index.html',
+      defaultRootObject: 'game.html',
       priceClass: cloudfront.PriceClass.PRICE_CLASS_200,
       defaultBehavior: {
         origin: webOrigin,
@@ -246,7 +236,11 @@ export class DeepCourtStack extends cdk.Stack {
       },
     });
 
-    const configJs = `window.DEEPCOURT_CONFIG=${JSON.stringify({ apiBase: '/api' })};\n`;
+    const configJs = `window.DEEPCOURT_CONFIG=${JSON.stringify({
+      apiBase: '/api',
+      submitUrl: `https://${distribution.distributionDomainName}/`,
+      githubUrl: 'https://github.com/jasonlovegugu/nba-hackathon-team04/tree/events-possession-eval',
+    })};\n`;
     new s3deploy.BucketDeployment(this, 'DeployWeb', {
       sources: [
         s3deploy.Source.asset(webDir, { exclude: ['design-ref', 'design-ref/**'] }),
@@ -267,9 +261,24 @@ export class DeepCourtStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'MediaBucketName', {
       value: mediaBucket.bucketName,
     });
+    new cdk.CfnOutput(this, 'WebBucketName', {
+      value: webBucket.bucketName,
+    });
     new cdk.CfnOutput(this, 'AgentRuntimeArn', {
       value: runtime.attrAgentRuntimeArn,
     });
+
+    if (this.node.tryGetContext('enableP1') !== 'false') {
+      addP1(this, { mediaBucket, jobs, events, analyzeFn, code });
+    }
+    if (this.node.tryGetContext('enableP2') !== 'false') {
+      addP2(this, {
+        api,
+        mediaBucket,
+        code,
+        callbackUrl: `https://${distribution.distributionDomainName}/api/oauth/kuaishou/callback`,
+      });
+    }
   }
 
   private pyFunction(
@@ -289,6 +298,9 @@ export class DeepCourtStack extends cdk.Stack {
       memorySize: memory,
       ephemeralStorageSize: cdk.Size.mebibytes(ephemeralMb),
       environment,
+      tracing: this.node.tryGetContext('enableP2') === 'false'
+        ? lambda.Tracing.DISABLED
+        : lambda.Tracing.ACTIVE,
       logGroup: new logs.LogGroup(this, `${id}Logs`, {
         retention: logs.RetentionDays.ONE_WEEK,
         removalPolicy: cdk.RemovalPolicy.DESTROY,
