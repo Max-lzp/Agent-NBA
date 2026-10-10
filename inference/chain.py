@@ -403,12 +403,33 @@ def _majority(reads: list[dict]) -> tuple[str, int, str, int]:
 
 def _referee_color(color: str) -> bool:
     text = color.lower()
+    if "black and white" in text or "white and black" in text or "黑白" in text:
+        return True
     return any(word in text for word in ("gray", "grey", "stripe", "灰", "条纹"))
+
+
+def _team_colors() -> list[tuple[str, str]]:
+    """TEAM_COLORS="HOU=red,DAL=black"：这场两队的球衣颜色，按作业传入。"""
+    pairs = []
+    for part in os.environ.get("TEAM_COLORS", "").split(","):
+        team, _, words = part.partition("=")
+        team, words = team.strip().upper(), words.strip().lower()
+        if team and words:
+            for word in words.split("|"):
+                if word.strip():
+                    pairs.append((word.strip(), team))
+    return pairs
 
 
 def _team_from_color(color: str) -> str:
     text = color.lower()
     if _referee_color(text):
+        return ""
+    configured = _team_colors()
+    if configured:
+        for word, team in configured:
+            if word in text:
+                return team
         return ""
     if any(word in text for word in ("white", "白", "light")):
         return "HOU"
