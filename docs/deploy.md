@@ -2,7 +2,7 @@
 
 账号 `382918437747`，profile `nba`，区域只有 `us-east-1`。账号已经 bootstrap，不要再跑 `cdk bootstrap`。IAM 角色的权限边界 `NBAHackathonParticipantBoundary` 由 `cdk/bin/app.ts` 加上，新角色不用手改。
 
-考试片仍走现在已经部署的作业定义。18:00–19:45 不要部署这一份。成片出来之后再部署。默认路径是往现有栈上叠加：不替换 Batch 队列、计算环境、作业定义，也不替换 CloudFront 分配和网页桶。
+考试片仍走现在已经部署的作业定义。18:00–19:45 不要部署这一份。成片出来之后再部署。默认路径不替换 Batch 计算环境、作业队列、CloudFront 分配、网页桶和媒体桶。作业定义名字仍是 `deepcourt-track`，镜像仍是 `deepcourt-tracker:ready`。术语表会让作业定义出新修订版，见下面「术语表」。
 
 ## 一条命令
 
@@ -51,11 +51,43 @@ cd cdk && npm ci && npx cdk synth
 
 ## 镜像
 
-默认作业定义仍引用 ECR `deepcourt-tracker:ready`。`TrackJob`、`GpuCompute`、`TrackQueue` 的逻辑 ID 和属性与现在的模板一致，部署不会替换这三样。
+默认作业定义仍引用 ECR `deepcourt-tracker:ready`。`GpuCompute`、`TrackQueue` 的逻辑 ID 和属性不变，部署不会替换这两样。`TrackJob` 的逻辑 ID 和名字 `deepcourt-track` 不变，镜像标签仍是 `ready`。环境变量多了 `TRANSLATE_TERMINOLOGY`，部署时这条作业定义出新修订版。
 
 `inference/bake.sh` 仍是在已经开着的 Batch 主机上，从 S3 `bootstrap/bake/` 的扁平目录构建并推 `:ready`。仓库里的 Dockerfile 按仓库根目录构建，不要拿它覆盖 `bootstrap/bake/` 里那份扁平 Dockerfile。
 
 `-c buildTrackerImage=true` 会把作业定义的镜像改成 CDK 资产仓库里的标签，并给执行角色加上拉取该仓库的权限。CloudFormation 更新 `AWS::Batch::JobDefinition` 的 `ContainerProperties` 会替换作业定义。队列和计算环境的逻辑 ID 仍不变。已有栈在考试窗口不要开这个开关。
+
+## 术语表
+
+`aws-cdk-lib/aws-translate` 只有 `AWS::Translate::ParallelData`，没有术语表 L1。`BasketballTerminology` 用 `AwsCustomResource` 调 `ImportTerminology`（`MergeStrategy` `OVERWRITE`），文件内容是仓库 `data/terminology/basketball-en-zh.csv`，方向 `UNI`。删除这条资源时调 `DeleteTerminology`。作业定义环境变量是 `TRANSLATE_TERMINOLOGY=deepcourt-basketball`。自定义资源的角色挂 `NBAHackathonParticipantBoundary`，并且 `installLatestAwsSdk` 为 false。
+
+`TrackJobRole` 原有的 `translate:TranslateText` 仍是 `Resource: "*"`。服务授权参考里这个动作的资源类型是可选的 terminology / parallel-data；不带术语表的回退请求没有术语表这条资源，所以不能只写 ARN。带上术语表还要 `translate:GetTerminology`。新增的一条把 `translate:GetTerminology` 和 `translate:TranslateText` 限定到 `arn:aws:translate:us-east-1:<账号>:terminology/deepcourt-basketball/LATEST`。
+
+两份都是 `npx cdk synth`，默认开关，没有连账号。相对加术语表之前的模板：
+
+不会替换，模板逐字节相同：
+
+- 计算环境 `GpuCompute`
+- 作业队列 `TrackQueue`（名字 `deepcourt-track`）
+- CloudFront 分配 `Site`
+- 网页桶 `WebBucket`
+- 媒体桶 `MediaBucket`
+
+就地修改：
+
+- `TrackJob`：逻辑 ID 和名字 `deepcourt-track` 不变，镜像仍是 `deepcourt-tracker:ready`。只多了环境变量 `TRANSLATE_TERMINOLOGY`，以及等术语表导入完成的 `DependsOn`。部署时这个名字会出新修订版。
+- `TrackJobRoleDefaultPolicy`：角色本身不变，策略多了上面那条术语表权限。
+- `CDKMetadata`：CDK 元数据。
+
+新增：
+
+- `BasketballTerminology`（`Custom::TranslateTerminology`）
+- 它的策略 `BasketballTerminologyCustomResourcePolicy`（`translate:ImportTerminology` 与 `translate:DeleteTerminology`，资源是同一个术语表 ARN）
+- 自定义资源提供方的 Lambda、日志组和角色（角色挂权限边界）
+
+状态机 `FilmPipeline` 的模板文本没变，提交参数仍是作业定义的 `Ref`。部署时修订号变了，变更集会把新的作业定义 ARN 写进状态机。这是就地更新，不是另建一条状态机，也不是替换队列或计算环境。
+
+这次不要部署。作业定义要等术语表导入成功才更新；导入失败时现有修订版还在。
 
 ## 上传之后谁提交 Batch
 
@@ -82,7 +114,9 @@ aws stepfunctions start-execution \
 
 ### 相对已经合入的 `feat/standard-player`
 
-这是本改动自己带上的差异。`GpuCompute`、`TrackQueue`、`TrackJob` 及其角色、`Site`（CloudFront 分配）、`WebBucket`、`WebBucketPolicy`、`AnalyzeJob`（含已经改成 240 秒的超时）、`SubmitTrack`、`AskAgent`、`AnalystRuntime`、网页部署用的 512MiB 角色和策略，与这份基线逐字节相同。
+术语表相对当前模板的差异见上面「术语表」。`TrackJob` 不再与加术语表之前逐字节相同。下面是编排合入时相对更早模板的差异，其中把 `TrackJob` 算成逐字节相同的那句，以「术语表」为准。
+
+这是编排那次改动自己带上的差异。`GpuCompute`、`TrackQueue`、`Site`（CloudFront 分配）、`WebBucket`、`WebBucketPolicy`、`AnalyzeJob`（含已经改成 240 秒的超时）、`SubmitTrack`、`AskAgent`、`AnalystRuntime`、网页部署用的 512MiB 角色和策略，与那份基线逐字节相同。当时的 `TrackJob` 及其角色也相同；术语表随后改了作业定义的环境变量和角色策略。
 
 新增：
 
@@ -106,7 +140,7 @@ aws stepfunctions start-execution \
 
 ### 相对更早的线上模板
 
-`feat/standard-player` 上已经合入的分析师改动（AgentCore、`POST /agent/ask`、`web/analyst.js`）在全景里标的是「部署中」，synth 对照也还没出现在更早的模板里。考试片出完后的第一次 `cdk deploy` 会把那一份和上面的编排一起上去。那一份会更新 `AnalystRuntime`、`AnalyzeJob` 超时（120 秒改为 240 秒）和各 Lambda 的代码包，并替换 API Gateway 的 Deployment（阶段仍指向同一个 Stage，分配 `Site` 不变）。它也会让网页部署重传并失效 `/*`，因为网页包里多了 `web/analyst.js`。Batch 队列、计算环境、作业定义在那一份里同样不变。
+`feat/standard-player` 上已经合入的分析师改动（AgentCore、`POST /agent/ask`、`web/analyst.js`）在全景里标的是「部署中」，synth 对照也还没出现在更早的模板里。考试片出完后的第一次 `cdk deploy` 会把那一份和上面的编排一起上去。那一份会更新 `AnalystRuntime`、`AnalyzeJob` 超时（120 秒改为 240 秒）和各 Lambda 的代码包，并替换 API Gateway 的 Deployment（阶段仍指向同一个 Stage，分配 `Site` 不变）。它也会让网页部署重传并失效 `/*`，因为网页包里多了 `web/analyst.js`。Batch 队列和计算环境在那一份里同样不变。作业定义要等这次术语表改动才出新修订版，见上面「术语表」。
 
 状态机调用 `analyze_job` 的等待时间是 300 秒，盖过函数自己的 240 秒，避免函数还在写 DONE 时状态机先判失败。
 
