@@ -53,12 +53,12 @@
       </thead>
       <tbody>
         <tr><td>收片、任务</td><td>CloudFront、API Gateway、Lambda、S3、DynamoDB</td><td>主路径</td></tr>
-        <tr><td>追踪</td><td>Batch、EC2 c7i.48xlarge、EBS、ECR、S3</td><td>部署中。192 vCPU 保持开着，镜像正在烤</td></tr>
-        <tr><td>记分牌、认人、事件、官方数据</td><td>考试片的记分牌在同一台机器上。Textract 只做过探测</td><td>记分牌部署中。认人、事件、官方数据仍在本地</td></tr>
+        <tr><td>追踪</td><td>Batch、EC2 c7i.48xlarge、EBS、ECR、S3</td><td>已接通。192 vCPU 保持开着，镜像已烤好</td></tr>
+        <tr><td>记分牌、认人、事件、官方数据</td><td>考试片的记分牌在同一台机器上。Textract 只做过探测</td><td>记分牌已接通。认人、事件、官方数据仍在本地</td></tr>
         <tr><td>校验清单</td><td>Lambda、Bedrock AgentCore、DynamoDB、CloudWatch Logs</td><td>主路径</td></tr>
         <tr><td>回放</td><td>CloudFront、S3、API Gateway、Lambda</td><td>主路径</td></tr>
         <tr><td>解说</td><td>Bedrock、Polly、S3</td><td>成片仍用本机语音</td></tr>
-        <tr><td>成片</td><td>同一台机器上的 ffmpeg，写入网页桶。MediaConvert 模板已建</td><td>部署中。MediaConvert 还没提交转码作业</td></tr>
+        <tr><td>成片</td><td>同一台机器上的 ffmpeg，写入网页桶。MediaConvert 模板已建</td><td>已接通。探测成片已在网页桶。MediaConvert 还没提交转码作业</td></tr>
         <tr><td>观测和密钥</td><td>CloudWatch、X-Ray、Secrets Manager、Cost Explorer</td><td>已接通。密钥是空占位</td></tr>
       </tbody>
     </table>
