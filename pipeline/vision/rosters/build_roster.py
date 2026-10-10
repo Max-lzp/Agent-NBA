@@ -23,6 +23,12 @@ SHORT_NAMES = {
     "Dwight Powell": "Powell", "Caleb Martin": "Martin", "Moussa Cisse": "Cisse",
     "Klay Thompson": "Klay", "Brandon Williams": "Williams", "Ryan Nembhard": "Nembhard",
     "D'Angelo Russell": "Russell", "Jaden Hardy": "Hardy", "Anthony Davis": "Davis",
+    "Steven Adams": "Adams", "Fred VanVleet": "VanVleet", "Kevon Harris": "Harris",
+    "Tristen Newton": "Newton", "Tyler Smith": "Tyler-Smith", "Kyrie Irving": "Irving",
+    "Khris Middleton": "Middleton", "Dante Exum": "Exum", "Tyus Jones": "Jones",
+    "Marvin Bagley III": "Bagley", "Jeremiah Robinson-Earl": "Robinson-Earl",
+    "Dereck Lively II": "Lively", "AJ Johnson": "AJ Johnson", "Miles Kelly": "Kelly",
+    "John Poulakidas": "Poulakidas",
 }
 
 

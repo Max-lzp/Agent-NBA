@@ -21,7 +21,7 @@ python pipeline/vision/models/run_official_model.py
 
 ## 2026-10-10 官方统计更新
 
-stats.nba.com 现在可访问，已提交 `pipeline/vision/rosters/sources/2025-26-official-sources.json`（完整接口响应、URL、抓取时间及 SHA-256）与 `2025-26-verified-totals.csv`。火箭 17 人、独行侠 24 人的候选名单已取得真实 ID/GP/GS/总分钟，两队 GS 各合计 410。GP/MIN 来自球队过滤的 leaguedashplayerstats；GS 来自 playercareerstats 的 2025-26、对应球队行，因为 leaguedashplayerstats 不提供 GS。career MIN 为整数，校验其与精确总分钟的差不超过 1 分钟；输出保留 leaguedash 的精度。
+stats.nba.com 现在可访问，已提交 `pipeline/vision/rosters/sources/2025-26-official-sources.json`（完整接口响应、URL、抓取时间及 SHA-256）与 `2025-26-verified-totals.csv`。最初火箭 17 人、独行侠 24 人的快照候选取得真实 ID/GP/GS/总分钟；随后通过历史游戏页面补齐为火箭 19 人、独行侠 25 人（44 条球员—球队统计记录），两队 GS 各合计 410。GP/MIN 来自球队过滤的 leaguedashplayerstats；GS 来自 playercareerstats 的 2025-26、对应球队行，因为 leaguedashplayerstats 不提供 GS。career MIN 为整数，校验其与精确总分钟的差不超过 1 分钟；输出保留 leaguedash 的精度。
 
 ```bash
 python3 pipeline/vision/rosters/fetch_nba_sources.py \
@@ -30,7 +30,7 @@ python3 pipeline/vision/rosters/fetch_nba_sources.py \
 
 候选是 commonteamroster 快照与该队赛季统计的并集，不宣称覆盖所有未出场且赛季中已离队的登记人员。球队过滤统计返回的 TEAM_ID/TEAM_ABBREVIATION 可能仍指球员最新所属队（如 Davis），所以不能据此丢弃已离队球员；脚本通过 career 的赛季-球队行核对 GP、GS、MIN。
 
-零出场者（VanVleet、Irving）由官方名单快照及两份完整出场统计中无当季出场行共同确认，未将网络失败或缺失值直接改为零。当前还缺完整历史登记日期/号码/位置；John Poulakidas 的快照号码为空、两名球员显示 21 号，不能直接把快照当时段名单。待这些字段核验后，用 verified-totals.csv 和真实 registrations.csv 生成目标 2025-26.json。详细待核验字段逐人保存在 sources JSON 的 candidates 中。
+零出场者（VanVleet、Irving）由官方名单快照及两份完整出场统计中无当季出场行共同确认，未将网络失败或缺失值直接改为零。位置已补查官方 commonplayerinfo；当前还缺经过独立复核的完整历史登记日期/号码；John Poulakidas 的快照号码为空、两名球员显示 21 号，不能直接把快照当时段名单。待这些字段核验后，用 verified-totals.csv 和真实 registrations.csv 生成目标 2025-26.json。详细待核验字段逐人保存在 sources JSON 的 candidates 中。
 
 ## 名单输入与生成
 
@@ -76,6 +76,6 @@ git diff --check
 
 测试使用明确标记的合成数据验证公式守恒、单位转换、非法输入拒绝、关键度排序、号码 00、short_name、零出场、换号区间；它们不证明 NBA 数据已取得。
 
-验证包括模型/名单契约测试、原有后端测试、合成输入的 CLI 检查，以及官方抓取与真实 CSV→JSON/PNG 流程。其他分支中的名单种子 ID/统计为空，未作为正式名单复用。正式深度结果已生成；历史号码/登记缺失仍阻止正式名单验收。
+验证包括模型/名单契约测试、原有后端测试、合成输入的 CLI 检查，以及官方抓取与真实 CSV→JSON/PNG 流程。其他分支中的名单种子 ID/统计为空，未作为正式名单复用。正式深度结果已生成；历史号码/登记缺失仍阻止正式名单验收，详见 docs/roster-history-notes.md。
 
 任务书已授权提交分支与 PR，现已推送并创建草稿 PR #8。PR 描述区分已取得的真实数据/模型结果与尚未完成的历史名单/高 Leverage 回放。团队群地址未提供，暂不发送消息。
