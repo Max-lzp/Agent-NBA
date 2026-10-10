@@ -46,15 +46,6 @@
     return (pack.shots || []).filter((shot) => shot.made && shot.release && Number.isFinite(shot.release.t));
   }
 
-  function scoreLine(pack, shot) {
-    const rows = pack.scorebug || [];
-    const bug = [...rows].reverse().find((row) => row.t <= shot.release.t + 0.05) || rows[0];
-    if (!bug) return "";
-    const mine = shot.team === bug.away ? bug.awayScore - bug.homeScore : bug.homeScore - bug.awayScore;
-    const gap = mine === 0 ? "打平" : `${TEAM_ZH[shot.team] || shot.team}${mine > 0 ? "领先" : "落后"} ${Math.abs(mine)} 分`;
-    return `${bug.period} ${bug.clock} · ${bug.awayName} ${bug.awayScore} : ${bug.homeScore} ${bug.homeName} · ${gap}`;
-  }
-
   const OFF_RANKS = [["pts", "场均得分", 1], ["fg_pct", "投篮命中率", "pct"], ["ts_pct", "真实命中率", "pct"]];
   const DEF_RANKS = [["stl", "场均抢断", 1], ["blk", "场均盖帽", 1], ["dreb", "场均防守篮板", 1], ["def_rating", "防守效率", 1]];
 
@@ -112,7 +103,6 @@
     const offense = offenseLines(shot).map(wrap).join("");
     const defense = defenseLines(shot).map(wrap).join("");
     return `<div class="freeze-head"><b>出手瞬间</b><span>定格 ${Math.ceil(left / 1000)} 秒</span></div>
-      <p class="freeze-score">${scoreLine(pack, shot)}</p>
       <h3><i class="dot red"></i>${shot.name} #${shot.number}<small>${shooterSource(shot)}</small></h3>${offense}
       <h3><i class="dot gold"></i>防守</h3>${defense}`;
   }
@@ -150,7 +140,7 @@
     ctx.font = `${Math.round(13 * ratio)}px MiSans, "PingFang SC", sans-serif`;
     const width = ctx.measureText(text).width + 12 * ratio;
     const x = right ? box[2] * scale + 5 * ratio : box[0] * scale - width - 5 * ratio;
-    const y = (box[1] + (box[3] - box[1]) * 0.25) * scale;
+    const y = (box[1] + (box[3] - box[1]) * 0.45) * scale - 9 * ratio;
     ctx.fillStyle = "rgba(20,17,14,0.9)";
     ctx.fillRect(x, y, width, 18 * ratio);
     ctx.fillStyle = color;
