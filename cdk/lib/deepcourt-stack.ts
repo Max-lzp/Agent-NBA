@@ -106,6 +106,8 @@ export class DeepCourtStack extends cdk.Stack {
     const agentAsset = new s3assets.Asset(this, 'AgentCode', {
       path: agentDir,
       exclude: ['__pycache__', '*.pyc', 'test_*.py', 'requirements.txt'],
+      // 按打包结果算哈希：打包方式改了也会重新上传，不会复用旧的 zip。
+      assetHashType: cdk.AssetHashType.OUTPUT,
       bundling: {
         image: cdk.DockerImage.fromRegistry('public.ecr.aws/docker/library/python:3.12-slim'),
         local: {

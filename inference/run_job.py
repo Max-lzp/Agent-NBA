@@ -200,34 +200,45 @@ def _players_at(tags: list, t: float) -> list:
 
 
 def _draw_player_tags(draw, font, players: list) -> None:
+    """名签贴在框顶上方 12 像素，最多上挪一行，不高过场上最高那个人的头顶。Agent detecting 放不下就不画。"""
+    if font is None or not players:
+        return
+    ceiling = min(float(player.get("y") or 0) for player in players)
     placed = []
     for player in players:
-        rect = _tag_slot(draw, font, player, placed)
+        rect = _tag_slot(draw, font, player, placed, ceiling)
         if rect is None:
-            continue
+            if player.get("label") == "Agent detecting":
+                continue
+            rect = _tag_slot(draw, font, player, [], ceiling)
+            if rect is None:
+                continue
         placed.append(rect)
         _paint_tag(draw, font, player, rect)
 
 
-def _tag_slot(draw, font, player: dict, placed: list):
+def _tag_slot(draw, font, player: dict, placed: list, ceiling: float):
     text = player.get("label") or player.get("name") or ""
-    if not text or font is None:
+    if not text:
         return None
     box = draw.textbbox((0, 0), text, font=font)
-    tw, th = box[2] - box[0], box[3] - box[1]
-    width = tw + 16
-    height = th + 8
+    width = box[2] - box[0] + 16
+    height = box[3] - box[1] + 8
     x = float(player.get("x") or 0)
     y = float(player.get("y") or 0)
     w = float(player.get("w") or 0)
-    left = x + (w - width) / 2
-    for step in range(4):
-        top = y - height - 6 - step * (height + 4)
-        if top < 4:
+    center = x + (w - width) / 2
+    floor = max(4.0, ceiling - 2 * height - 16)
+    for row in range(2):
+        top = y - height - 12 - row * (height + 4)
+        if top < floor:
             break
-        rect = (left, top, left + width, top + height)
-        if not any(_overlap(rect, other) for other in placed):
-            return rect
+        for left in (center, center - width / 2, center + width / 2):
+            if left < 0 or left + width > 1280:
+                continue
+            rect = (left, top, left + width, top + height)
+            if not any(_overlap(rect, other) for other in placed):
+                return rect
     return None
 
 
