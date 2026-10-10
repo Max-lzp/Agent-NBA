@@ -137,4 +137,132 @@
 
 盖帽没有碰到篮筐，所以鲍威尔拿到进攻篮板后进攻时间不重置，从 9 一直走到出手前的 0.4。截帧读数和这一点一致。
 
-<!-- 4–5 待补 -->
+## 4. 出手深度数据
+
+克里斯蒂全场只出手 2 次（`boxscore` 里 `fieldGoalsAttempted` = 2），两次都在这支片子里。
+
+### 两次出手
+
+| 字段 | 270 被盖的抛投 | 273 后撤步打板三分 | 来源 |
+| --- | --- | --- | --- |
+| 预期命中率 | **0.177**（17.7%） | **0.300**（30.0%） | `shotqualityshotlog.shotQuality`（shotcard 里也是同值） |
+| 结果 | 不中，被盖（`success` = 0） | 命中（`success` = 1），3 分 | `shotqualityshotlog.success` / `playbyplay.shotResult` |
+| 类型 | 2pt，`Jump Shot`，`driving floating` | 3pt，`Jump Shot`，`step back bank` | `eventType` / `subType` / `descriptor` |
+| 投篮距离 | **8.95 英尺** | **24.85 英尺** | `playbyplay.shotDistance` = `shotcard.shotDistance`；赛季坐标文件取整为 8 / 24 |
+| 区域 | `In The Paint (Non-RA)`，`8-16 Right` | `Above the Break 3`，`24+ Right Center` | `playbyplay.area` / `areaDetail` |
+| 赛季坐标文件区域 | `Right Side(R)`，`8-16 ft.` | `Right Side Center(RC)`，`24+ ft.` | `dal_shot_coordinates.csv` `SHOT_ZONE_AREA` / `SHOT_ZONE_RANGE` |
+| shotcard 坐标 | `xLegacy` 72，`yLegacy` 52 | `xLegacy` 147，`yLegacy` 200 | `shotcard`；与 `dal_shot_coordinates.csv` 的 `LOC_X` / `LOC_Y` 一致 |
+| 逐回合坐标 | `x` 11.17，`y` 35.50，`side` left | `x` 26.89，`y` 20.59，`side` left | `playbyplay.x` / `y` / `side` |
+| 盖帽人 | 小史密斯 1631095 | 无 | `blockPersonId` |
+| 助攻 | 无 | 无 | `assistPersonId` 为 null |
+| 二次进攻 | 无 | `2ndchance` | `qualifiers` |
+| 出手 UTC | 2025-12-07T02:23:42 | 2025-12-07T02:23:50 | `shotUtcTime` |
+| 官方视频 | 9800 ms | 9650 ms | `largeDuration` |
+| 犯规 | 无 | 小史密斯投篮犯规，加罚 1 中 1（片外） | `playbyplay` 274 / 276 |
+
+**shotquality 日志里没有的字段**：防守人距离、最近防守人、出手前运球次数、触球时间。这些在附件和仓库里都找不到，成片里不能出现。「防守人是小史密斯」来自盖帽记录、犯规记录和下面的 matchups 数据，不是 shotquality。
+
+参照：本场 DAL 全队平均 `shotQuality` 0.517（48/80），HOU 0.462（44/85），来源 `shotqualityshotlog.teams`。两投都明显低于全队平均。
+
+### matchups：克里斯蒂对位谁
+
+`boxscorematchupsv3` 里 `homeTeam` 克里斯蒂（1631108）的防守人一共 10 个。和本片有关的是小史密斯：
+
+| 字段 | 克里斯蒂 ← 小史密斯防守 |
+| --- | --- |
+| `matchupMinutes` | 0:59 |
+| `partialPossessions` | 5.6 |
+| `percentageDefenderTotalTime` | 0.0687 |
+| `percentageOffensiveTotalTime` | 0.1335 |
+| `percentageTotalTimeBothOn` | 0.144 |
+| `playerPoints` | **4** |
+| `teamPoints` | 9 |
+| `matchupFieldGoalsMade` / `Attempted` | **1 / 2** |
+| `matchupThreePointersMade` / `Attempted` | **1 / 1** |
+| `matchupBlocks` | **1** |
+| `matchupFreeThrowsMade` / `Attempted` | **1 / 1** |
+| `shootingFouls` | **1** |
+| `switchesOn` | 0 |
+
+这一行正好对上本片：两投一中、三分 1/1、盖帽 1 次、投篮犯规 1 次、加罚 1/1，合计 4 分。所以两次出手的主防都是小史密斯，有官方数据支持。克里斯蒂被防时间最长的是阿隆·霍勒迪（2:23）和里德·谢泼德（1:53），但他们两人都不在本片场上。
+
+反方向（`awayTeam` 小史密斯的进攻对位里）也有克里斯蒂这一行，0:20，数值全是 0 次出手。那是小史密斯进攻、克里斯蒂防守，和本片无关。
+
+matchups 里出手 0 次时命中率字段返回 `0.0`，应当按「无数据」处理，不要写成 0%。
+
+### 赛季数据：可用于定格卡（2025–26 常规赛）
+
+克里斯蒂（`player_shooting_three_bands.csv`、`player_shot_zones.csv`，DAL scope 与 NBA scope 数值相同）：
+
+| 项 | 数值 |
+| --- | --- |
+| 三分（全部） | 180 / 446，**40.4%** |
+| 弧顶以上三分 `Above the Break 3`（本球区域） | 105 / 281，**37.4%** |
+| 左底角 / 右底角三分 | 44/98 44.9% / 31/67 46.3% |
+| 非 RA 油漆区 `In The Paint (Non-RA)`（抛投区域） | 37 / 100，**37.0%** |
+| 近框 `Restricted Area` | 82 / 125，65.6% |
+| 6 英尺内 / 6 英尺外两分 / 三分（`player_shooting_distance_aligned.csv`） | 96/162 59.3% / 44/117 37.6% / 180/446 40.4% |
+| 场次 / 分钟 | 77 场 / 2244.5 分钟 |
+| TS% / eFG% | 0.601 / 0.566 |
+| 身高 / 位置 / 选秀 | 6-5（195.58 cm）/ Guard / 2022 第 2 轮第 35 顺位 |
+| 臂展 | 80.75 英寸（205.1 cm），2022 年联合试训 |
+
+小史密斯防守（`player_defensive_shooting.csv`，NBA scope；HOU scope 数值相同）：
+
+| 段 | 对手命中 | 对手正常命中率 | 差值 | 说明 |
+| --- | --- | --- | --- | --- |
+| 6 英尺内 `near_six_ft` | 185/334，**55.4%** | 63.0% | **−7.6 个百分点** | 用户问的「防守近框」 |
+| 10 英尺内 `near_ten_ft` | 226/422，**53.6%** | 58.9% | **−5.3 个百分点** | 本次 8.95 英尺抛投落在这一段，**更贴切** |
+| 三分 `three_point` | 140/381，36.7% | 35.8% | +1.0 个百分点 | 本次三分对应这一段 |
+| 整体 `overall` | 434/954，45.5% | 46.7% | −1.2 个百分点 | |
+
+小史密斯身高 6-11（210.82 cm），Forward，2022 第 1 轮第 3 顺位。官方试训臂展**没有数据**（`not_found_in_2000_2025_official_combine`），不要写。`priority_team_profiles_reviewed.csv` 里的 216.0 是用户未核实值，也不能用。
+
+本场：小史密斯全场 1 次盖帽，就是这一次（`boxscore.blocks` = 1）。克里斯蒂全场 6 分，其中 4 分来自这一回合（三分 + 加罚，`pointsSecondChance` = 4）。
+
+## 5. 成片建议
+
+### 定格卡
+
+**首选：三分出手瞬间，约 14.6–15.0 秒（推断）。** 用视频里克里斯蒂球刚离手的那一帧，进攻时间应在 1 秒以内。截帧里最接近的是 13 秒（5:00，进攻时间 2.2）：克里斯蒂在左侧三分线外持球，鲍威尔在旁边，画面干净、记分牌清楚，可以当备选。15 秒那帧球已经出手，人物看不全，不建议用。
+
+卡片写这几个数字：
+
+1. **预期命中率 30%**（`shotQuality` 0.300），结果「命中 + 犯规」。
+2. **24.85 英尺**后撤步打板（`shotDistance`、`descriptor`）。
+3. **进攻时间约 0.4–1 秒**（记分牌，推断）；或者写「二次进攻」（`2ndchance`）。
+4. 克里斯蒂赛季弧顶三分 **37.4%**（105/281），或全部三分 40.4%。
+5. 防守人小史密斯：本回合盖 1 次、投篮犯规 1 次（matchups）。
+
+比分写 **44:40 → 44:43**，加罚之后的 44:44 在片外，可以用「随后加罚命中扳平」带过。
+
+**第二张（可选）：盖帽，约 5.9 秒。** 写预期命中率 17.7%、8.95 英尺突破抛投、小史密斯赛季 10 英尺内对手命中率 53.6%（正常 58.9%）。
+
+### 中文解说（每句后面是数据来源）
+
+1. 第二节还剩 5 分 07 秒，火箭 44 比 40 领先，克里斯蒂突破抛投，被小史密斯盖下。（截帧记分牌；`playbyplay` 270/271）
+2. 这次 8.95 英尺的抛投，预期命中率只有 17.7%；小史密斯本季把 10 英尺内对手命中率压到 53.6%。（`shotDistance`、`shotQuality` 0.177；`player_defensive_shooting.csv` `near_ten_ft`）
+3. 鲍威尔抢下进攻篮板，进攻时间没有重置，球回到克里斯蒂手里。（`playbyplay` 272；截帧进攻时间 9 → 6）
+4. 进攻时间不到 1 秒，克里斯蒂 24.85 英尺后撤步打板三分命中，还造成小史密斯犯规。（截帧进攻时间 0.4；`playbyplay` 273/274，`shotDistance`、`descriptor`）
+5. 这一投的预期命中率只有 30%，比分追到 43 比 44，随后加罚命中扳平。（`shotQuality` 0.300；273 `scoreHome`；276，片外）
+
+### English commentary (source in brackets)
+
+1. 5:07 left in the second, Houston up 44–40, Max Christie drives for a floater and Jabari Smith Jr. swats it. (scoreboard frames; `playbyplay` 270/271)
+2. That 9-foot floater carried just a 17.7% expected make; opponents shoot 53.6% within 10 feet against Smith this season. (`shotDistance` 8.95, `shotQuality` 0.177; `player_defensive_shooting.csv` `near_ten_ft`)
+3. Dwight Powell keeps it alive on the offensive glass, no shot-clock reset. (`playbyplay` 272; shot clock 9 → 6 in frames)
+4. Under a second on the shot clock, Christie steps back from 24.85 feet, banks it in, and draws the foul on Smith. (shot clock 0.4 frame; `playbyplay` 273/274)
+5. A 30% look turned into a four-point chance: 44–43 now, and the free throw ties it. (`shotQuality` 0.300; 273 `scoreHome`; 276, after the clip)
+
+### 容易错的点
+
+1. **把裁判认成球员。** 前景底线的 #30 是裁判 John Butler（1628951），火箭卡佩拉也是 #30。按衣服区分：裁判是灰黑条纹，卡佩拉是红衣。274 号犯规就是 Butler 吹的。
+2. **#7 和 #10 撞号。** #7 有杜兰特（红）和鲍威尔（黑），#10 有小史密斯（红）和 B. 威廉姆斯（黑）。抢篮板的 #7 是**鲍威尔**，不是杜兰特。识别号码时必须带上球衣颜色。
+3. **鲍威尔和其他人混淆。** 鲍威尔是 Dwight Powell（203939），中文「德怀特·鲍威尔」；火箭这边没有姓 Powell 的人。他本场只有 1 个进攻篮板（`reboundsOffensive` = 1），就是这一个。
+4. **44:44 的时机。** 片内比分只有 44:40 和 44:43，19–21 秒才翻到 43。写 44:44 只能说「随后加罚」，不能放在片内任何时刻，也不能写在定格卡的「当前比分」上。
+5. **认错比赛和球衣。** 这是 `0022500356`（HOU @ DAL，2025-12-06），不是主模板 `0022500701`。DAL 穿黑色城市版、HOU 穿红色，不是「白衣火箭」。用 `--white HOU` 写死会认反。
+6. **鲍威尔篮板的时间。** 官方时钟写 5:03，画面上在 5:06 前后，以画面为准（约 6.5–8 秒）。
+7. **盖帽人。** 截帧里卡佩拉离球最近，但官方盖帽人是小史密斯（`blockPersonId` 1631095），不要写成卡佩拉。
+8. **没有的数据不要编。** 不写防守人距离、最近防守人距离、小史密斯臂展（官方无数据），也不写克里斯蒂的助攻传球人（官方没有记助攻）。matchups 里 0 次出手对应的 `0.0` 命中率不能显示成 0%。
+9. **三分距离。** 写 24.85 英尺（或约 25 英尺），不要用赛季坐标文件里取整后的 24。抛投写 8.95 英尺（约 9 英尺），不要写成 8 英尺。
+10. **左右方向。** 官方 `areaDetail` 写 `Right Center`，`side` 写 left，画面上克里斯蒂在镜头左侧。这些是不同坐标系，成片不要写「左侧/右侧三分」，写「弧顶偏侧翼」更稳。
