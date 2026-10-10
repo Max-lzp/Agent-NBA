@@ -1,7 +1,4 @@
-"""同一台机器上跑完追踪、记分牌和成片，再把新文件名的 mp4 和回放数据写进网页桶。
-
-出手、领防和官方预期命中率仍由本机清单补。这里写进页面的是记分牌读数和比分跳动。
-"""
+"""同一台机器上跑完追踪、记分牌、认人、事件清单和成片，再把新文件名的 mp4 和回放数据写进网页桶。"""
 
 from __future__ import annotations
 
@@ -50,6 +47,7 @@ def main() -> None:
     track._put(output, body)
     local_video = Path("/tmp/video.mp4")
     board = _scoreboard(local_video)
+    linked = _link(job_id, local_video, frames, board, bucket_name)
     film = Path("/tmp/broadcast.mp4")
     _render(
         local_video,
@@ -61,7 +59,7 @@ def main() -> None:
     if not bucket_name:
         raise RuntimeError("缺少 MEDIA_BUCKET，解说无法把原声送去转写")
     spoken = _dub(job_id, local_video, film, bucket_name)
-    _publish(job_id, film, board, web_bucket, distribution, spoken)
+    _publish(job_id, film, board, web_bucket, distribution, spoken, linked)
     print(json.dumps({
         "jobId": job_id,
         "frames": len(frames),
@@ -177,6 +175,18 @@ def _period(value: str | None) -> str:
     return PERIODS.get(value, value)
 
 
+def _link(job_id: str, video: Path, frames: list, board: dict, bucket: str) -> dict:
+    if not bucket:
+        return {}
+    try:
+        import chain
+
+        return chain.link(job_id, video, frames, board, bucket)
+    except Exception as exc:  # noqa: BLE001 — 认人或官方数据失败仍要交出成片
+        print(f"认人、事件或官方数据没写完：{exc}")
+        return {}
+
+
 def _dub(job_id: str, source: Path, film: Path, media_bucket: str) -> dict:
     import dub
 
@@ -184,7 +194,7 @@ def _dub(job_id: str, source: Path, film: Path, media_bucket: str) -> dict:
     return dub.attach(source, film, Path("/tmp/dub"), media_bucket, job_id)
 
 
-def _publish(job_id: str, film: Path, board: dict, web_bucket: str, distribution: str, spoken: dict | None = None) -> None:
+def _publish(job_id: str, film: Path, board: dict, web_bucket: str, distribution: str, spoken: dict | None = None, linked: dict | None = None) -> None:
     s3 = boto3.client("s3", region_name=REGION)
     video_key = f"assets/{job_id}-broadcast.mp4"
     s3.upload_file(
@@ -198,7 +208,7 @@ def _publish(job_id: str, film: Path, board: dict, web_bucket: str, distribution
         key = f"assets/{job_id}-{lang}.mp4"
         s3.upload_file(str(path), web_bucket, key, ExtraArgs={"ContentType": "video/mp4"})
         track_keys.append(key)
-    clips = _merge_clips(s3, web_bucket, job_id, video_key, board, spoken)
+    clips = _merge_clips(s3, web_bucket, job_id, video_key, board, spoken, linked)
     body = _clips_js(job_id, clips)
     s3.put_object(
         Bucket=web_bucket,
@@ -227,7 +237,7 @@ def _publish(job_id: str, film: Path, board: dict, web_bucket: str, distribution
         )
 
 
-def _merge_clips(s3, web_bucket: str, job_id: str, video_key: str, board: dict, spoken: dict | None = None) -> dict:
+def _merge_clips(s3, web_bucket: str, job_id: str, video_key: str, board: dict, spoken: dict | None = None, linked: dict | None = None) -> dict:
     text = ""
     try:
         text = s3.get_object(Bucket=web_bucket, Key="replay/clips.js")["Body"].read().decode("utf-8")
@@ -239,7 +249,7 @@ def _merge_clips(s3, web_bucket: str, job_id: str, video_key: str, board: dict, 
     for key in ("flagg", "amen"):
         if key in text and key not in data:
             raise RuntimeError(f"现有回放数据里的 {key} 没读出来，停止覆盖")
-    data[job_id] = _pack(job_id, video_key, board, spoken)
+    data[job_id] = _pack(job_id, video_key, board, spoken, linked)
     return data
 
 
@@ -265,7 +275,7 @@ def _clips_js(job_id: str, data: dict) -> str:
     return f"{lead}window.DEEPCOURT_CLIPS={payload};\n"
 
 
-def _pack(job_id: str, video_key: str, board: dict, spoken: dict | None = None) -> dict:
+def _pack(job_id: str, video_key: str, board: dict, spoken: dict | None = None, linked: dict | None = None) -> dict:
     import cv2
 
     cap = cv2.VideoCapture("/tmp/video.mp4")
@@ -276,7 +286,7 @@ def _pack(job_id: str, video_key: str, board: dict, spoken: dict | None = None) 
     away = board.get("away") or os.environ.get("AWAY", "")
     home = board.get("home") or os.environ.get("HOME_TEAM", "")
     scorebug = _scorebug(board.get("reads") or [], away, home)
-    events = _events(board.get("ticks") or [])
+    events = (linked or {}).get("events") or _events(board.get("ticks") or [])
     title = os.environ.get("TITLE") or _title(scorebug, away, home, job_id)
     anchor = events[0]["t"] if events else 0
     pack = {
@@ -287,15 +297,15 @@ def _pack(job_id: str, video_key: str, board: dict, spoken: dict | None = None) 
         "width": 1280,
         "height": 720,
         "duration": duration,
-        "gameId": os.environ.get("GAME_ID", ""),
+        "gameId": (linked or {}).get("gameId") or os.environ.get("GAME_ID", ""),
         "away": away,
         "home": home,
         "scorebug": scorebug,
         "tags": [],
         "events": events,
-        "shots": [],
+        "shots": [row for row in events if row.get("eventType") == "shot"],
         "anchor": anchor,
-        "voice": (spoken or {}).get("voice") or "比分来自云上记分牌。出手、领防和官方预期命中率仍由本机清单补。",
+        "voice": (spoken or {}).get("voice") or "记分牌、球衣号码和官方回合都在这台云上机器读完。",
     }
     if spoken and spoken.get("tracks"):
         pack["tracks"] = spoken["tracks"]

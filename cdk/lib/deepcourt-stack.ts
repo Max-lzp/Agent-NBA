@@ -243,7 +243,7 @@ export class DeepCourtStack extends cdk.Stack {
     })};\n`;
     new s3deploy.BucketDeployment(this, 'DeployWeb', {
       sources: [
-        s3deploy.Source.asset(webDir, { exclude: ['design-ref', 'design-ref/**'] }),
+        s3deploy.Source.asset(webDir, { exclude: ['design-ref', 'design-ref/**', 'replay/clips.js'] }),
         s3deploy.Source.data('config.js', configJs),
       ],
       destinationBucket: webBucket,

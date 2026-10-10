@@ -7,8 +7,14 @@
 
 ```mermaid
 flowchart LR
-  video[视频] --> cloud[c7i.48xlarge 追踪、记分牌、ffmpeg]
-  cloud --> page[网页呈现]
+  video[视频] --> machine[c7i 追踪、记分牌、ffmpeg]
+  machine --> film[成片，音轨仍是原声]
+  film --> en[英文原声]
+  film --> asr[Transcribe]
+  asr --> zhwords[Translate]
+  zhwords --> polly[Polly Neural 知语]
+  en --> page[CloudFront 播放器]
+  polly --> page
   video --> stream[本机事件清单]
   official[官方逐回合 本地文件] --> stream
   stream --> s3[S3 structured]
@@ -17,15 +23,11 @@ flowchart LR
   agent --> ddb[DynamoDB]
   analyze --> ddb
   ddb --> page
-  stream --> cut[本机 ffmpeg 训练片画面]
+  stream --> cut[本机训练片画面]
   cut --> page
-  video --> en[英文原声]
-  video --> asr[Transcribe]
-  asr --> zhwords[Translate]
-  zhwords --> polly[Polly Neural 知语]
-  en --> page
-  polly --> page
 ```
+
+云上新片子走上面一行：成片出来之后才做两条音轨。下面一行是本机清单和训练片，不经过 Transcribe。
 
 ## 步骤
 
@@ -40,8 +42,8 @@ flowchart LR
 | 7. 清单上云 | `structured/{jobId}.json` | S3 | S3 媒体桶 `team04deepcourt-mediabucketbcbb02ba-haisfxujonfg` | 主路径 |
 | 8. 校验 | 取回清单并写成页面事件。Agent 不可用时 Lambda 直接读清单 | Lambda `analyze_job` | Bedrock AgentCore `DeepCourtAnalyst`、DynamoDB EventsTable、CloudWatch Logs | 主路径。这三项资源已创建 |
 | 9. 回放 | 成片、时间线、暂停展开。进球后跳回出手帧定格 5 秒，投篮人脚下画红圈，弹出比分、投篮人和领防人的队内排名星级；领防人脚下画黄色虚线圈；领防人号码没读出就只写没读出；右栏是分区热区图，红圈标出这一投。站点本身在第 12 步 | 浏览器。考试片的 mp4 和 `replay/clips.js` 用新文件名直传网页桶，只失效这几个路径 | API Gateway `GET /jobs/{id}` 与 `/events`、Lambda `get_job` `list_events` | 主路径 |
-| 10. 解说 | 页面可选两条音轨。英文音轨直接播原声。中文音轨用 Transcribe 转写英文解说，Translate 译成中文，再按原句的时间用 Polly 合成。原解说不留在中文音轨里。普通话只合成人声，因为现场声和原解说叠在一起，声道又几乎是单声道，分不开 | 云上作业在成片之后做。容器启动时从 S3 `bootstrap/track/` 拉 `run_job.py`、`dub.py`、`commentary.py`。训练片的两条音轨已经在网页桶 | Transcribe、Translate、Polly Neural `Zhiyu`（`cmn-CN`）、S3 `commentary/asr/`、任务角色 `TrackJobRole` | 部署中。任务定义已改成启动时拉脚本，角色已有这三项权限，脚本已在 S3。还没有一支云上作业跑完解说。GitHub 没有自动部署 |
-| 11. 成片转码 | 人名烧进 MP4，写到网页桶 `assets/{jobId}-broadcast.mp4`。前 3 秒标出已回溯到的所有人，之后只标持球人、传球双方和领防人。训练片另出一份 `{clip}-replay.mp4`：进球后插入 5 秒出手帧定格 | 考试片在同一台 `c7i.48xlarge` 上用 ffmpeg。训练片仍是本机 ffmpeg | MediaConvert 模板 `deepcourt-render-template` | 已接通。`assets/warm-probe-broadcast.mp4` 已在网页桶。MediaConvert 还没有提交转码作业 |
+| 10. 解说 | 页面上选两条音轨。英文是成片里的原声，不另处理。中文先把这条原声交给 Transcribe，再由 Translate 译成中文，按原句的时间用 Polly Neural 知语合成。原解说不留在中文音轨里。现场声和原解说叠在一起，声道又几乎是单声道，分不开，所以中文音轨只有合成人声 | 考试片：成片之后在同一容器里做。启动时从 S3 `bootstrap/track/` 拉 `run_job.py`、`dub.py`、`commentary.py`。训练片弗拉格、阿门的两条音轨已经在网页桶，那是本机做的 | Transcribe、Translate、Polly Neural `Zhiyu`（`cmn-CN`）、S3 `commentary/asr/`、任务角色 `TrackJobRole` | 部署中。角色和任务定义已部署，脚本已在 S3。还没有一支云上作业跑完解说。GitHub 没有 Actions，不会自动部署 |
+| 11. 成片转码 | 云上成片只把记分牌烧进 `assets/{jobId}-broadcast.mp4`，原声留在里面，不烧人名。训练片在本机另烧人名，并出 `{clip}-replay.mp4`：进球后插入 5 秒出手帧定格 | 考试片在同一台 `c7i.48xlarge` 上用 ffmpeg。训练片仍是本机 ffmpeg | MediaConvert 模板 `deepcourt-render-template` | 已接通。`assets/warm-probe-broadcast.mp4` 已在网页桶。MediaConvert 还没有提交转码作业 |
 | 12. 网页呈现 | 评委打开的播放端和作品页。根路径是 `game.html`：成片、时间线、音轨选择。`/readme` 指到 `readme.html`。`/index.html` 只给自己上传，不作为提交链接。网页桶不公开，只经 CloudFront OAC 读取。`/api/*` 转到 API Gateway | 浏览器。CDK `DeployWeb` 把 `web/` 部署到网页桶 | CloudFront 分配 `Site`（`d2vzd2batw1eqe.cloudfront.net`）、S3 网页桶、CloudFront Function `ReadmePath` 与 `StripApiPrefix` | 主路径。`/` 和 `/readme` 已能打开 |
 | 13. 观测和密钥 | 看限流、放 webhook 和 token | 仪表盘和空密钥已建 | CloudWatch 仪表盘 `deepcourt-overview`、告警 `deepcourt-bedrock-throttles`、X-Ray、Secrets Manager `deepcourt/feishu-webhook` `deepcourt/github-token` `deepcourt/kuaishou`、Cost Explorer | 已接通。密钥仍是空占位。成本分配标签激活被拒绝。X-Ray 写过一条追踪 |
 

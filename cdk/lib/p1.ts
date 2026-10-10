@@ -18,9 +18,9 @@ const TRACK_BOOTSTRAP = [
   'bucket = os.environ["MEDIA_BUCKET"]',
   'root = Path("/opt/track")',
   's3 = boto3.client("s3")',
-  'required = {"run_job.py", "dub.py", "commentary.py"}',
+  'required = {"run_job.py", "chain.py", "dub.py", "commentary.py"}',
   'missing = []',
-  'names = ["run_job.py", "dub.py", "commentary.py", "web/game.html", "web/game.js", "web/styles.css"]',
+  'names = ["run_job.py", "chain.py", "dub.py", "commentary.py", "web/game.html", "web/game.js", "web/styles.css"]',
   'for name in names:',
   '    dest = root / name',
   '    dest.parent.mkdir(parents=True, exist_ok=True)',
@@ -112,7 +112,10 @@ export function addP1(
   });
   props.mediaBucket.grantRead(jobRole, 'raw/*');
   props.mediaBucket.grantRead(jobRole, 'bootstrap/*');
+  props.mediaBucket.grantRead(jobRole, 'official/*');
   props.mediaBucket.grantPut(jobRole, 'tracking/*');
+  props.mediaBucket.grantPut(jobRole, 'identity/*');
+  props.mediaBucket.grantPut(jobRole, 'structured/*');
   props.jobs.grantWriteData(jobRole);
   props.webBucket.grantRead(jobRole);
   props.webBucket.grantPut(jobRole, 'assets/*');
@@ -127,6 +130,7 @@ export function addP1(
       'transcribe:GetTranscriptionJob',
       'translate:TranslateText',
       'polly:SynthesizeSpeech',
+      'textract:DetectDocumentText',
     ],
     resources: ['*'],
   }));

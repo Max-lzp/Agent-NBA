@@ -3138,6 +3138,16 @@ clip,frame,tSec,truth,shooter,reads,n_boxes,failure
 0022500701_90,f_0023.jpg,11.0,10,Brandon Williams,20(0.971);2(0.913),6,wrong_number
 0022500701_90,f_0025.jpg,12.0,10,Brandon Williams,17(0.645),6,wrong_number
 0022500701_90,f_0026.jpg,12.5,10,Brandon Williams,32(0.995);17(0.745),6,wrong_number
+0022500701_92,f_0004.jpg,1.5,32,Cooper Flagg,27(0.651),6,wrong_number
+0022500701_92,f_0013.jpg,6.0,32,Cooper Flagg,1(0.74);3(0.74),6,wrong_number
+0022500701_92,f_0014.jpg,6.5,32,Cooper Flagg,17(0.843),6,wrong_number
+0022500701_92,f_0015.jpg,7.0,32,Cooper Flagg,7(0.861);7(0.871),6,wrong_number
+0022500701_92,f_0016.jpg,7.5,32,Cooper Flagg,1(0.928),6,wrong_number
+0022500701_92,f_0017.jpg,8.0,32,Cooper Flagg,17(0.992);17(0.991);1(0.929);28(0.891),6,wrong_number
+0022500701_92,f_0018.jpg,8.5,32,Cooper Flagg,28(0.995);28(0.998);1(0.733);17(0.992),6,wrong_number
+0022500701_92,f_0019.jpg,9.0,32,Cooper Flagg,7(0.917);17(0.994);28(0.999),6,wrong_number
+0022500701_92,f_0020.jpg,9.5,32,Cooper Flagg,28(0.997);17(0.998);17(0.757),6,wrong_number
+0022500701_92,f_0021.jpg,10.0,32,Cooper Flagg,25(0.531);7(0.972);2(0.973),6,wrong_number
 0022500160_10,f_0007.jpg,3.0,32,Cooper Flagg,,6,no_read
 0022500160_10,f_0013.jpg,6.0,32,Cooper Flagg,,6,no_read
 0022500160_10,f_0018.jpg,8.5,32,Cooper Flagg,,6,no_read
@@ -4390,6 +4400,8 @@ clip,frame,tSec,truth,shooter,reads,n_boxes,failure
 0022500701_90,f_0012.jpg,5.5,10,Brandon Williams,,6,no_read
 0022500701_90,f_0013.jpg,6.0,10,Brandon Williams,,6,no_read
 0022500701_90,f_0024.jpg,11.5,10,Brandon Williams,,6,no_read
+0022500701_92,f_0002.jpg,0.5,32,Cooper Flagg,,6,no_read
+0022500701_92,f_0010.jpg,4.5,32,Cooper Flagg,,6,no_read
 0022500160_10,f_0021.jpg,10.0,32,Cooper Flagg,,0,no_player
 0022500160_10,f_0022.jpg,10.5,32,Cooper Flagg,,0,no_player
 0022500160_111,f_0022.jpg,10.5,32,Cooper Flagg,,0,no_player
@@ -4597,3 +4609,5 @@ clip,frame,tSec,truth,shooter,reads,n_boxes,failure
 0022500701_81,f_0027.jpg,13.0,7,Kevin Durant,,0,no_player
 0022500701_81,f_0028.jpg,13.5,7,Kevin Durant,,0,no_player
 0022500701_81,f_0029.jpg,14.0,7,Kevin Durant,,0,no_player
+0022500701_92,f_0022.jpg,10.5,32,Cooper Flagg,,0,no_player
+0022500701_92,f_0023.jpg,11.0,32,Cooper Flagg,,0,no_player

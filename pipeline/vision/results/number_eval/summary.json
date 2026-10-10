@@ -1,13 +1,13 @@
 {
- "frames_total": 5229,
+ "frames_total": 5252,
  "outcomes": {
-  "hit": 631,
-  "miss_with_reads": 3139,
-  "no_read": 1252,
-  "no_player": 207
+  "hit": 640,
+  "miss_with_reads": 3149,
+  "no_read": 1254,
+  "no_player": 209
  },
- "hit_rate": 0.1207,
- "miss_rate": 0.6003,
+ "hit_rate": 0.1219,
+ "miss_rate": 0.5996,
  "per_number": {
   "0": {
    "no_read": 48,
@@ -104,10 +104,10 @@
    "no_player": 2
   },
   "32": {
-   "hit": 55,
-   "miss_with_reads": 232,
-   "no_read": 117,
-   "no_player": 16
+   "hit": 64,
+   "miss_with_reads": 242,
+   "no_read": 119,
+   "no_player": 18
   },
   "4": {
    "no_read": 6,
@@ -170,6 +170,11 @@
    "count": 57
   },
   {
+   "true": "32",
+   "pred": "7",
+   "count": 56
+  },
+  {
    "true": "1",
    "pred": "10",
    "count": 56
@@ -188,11 +193,6 @@
    "true": "7",
    "pred": "32",
    "count": 54
-  },
-  {
-   "true": "32",
-   "pred": "7",
-   "count": 52
   },
   {
    "true": "25",
