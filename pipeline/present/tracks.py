@@ -586,6 +586,72 @@ def dub_mp4s(
     return meta
 
 
+BED_VOLUME = 0.12  # 原片只留现场环境声：原解说压到很低，不和配音抢
+EN_VOICE_ID = "Matthew"
+
+
+def dub_script(source: Path, picture: Path, work: Path, *, clip: str, lines: list[dict], polly) -> dict:
+    """按事件时间轴的解说稿配两条音轨。原片音轨压低当底，配音一句句铺在各自的时刻。"""
+    if not lines:
+        raise SystemExit(f"{clip} 没有解说稿")
+    work.mkdir(parents=True, exist_ok=True)
+    duration = media_duration(picture)
+    files, scripts = {}, {}
+    for lang, voice, code in (("zh", VOICE_ID, "cmn-CN"), ("en", EN_VOICE_ID, "en-US")):
+        placed = []
+        for index, line in enumerate(lines):
+            text = (line.get(lang) or "").strip()
+            if not text:
+                continue
+            speech = work / f"{lang}-line-{index}.mp3"
+            audio = polly.synthesize_speech(Engine=ENGINE, LanguageCode=code, VoiceId=voice,
+                                            OutputFormat="mp3", Text=text, TextType="text")
+            speech.write_bytes(audio["AudioStream"].read())
+            nxt = next((float(row["t"]) for row in lines[index + 1:] if (row.get(lang) or "").strip()), duration)
+            placed.append((speech, float(line["t"]), max(0.6, min(nxt, duration) - float(line["t"]) - 0.05)))
+        track = work / f"{lang}.m4a"
+        _mix_over(source, placed, duration, track)
+        out = work / f"{lang}.mp4"
+        _remux(picture, track, out)
+        files[lang] = out
+        scripts[lang] = ("" if lang == "zh" else " ").join((row.get(lang) or "").strip() for row in lines)
+    return {
+        "scriptEn": scripts["en"],
+        "scriptZh": scripts["zh"],
+        "tracks": {"zh": f"assets/{clip}-zh.mp4", "en": f"assets/{clip}-en.mp4"},
+        "voice": "中文和英文解说按事件时间轴写稿，Amazon Polly 配音，原片声音压低只留现场环境声。",
+        "files": files,
+    }
+
+
+def _mix_over(source: Path, lines: list[tuple[Path, float, float]], duration_s: float, dest: Path) -> None:
+    cmd = [
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-f", "lavfi", "-t", f"{duration_s:.3f}", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100",
+        "-i", str(source),
+    ]
+    filters = [
+        "[0:a]aformat=channel_layouts=stereo[a0]",
+        f"[1:a]aformat=channel_layouts=stereo,volume={BED_VOLUME},atrim=end={duration_s:.3f}[bed]",
+    ]
+    labels = ["[a0]", "[bed]"]
+    for index, (speech, start_s, slot_s) in enumerate(lines, start=2):
+        rate = playback_rate(media_duration(speech), slot_s)
+        tempo = f"atempo={rate:.4f}," if rate > 1.01 else ""
+        cmd.extend(["-itsoffset", f"{max(0.0, start_s):.3f}", "-i", str(speech)])
+        filters.append(f"[{index}:a]aformat=channel_layouts=stereo,{tempo}atrim=duration={slot_s:.3f}[a{index}]")
+        labels.append(f"[a{index}]")
+    filters.append(f"{''.join(labels)}amix=inputs={len(labels)}:duration=first:dropout_transition=0:normalize=0[out]")
+    cmd.extend([
+        "-filter_complex", ";".join(filters),
+        "-map", "[out]",
+        "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-ac", "2",
+        str(dest),
+    ])
+    _run(cmd)
+    _assert_playable(dest, duration_s)
+
+
 def _transcribe_boto(clip: str, wav: Path, bucket: str, s3, transcribe, work: Path) -> dict:
     key = f"commentary/asr/{clip}.wav"
     s3.upload_file(str(wav), bucket, key, ExtraArgs={"ContentType": "audio/wav"})
