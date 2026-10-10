@@ -12,6 +12,7 @@
 | boxscore（`boxscoresummaryv3` / `boxscoretraditionalv3` / CDN） | 有 `homeTeam.players` | 号码 → 球员，这场的出场名单 |
 | `shotqualityshotlog` | 有非空 `shots` | xFG%、防守人 |
 | `2025-26/dal_margin_offense.json` | 固定文件名，不按场次 | 独行侠球员在四档分差下的赛季真实命中率、每球权得分 |
+| `data/deep/*.csv` | 仓库内 `data/deep`，没有时再看数据目录的 `2025-26/deep` | 赛季出手质量、实际命中率、引力、关键度。按球员 ID 或球队+号码贴到出手上。赛季汇总，不是这一球的胜率变化 |
 
 `DEEPCOURT_DATA=/别的目录` 可以临时换数据目录。
 
@@ -33,7 +34,7 @@ python3 -m unittest pipeline.enrich.test_join
 
 ## 产出字段
 
-- 事件 `official`：action_number / period / clock_s / made / value / shot_type / distance_ft / assist / xfg / defender / description；独行侠出手多一个 `season_margin`（分差档、真实命中率、每球权得分）。出手还会填 `geometry.x_ft / y_ft / shot_zone`。
+- 事件 `official`：action_number / period / clock_s / made / value / shot_type / distance_ft / assist / xfg / defender / description / player_id；独行侠出手多一个 `season_margin`（分差档、真实命中率、每球权得分）。对得上 `data/deep` 的人多一个 `season_profile`（赛季预期命中率、实际命中率、高于或低于预期、引力、关键度）。出手还会填 `geometry.x_ft / y_ft / shot_zone`。
 - 出手还会多这几项（`defense.attach`，读 `pipeline/vision/results/local/{clip}.release.json`、`boxscorematchupsv3`、`leaguedashplayerstats`、四场 `shotqualityshotlog`）：
   - `release`：出手帧时刻、投篮人框、球框。由 `pipeline/vision/release.py` 按原帧率重检得出。
   - `defense.nearest` / `defense.nearest_box`：出手帧离投篮人最近的对方球员。号码读不出时只有球队。

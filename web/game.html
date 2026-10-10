@@ -26,6 +26,43 @@
           <div class="fill" id="fill"></div>
           <div class="ticks" id="ticks"></div>
         </div>
+        <section class="floor" id="floor" hidden aria-label="场上球员">
+          <div id="floor-offense"></div>
+          <div id="floor-defense"></div>
+        </section>
+        <section class="share" aria-labelledby="share-title">
+          <div class="share-head">
+            <h2 id="share-title">分享</h2>
+            <p>NBA 中国官方合作平台</p>
+          </div>
+          <div class="share-row">
+            <button class="share-btn" type="button" data-share="kuaishou">
+              <img src="brands/kuaishou.svg" alt="" width="28" height="28">
+              <span>快手</span>
+              <em>官方短视频平台</em>
+            </button>
+            <button class="share-btn" type="button" data-share="bilibili">
+              <img src="brands/bilibili.svg" alt="" width="28" height="28">
+              <span>哔哩哔哩</span>
+              <em>官方优质内容社区</em>
+            </button>
+            <button class="share-btn" type="button" data-share="wechat">
+              <img src="brands/wechat.svg" alt="" width="28" height="28">
+              <span>视频号</span>
+              <em>官方内容账号</em>
+            </button>
+            <button class="share-btn" type="button" data-share="weibo">
+              <img src="brands/weibo.svg" alt="" width="28" height="28">
+              <span>微博</span>
+              <em>官方社交媒体平台</em>
+            </button>
+            <button class="share-btn" type="button" data-share="douyin">
+              <img src="brands/douyin.svg" alt="" width="28" height="28">
+              <span>抖音</span>
+              <em>内容智能分发平台</em>
+            </button>
+          </div>
+        </section>
       </div>
       <aside class="rail" aria-label="这一球">
         <p class="rail-kicker">半场落点 · 官方坐标</p>
@@ -47,44 +84,13 @@
 
     <div class="events" id="events"></div>
 
-    <section class="share" aria-labelledby="share-title">
-      <h2 id="share-title">分享</h2>
-      <div class="share-row">
-        <button class="share-btn on" id="share-kuaishou" type="button">
-          <img src="brands/kuaishou.svg" alt="" width="28" height="28">
-          <span>快手</span>
-        </button>
-        <button class="share-btn" type="button" disabled>
-          <img src="brands/bilibili.svg" alt="" width="28" height="28">
-          <span>哔哩哔哩</span>
-          <em>即将推出</em>
-        </button>
-        <button class="share-btn" type="button" disabled>
-          <img src="brands/wechat.svg" alt="" width="28" height="28">
-          <span>微信</span>
-          <em>即将推出</em>
-        </button>
-        <button class="share-btn" type="button" disabled>
-          <img src="brands/weibo.svg" alt="" width="28" height="28">
-          <span>微博</span>
-          <em>即将推出</em>
-        </button>
-        <button class="share-btn" type="button" disabled>
-          <img src="brands/douyin.svg" alt="" width="28" height="28">
-          <span>抖音</span>
-          <em>即将推出</em>
-        </button>
-      </div>
-      <iframe id="kuaishou-frame" class="kuaishou-frame" title="快手扫码" hidden></iframe>
-    </section>
-
     <section class="spec">
       <hr class="rule">
       <h2>三层信息</h2>
       <button class="layer on" type="button" data-layer="resident"><b>常驻层</b><span>比分条烧进成片。人名只标票数够的轨迹，跟着框走。</span></button>
       <button class="layer on" type="button" data-layer="event"><b>事件层</b><span>出手后三秒弹出预期命中率、区域和距离。点时间线跳到那一球。</span></button>
       <button class="layer on" type="button" data-layer="expand"><b>展开层</b><span>暂停后写出官方描述、助攻和场上阵容。决策反差只在预期和结果打架时出现。</span></button>
-      <p class="baseline">画面上的数字都能在事件清单里对上。没有逐回合来源的引力和胜率摆幅不显示。</p>
+      <p class="baseline">画面上的数字都能在事件清单里对上。引力和关键度是赛季汇总，暂停后出现，不写成这一球的胜率变化。</p>
     </section>
 
     <footer class="foot">
@@ -92,6 +98,24 @@
       <b>TEAM 04 · 2026.10.09</b>
     </footer>
   </main>
+  <div class="ks-window" id="share-post" hidden>
+    <form class="ks-sheet" role="dialog" aria-modal="true" aria-labelledby="ks-title">
+      <header class="ks-bar">
+        <button class="ks-close" id="ks-close" type="button">取消</button>
+        <h3 id="ks-title">发布作品</h3>
+        <button class="ks-send" id="ks-send" type="submit">发布</button>
+      </header>
+      <div class="ks-main">
+        <div class="ks-cover">
+          <img id="share-cover" alt="">
+          <span class="ks-play" aria-hidden="true"></span>
+        </div>
+        <textarea id="share-caption" aria-label="作品描述" placeholder="添加作品描述…"></textarea>
+      </div>
+      <p class="ks-meta" id="share-meta">公开可见</p>
+      <p class="ks-status" id="share-status"></p>
+    </form>
+  </div>
   <script src="config.js"></script>
   <script src="replay/clips.js"></script>
   <script src="replay-freeze.js?v=3"></script>

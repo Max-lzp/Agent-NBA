@@ -140,6 +140,7 @@ def players_from_box(doc) -> dict[int, dict]:
                 "jersey": str(p.get("jerseyNum") or "").strip(),
                 "name": p.get("familyName") or p.get("lastName") or str(p.get("name") or "").split(" ")[-1],
                 "full_name": p.get("name") or " ".join(x for x in (p.get("firstName"), p.get("familyName")) if x),
+                "position": str(p.get("position") or "").strip(),
                 "played": (str(p.get("played", "")) == "1") or minutes not in {"", "PT00M00.00S", "0:00", "00:00"},
             }
     return out
@@ -167,7 +168,43 @@ def load_game(game_id: str, data_dir: Path = DATA) -> dict:
         if players and len(players) > len(found["players"]):
             found["players"] = players
             found["files"].append(path.name)
+    _fill_roster_positions(found["players"], data_dir)
     return found
+
+
+def position_zh(code: str | None) -> str:
+    """G / F / C，或 SF、F-C 这种写法，收成前锋、后卫、中锋。"""
+    names = {"G": "后卫", "F": "前锋", "C": "中锋", "PG": "后卫", "SG": "后卫", "SF": "前锋", "PF": "前锋"}
+    raw = str(code or "").strip().upper()
+    if not raw:
+        return ""
+    if raw in names:
+        return names[raw]
+    parts = [names.get(part) for part in raw.split("-")]
+    if parts and all(parts):
+        return "/".join(dict.fromkeys(parts))
+    return ""
+
+
+def _fill_roster_positions(players: dict[int, dict], data_dir: Path) -> None:
+    """boxscore 只给首发写位置。全队名单里的 POSITION 覆盖它，替补才有位置。"""
+    if not players:
+        return
+    for path in sorted(data_dir.rglob("commonteamroster_*.json")):
+        try:
+            doc = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        for rs in doc.get("resultSets") or []:
+            headers = rs.get("headers") or []
+            if "PLAYER_ID" not in headers or "POSITION" not in headers:
+                continue
+            pid_i, pos_i = headers.index("PLAYER_ID"), headers.index("POSITION")
+            for row in rs.get("rowSet") or []:
+                pid = _int(row[pid_i])
+                code = str(row[pos_i] or "").strip()
+                if pid in players and code:
+                    players[pid]["position"] = code
 
 
 def game_roster(players: dict[int, dict]) -> dict:
