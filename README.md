@@ -41,7 +41,7 @@ aws sts get-caller-identity --profile team04 --region us-east-1
 
 # 2. 评委成片 + 部署。先生成回放，再部署。
 #    根路径打开的是回放页 game.html（给评委）。
-#    全队协作台在 /hub.html（现状、回放、GitHub、正式提交链接），不要把 hub 当提交页。
+#    发布台在 /hub.html，只管理 GitHub 同步和 CloudFront 部署，不要把 hub 当提交页。
 #    上传页仍在 /index.html。部署后把 CloudFront 根 URL 写进 web/config.js 的 submitUrl。
 #    GPU 配额为 0，不带 Batch。Polly 未开通时解说留在本地成片里，不带 P2。
 #    账号还不能登录时，脚本会停在本地成片，不报部署失败。

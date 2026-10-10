@@ -39,6 +39,7 @@ python3 -m unittest pipeline.enrich.test_join
   - `release`：出手帧时刻、投篮人框、球框。由 `pipeline/vision/release.py` 按原帧率重检得出。
   - `defense.nearest` / `defense.nearest_box`：出手帧离投篮人最近的对方球员。号码读不出时只有球队。
   - `official.defender`：领防人，来自 `release.py` 出手前 5 秒的跟踪（`source: cv_lead`），附贴防秒数和号码票数。号码票数够才有 `number` / `name`，再附 `vs_shooter`（本场对位秒数、回合、投篮人的出手和得分）和 `season`（赛季场均）。票数不够写 `status: number_unread`，贴防不到 1 秒写 `short_guard`，都不带名字，也不拿对位表顶替。
+  - `official.shooter_rank` 和 `official.defender.team_rank`：同队轮换球员（≥20 场、场均 ≥15 分钟）里的赛季排名，每项 `{value, rank, of, stars}`。得分、命中率、抢断、盖帽、防守篮板来自 `leaguedashplayerstats_{队}.json`，真实命中率和防守效率来自同接口 `MeasureType=Advanced` 的 `leaguedashadvanced_{队}.json`。防守效率越低排名越前。队内第 1 名五星，每往后一名少半星，最少半星。
   - `official.shooter_check`：画面读到的投篮人号码和官方号码对照。`defense.lead_box` 是出手帧上领防人的框，跟丢了就是空；`defense.matchup` 是对位表第一行，只留作数据。
   - `official.shooter_season`：投篮人赛季场均。
   - `official.zone_chart`：投篮人四场在 8 个区的出手、命中、平均 xFG，以及全部球员同区平均。不足 3 投不给 xFG。

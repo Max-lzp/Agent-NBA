@@ -11,9 +11,23 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as mediaconvert from 'aws-cdk-lib/aws-mediaconvert';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 
+function bootTrack(): string {
+  return [
+    'set -eu',
+    'export DEBIAN_FRONTEND=noninteractive',
+    'apt-get update -y',
+    'apt-get install -y --no-install-recommends libglib2.0-0 libgomp1',
+    'python3 -m pip install --no-cache-dir boto3',
+    'python3 -c "import boto3,os; boto3.client(\'s3\').download_file(os.environ[\'MEDIA_BUCKET\'], \'bootstrap/track.py\', \'/tmp/track.py\')"',
+    'python3 -m pip install --no-cache-dir ultralytics opencv-python-headless',
+    'python3 /tmp/track.py',
+  ].join(' && ');
+}
+
 /**
  * P1 加在同一个栈里，避免再做一层跨栈导出。
- * 上下文 enableP1=false 时整段跳过，GPU 配额不够也不会挡住 P0。
+ * 上下文 enableP1=false 时整段跳过。
+ * G/VT 配额为 0，跟踪用标准配额 256 vCPU 里最大的 c7i.48xlarge（192 vCPU）。
  */
 export function addP1(
   stack: cdk.Stack,
@@ -40,9 +54,11 @@ export function addP1(
     blockDevices: [
       {
         deviceName: '/dev/xvda',
-        volume: ec2.BlockDeviceVolume.ebs(100, {
+        volume: ec2.BlockDeviceVolume.ebs(1000, {
           volumeType: ec2.EbsDeviceVolumeType.GP3,
           encrypted: true,
+          iops: 16000,
+          throughput: 1000,
         }),
       },
     ],
@@ -50,11 +66,11 @@ export function addP1(
   const compute = new batch.ManagedEc2EcsComputeEnvironment(stack, 'GpuCompute', {
     vpc,
     vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
-    instanceTypes: [ec2.InstanceType.of(ec2.InstanceClass.G4DN, ec2.InstanceSize.XLARGE)],
+    instanceTypes: [ec2.InstanceType.of(ec2.InstanceClass.C7I, ec2.InstanceSize.XLARGE48)],
     useOptimalInstanceClasses: false,
-    images: [{ imageType: batch.EcsMachineImageType.ECS_AL2023_NVIDIA }],
+    images: [{ imageType: batch.EcsMachineImageType.ECS_AL2023 }],
     minvCpus: 0,
-    maxvCpus: 4,
+    maxvCpus: 256,
     launchTemplate,
   });
   const queue = new batch.JobQueue(stack, 'TrackQueue', {
@@ -67,19 +83,23 @@ export function addP1(
     description: 'Deep Court Batch tracker reads raw video and writes tracking JSON',
   });
   props.mediaBucket.grantRead(jobRole, 'raw/*');
+  props.mediaBucket.grantRead(jobRole, 'bootstrap/*');
   props.mediaBucket.grantPut(jobRole, 'tracking/*');
   props.jobs.grantWriteData(jobRole);
 
   const jobDef = new batch.EcsJobDefinition(stack, 'TrackJob', {
     jobDefinitionName: 'deepcourt-track',
     container: new batch.EcsEc2ContainerDefinition(stack, 'TrackContainer', {
-      image: ecs.ContainerImage.fromEcrRepository(repo, 'latest'),
-      cpu: 4,
-      memory: cdk.Size.mebibytes(8192),
-      gpu: 1,
+      image: ecs.ContainerImage.fromRegistry('public.ecr.aws/docker/library/python:3.12-slim'),
+      cpu: 180,
+      memory: cdk.Size.gibibytes(340),
       jobRole,
-      command: ['python3', 'track.py'],
-      environment: { MEDIA_BUCKET: props.mediaBucket.bucketName },
+      command: ['bash', '-lc', bootTrack()],
+      environment: {
+        MEDIA_BUCKET: props.mediaBucket.bucketName,
+        OMP_NUM_THREADS: '180',
+        MKL_NUM_THREADS: '180',
+      },
     }),
     retryAttempts: 1,
   });
@@ -234,7 +254,7 @@ export function addP1(
     }),
   );
   dashboard.addWidgets(new cloudwatch.TextWidget({
-    markdown: `Batch 队列 \`${queue.jobQueueName}\`，空闲时 vCPU 为 0。跟踪作业由 SubmitTrack 提交，不走 P0 的分析函数。`,
+    markdown: `Batch 队列 \`${queue.jobQueueName}\`，实例 c7i.48xlarge（192 vCPU），空闲时缩到 0，上限 256 vCPU。G/VT 配额为 0。跟踪作业由 SubmitTrack 提交。`,
     width: 24,
     height: 2,
   }));

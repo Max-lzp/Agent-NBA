@@ -77,6 +77,47 @@ def _season() -> dict[int, dict]:
     return out
 
 
+RANK_MIN_GP = 20
+RANK_MIN_MPG = 15.0
+RANK_METRICS = {  # 名 → (取值, 越小越好)
+    "pts": (lambda b, a: b["PTS"] / b["GP"], False),
+    "fg_pct": (lambda b, a: b.get("FG_PCT"), False),
+    "ts_pct": (lambda b, a: a.get("TS_PCT"), False),
+    "stl": (lambda b, a: b["STL"] / b["GP"], False),
+    "blk": (lambda b, a: b["BLK"] / b["GP"], False),
+    "dreb": (lambda b, a: b["DREB"] / b["GP"], False),
+    "def_rating": (lambda b, a: a.get("DEF_RATING"), True),
+}
+
+
+def stars(rank: int) -> float:
+    """队内第 1 名五星，每往后一名少半星，最少半星。"""
+    return max(5.0 - 0.5 * (rank - 1), 0.5)
+
+
+def _rows(path: Path) -> list[dict]:
+    rs = (json.loads(path.read_text(encoding="utf-8")).get("resultSets") or [{}])[0]
+    return [dict(zip(rs.get("headers") or [], r)) for r in rs.get("rowSet") or []]
+
+
+@lru_cache(maxsize=1)
+def _team_rank() -> dict[int, dict]:
+    """同队轮换球员（≥20 场、场均 ≥15 分钟）里的赛季排名。基础数据来自 leaguedashplayerstats，
+    真实命中率和防守效率来自 leaguedashadvanced（同一接口 MeasureType=Advanced）。"""
+    out: dict[int, dict] = {}
+    for path in sorted(DATA.rglob("leaguedashplayerstats_*.json")):
+        team_id = path.stem.rsplit("_", 1)[-1]
+        adv_path = path.with_name(f"leaguedashadvanced_{team_id}.json")
+        adv = {r["PLAYER_ID"]: r for r in _rows(adv_path)} if adv_path.exists() else {}
+        pool = [r for r in _rows(path) if (r.get("GP") or 0) >= RANK_MIN_GP and r["MIN"] / r["GP"] >= RANK_MIN_MPG]
+        for name, (get, low) in RANK_METRICS.items():
+            vals = [(get(r, adv.get(r["PLAYER_ID"], {})), r["PLAYER_ID"]) for r in pool]
+            vals = sorted(((v, pid) for v, pid in vals if v is not None), key=lambda x: x[0], reverse=not low)
+            for i, (v, pid) in enumerate(vals):
+                out.setdefault(pid, {})[name] = {"value": round(v, 3), "rank": i + 1, "of": len(vals), "stars": stars(i + 1)}
+    return out
+
+
 def _quality(shots: list, play: dict) -> Optional[float]:
     hit = next((s for s in shots if s.get("eventNum") == play["action_number"]), None)
     if hit is None:
@@ -174,6 +215,7 @@ def attach(stream: dict, clip_id: str, game: dict, game_id: str) -> dict:
     releases = load_release(clip_id)
     table = _matchups(game_id)
     season = _season()
+    ranks = _team_rank()
     court = _on_court_ids(stream, game)
     for poss in stream.get("possessions") or []:
         for ev in poss.get("events") or []:
@@ -195,9 +237,12 @@ def attach(stream: dict, clip_id: str, game: dict, game_id: str) -> dict:
                     defense["nearest_box"] = rel["defender"]["box"]
             if lead:
                 defense["lead_box"] = ((rel.get("lead") or {}).get("defender") or {}).get("box_at_release")
+                defense["lead_path"] = ((rel.get("lead") or {}).get("defender") or {}).get("path")
             if guards:
                 defense["matchup"] = {**guards[0], "source": "boxscorematchupsv3"}
             sh = (rel.get("lead") or {}).get("shooter")
+            if sh and ev.get("release"):
+                ev["release"]["shooter_path"] = sh.get("path")
             if sh:
                 official["shooter_check"] = {k: sh.get(k) for k in (
                     "number", "official_number", "votes", "reads", "seconds", "hold_seconds")}
@@ -209,12 +254,16 @@ def attach(stream: dict, clip_id: str, game: dict, game_id: str) -> dict:
                     official["defender"]["vs_shooter"] = {k: vs[k] for k in ("seconds", "possessions", "fgm", "fga", "points", "blocks")}
                 if pid in season:
                     official["defender"]["season"] = season[pid]
+                if pid in ranks:
+                    official["defender"]["team_rank"] = ranks[pid]
             else:
                 official.pop("defender", None)
             if defense:
                 ev["defense"] = defense
             if shooter in season:
                 official["shooter_season"] = season[shooter]
+            if shooter in ranks:
+                official["shooter_rank"] = ranks[shooter]
             if shooter:
                 official["zone_chart"] = zone_chart(shooter)
     return stream

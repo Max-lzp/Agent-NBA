@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DEEP COURT 播放器</title>
-  <link rel="stylesheet" href="styles.css?v=26">
+  <link rel="stylesheet" href="styles.css?v=27">
 </head>
 <body>
   <div class="court court-tr"></div>
@@ -23,14 +23,9 @@
     <div class="replay">
       <div class="player-col">
         <section class="stage" id="stage">
-          <video id="reel" playsinline preload="metadata"></video>
+          <video id="reel" controls playsinline preload="metadata"></video>
           <canvas id="names" aria-hidden="true"></canvas>
         </section>
-        <div class="scrub" id="scrub">
-          <div class="track"></div>
-          <div class="fill" id="fill"></div>
-          <div class="ticks" id="ticks"></div>
-        </div>
         <section class="share" aria-labelledby="share-title">
           <div class="share-head">
             <h2 id="share-title">分享</h2>
@@ -76,16 +71,6 @@
       </section>
     </div>
 
-    <div class="transport">
-      <button class="pause" id="pause" type="button" aria-label="暂停或播放">
-        <svg id="pause-icon" width="12" height="14" viewBox="0 0 12 14" aria-hidden="true"><rect x="1" y="0" width="3.2" height="14" fill="#14110E"/><rect x="7.6" y="0" width="3.2" height="14" fill="#14110E"/></svg>
-      </button>
-      <div>
-        <div class="clock" id="clock">00:00</div>
-        <div class="aside"><span class="teal">◆</span> 解说由程序根据官方事件生成，已混入成片<br><span class="brand">TEAM 04 · DEEP COURT</span></div>
-      </div>
-    </div>
-
     <div class="events" id="events"></div>
 
     <section class="spec">
@@ -123,6 +108,6 @@
   <script src="config.js"></script>
   <script src="replay/clips.js?v=3"></script>
   <script src="replay-freeze.js?v=4"></script>
-  <script src="game.js?v=24"></script>
+  <script src="game.js?v=25"></script>
 </body>
 </html>

@@ -392,7 +392,7 @@ h2 {
   object-fit: contain;
 }
 
-#names { z-index: 2; pointer-events: none; }
+#names { z-index: 2; pointer-events: none; bottom: 48px; height: auto; }
 #names.hidden { display: none; }
 
 .clip-switch { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }

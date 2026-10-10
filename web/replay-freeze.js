@@ -55,10 +55,22 @@
     return `${bug.period} ${bug.clock} · ${bug.awayName} ${bug.awayScore} : ${bug.homeScore} ${bug.homeName} · ${gap}`;
   }
 
+  const OFF_RANKS = [["pts", "场均得分", 1], ["fg_pct", "投篮命中率", "pct"], ["ts_pct", "真实命中率", "pct"]];
+  const DEF_RANKS = [["stl", "场均抢断", 1], ["blk", "场均盖帽", 1], ["dreb", "场均防守篮板", 1], ["def_rating", "防守效率", 1]];
+
+  function rankLines(ranks, spec) {
+    return spec.filter(([key]) => ranks && ranks[key]).map(([key, label, fmt]) => {
+      const r = ranks[key];
+      const value = fmt === "pct" ? pct(r.value) : Number(r.value).toFixed(fmt);
+      return `<p class="rank"><span>${label} ${value} · 队内第 ${r.rank}/${r.of}</span>`
+        + `<i class="stars" style="--s:${r.stars}" aria-label="${r.stars} 星"></i></p>`;
+    });
+  }
+
   function offenseLines(shot) {
-    const lines = [];
+    const lines = rankLines(shot.shooterRank, OFF_RANKS);
     const s = shot.season;
-    if (s) lines.push(`赛季场均 ${s.pts} 分 · 投篮 ${pct(s.fg_pct)} · 三分 ${pct(s.fg3_pct)}`);
+    if (s && !lines.length) lines.push(`赛季场均 ${s.pts} 分 · 投篮 ${pct(s.fg_pct)} · 三分 ${pct(s.fg3_pct)}`);
     if (shot.xfg != null) lines.push(`这一投预期命中率 ${pct(shot.xfg)} · ${shot.zone || ""} ${shot.distance ? Number(shot.distance).toFixed(0) + " 英尺" : ""}`.trim());
     const m = shot.season_margin;
     if (m && m.ts != null) {
@@ -82,7 +94,9 @@
     const lines = [`领防：${who} #${d.number}（画面，出手前贴防 ${Number(d.guard_seconds).toFixed(1)} 秒）`];
     const vs = d.vs_shooter;
     if (vs) lines.push(`本场对位 ${Math.round(vs.seconds / 60)} 分钟，${shot.name} ${vs.fgm}/${vs.fga}、得 ${vs.points} 分`);
-    if (d.season) lines.push(`赛季场均 抢断 ${d.season.stl} · 盖帽 ${d.season.blk} · 防守篮板 ${d.season.dreb}`);
+    const ranked = rankLines(d.team_rank, DEF_RANKS);
+    lines.push(...ranked);
+    if (d.season && !ranked.length) lines.push(`赛季场均 抢断 ${d.season.stl} · 盖帽 ${d.season.blk} · 防守篮板 ${d.season.dreb}`);
     return lines;
   }
 
@@ -94,8 +108,9 @@
   }
 
   function cardHtml(pack, shot, left) {
-    const offense = offenseLines(shot).map((line) => `<p>${line}</p>`).join("");
-    const defense = defenseLines(shot).map((line) => `<p>${line}</p>`).join("");
+    const wrap = (line) => (line.startsWith("<p") ? line : `<p>${line}</p>`);
+    const offense = offenseLines(shot).map(wrap).join("");
+    const defense = defenseLines(shot).map(wrap).join("");
     return `<div class="freeze-head"><b>出手瞬间</b><span>定格 ${Math.ceil(left / 1000)} 秒</span></div>
       <p class="freeze-score">${scoreLine(pack, shot)}</p>
       <h3><i class="dot red"></i>${shot.name} #${shot.number}<small>${shooterSource(shot)}</small></h3>${offense}
@@ -131,14 +146,29 @@
     ctx.fillText(text, x - width / 2 + 7 * ratio, y - 4 * ratio);
   }
 
+  function sideTag(ctx, text, box, scale, ratio, right, color) {
+    ctx.font = `${Math.round(13 * ratio)}px MiSans, "PingFang SC", sans-serif`;
+    const width = ctx.measureText(text).width + 12 * ratio;
+    const x = right ? box[2] * scale + 5 * ratio : box[0] * scale - width - 5 * ratio;
+    const y = (box[1] + (box[3] - box[1]) * 0.25) * scale;
+    ctx.fillStyle = "rgba(20,17,14,0.9)";
+    ctx.fillRect(x, y, width, 18 * ratio);
+    ctx.fillStyle = color;
+    ctx.fillRect(right ? x : x + width - 3 * ratio, y, 3 * ratio, 18 * ratio);
+    ctx.fillStyle = "#F3EDE2";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(text, x + 6 * ratio, y + 15 * ratio);
+  }
+
   function drawMarks(ctx, shot, scale, ratio) {
     const lead = shot.leadBox;
+    const box = shot.release.shooter_box;
     if (lead) {
       ellipse(ctx, lead, scale, ratio, "#F5C542", null, true);
       const d = shot.defender;
-      tag(ctx, d?.name ? `领防 · ${d.display || d.name} #${d.number}` : "领防", ((lead[0] + lead[2]) / 2) * scale, lead[1] * scale, ratio, "#F5C542");
+      const right = lead[0] + lead[2] >= box[0] + box[2];
+      sideTag(ctx, d?.name ? `领防 · ${d.display || d.name} #${d.number}` : "领防", lead, scale, ratio, right, "#F5C542");
     }
-    const box = shot.release.shooter_box;
     ellipse(ctx, box, scale, ratio, RED, "rgba(255,43,43,0.32)", false);
     tag(ctx, `出手 · ${shot.name}`, ((box[0] + box[2]) / 2) * scale, box[1] * scale, ratio, RED);
   }

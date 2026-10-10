@@ -88,12 +88,6 @@ const els = {
   court: document.querySelector("#court"),
   detail: document.querySelector("#detail"),
   events: document.querySelector("#events"),
-  fill: document.querySelector("#fill"),
-  ticks: document.querySelector("#ticks"),
-  scrub: document.querySelector("#scrub"),
-  clock: document.querySelector("#clock"),
-  pause: document.querySelector("#pause"),
-  pauseIcon: document.querySelector("#pause-icon"),
   switcher: document.querySelector("#clip-switch"),
   foot: document.querySelector("#foot-note"),
 };
@@ -132,11 +126,26 @@ function init() {
     state.active = Math.max(0, state.events.length - 1);
     render();
   });
-  els.reel.addEventListener("seeked", () => render());
+  els.reel.addEventListener("play", () => {
+    if (state.freeze) return;
+    state.paused = false;
+    state.layers.expand = false;
+    render();
+  });
+  els.reel.addEventListener("pause", () => {
+    if (state.freeze) return;
+    state.paused = true;
+    state.layers.expand = true;
+    render();
+  });
+  els.reel.addEventListener("seeked", () => {
+    if (state.freeze) return;
+    rearmFreeze(els.reel.currentTime);
+    state.active = nearestEventIndex(els.reel.currentTime);
+    render();
+  });
   window.addEventListener("resize", resizeCanvas);
-  els.scrub.addEventListener("click", onScrub);
-  els.pause.addEventListener("click", () => { pause(!state.paused); render(); });
-  els.events.addEventListener("click", (event) => {
+  if (els.events) els.events.addEventListener("click", (event) => {
     const button = event.target.closest(".event");
     if (!button) return;
     seekEvent(Number(button.dataset.index));
@@ -320,16 +329,6 @@ function seekEvent(index) {
   render();
 }
 
-function onScrub(event) {
-  const rect = els.scrub.getBoundingClientRect();
-  const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
-  els.reel.currentTime = ratio * state.clipDuration;
-  state.active = nearestEventIndex(els.reel.currentTime);
-  pause(true);
-  rearmFreeze(els.reel.currentTime);
-  render();
-}
-
 function onTimeUpdate() {
   drawNames();
   if (state.paused || state.freeze || maybeFreeze()) return;
@@ -353,18 +352,14 @@ function scoreAt(t) {
 
 function render() {
   const t = Number.isFinite(els.reel.currentTime) ? els.reel.currentTime : 0;
-  els.fill.style.width = `${Math.min(100, (t / state.clipDuration) * 100)}%`;
-  const bug = scoreAt(t);
-  els.clock.textContent = bug ? `${bug.period} ${bug.clock}` : format(t);
-  els.pauseIcon.innerHTML = state.paused
-    ? '<rect x="1" y="0" width="3.2" height="14" fill="#14110E"/><rect x="7.6" y="0" width="3.2" height="14" fill="#14110E"/>'
-    : '<path d="M2 0 L12 7 L2 14 Z" fill="#14110E"/>';
   els.names.classList.toggle("hidden", !state.layers.resident);
   renderFloor();
-  els.events.innerHTML = state.events.map((item, index) => {
-    const on = index === state.active ? " on" : "";
-    return `<button class="event${on}" type="button" data-index="${index}"><span class="t">${item.timecode || "--:--"}</span><span class="l">${item.label}</span></button>`;
-  }).join("");
+  if (els.events) {
+    els.events.innerHTML = state.events.map((item, index) => {
+      const on = index === state.active ? " on" : "";
+      return `<button class="event${on}" type="button" data-index="${index}"><span class="t">${item.timecode || "--:--"}</span><span class="l">${item.label}</span></button>`;
+    }).join("");
+  }
   document.querySelectorAll(".layer").forEach((button) => {
     button.classList.toggle("on", state.layers[button.dataset.layer]);
   });
@@ -633,6 +628,7 @@ function drawCourt() {
 }
 
 function renderTicks() {
+  if (!els.ticks) return;
   els.ticks.innerHTML = state.events.map((item) => {
     const pos = Math.min(100, Math.max(0, (item.t / state.clipDuration) * 100));
     return `<i style="left:${pos}%"></i>`;
@@ -748,7 +744,7 @@ function openShare(key) {
     status.textContent = "这一帧没能存成图片。";
     return;
   }
-  const clock = els.clock.textContent || "frame";
+  const clock = frameLabel();
   downloadDataUrl(dataUrl, `deepcourt-${key}-${clock.replace(/:/g, "-")}.jpg`);
   cover.src = dataUrl;
   cover.alt = `${target.name} 当前帧 ${clock}`;
