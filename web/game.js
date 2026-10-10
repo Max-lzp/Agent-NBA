@@ -63,8 +63,19 @@ function init() {
     if (!button) return;
     seekEvent(Number(button.dataset.index));
   });
-  const kuaishou = document.querySelector("#share-kuaishou");
-  if (kuaishou) kuaishou.addEventListener("click", () => openKuaishou());
+  const shareRow = document.querySelector(".share-row");
+  if (shareRow) shareRow.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-share]");
+    if (!button) return;
+    openShare(button.dataset.share);
+  });
+  const postForm = document.querySelector("#share-post");
+  if (postForm) postForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    publishShareDraft();
+  });
+  const closePost = document.querySelector("#ks-close");
+  if (closePost && postForm) closePost.addEventListener("click", () => { postForm.hidden = true; });
   document.querySelectorAll(".layer").forEach((button) => {
     button.addEventListener("click", () => {
       const key = button.dataset.layer;
@@ -262,6 +273,7 @@ function render() {
     ? '<rect x="1" y="0" width="3.2" height="14" fill="#14110E"/><rect x="7.6" y="0" width="3.2" height="14" fill="#14110E"/>'
     : '<path d="M2 0 L12 7 L2 14 Z" fill="#14110E"/>';
   els.names.classList.toggle("hidden", !state.layers.resident);
+  renderFloor();
   els.events.innerHTML = state.events.map((item, index) => {
     const on = index === state.active ? " on" : "";
     return `<button class="event${on}" type="button" data-index="${index}"><span class="t">${item.timecode || "--:--"}</span><span class="l">${item.label}</span></button>`;
@@ -345,14 +357,75 @@ function drawDetail() {
   const marginLine = margin && margin.ts != null
     ? `<p>赛季${margin.bucket_zh}：真实命中率 ${(Number(margin.ts) * 100).toFixed(1)}%${vsTeamText}，每球权 ${Number(margin.ppp).toFixed(3)}（${margin.fga} 投）</p>`
     : "";
+  const seasonLine = seasonProfileHtml(shot);
   const bits = [shot.zone, shot.distance ? `${Number(shot.distance).toFixed(1)} 英尺` : "", shot.assist ? `${shot.assist} 助攻` : ""].filter(Boolean);
   els.detail.innerHTML = `<p><b>${shot.name}</b> ${shot.value || ""} 分${shot.made ? "命中" : shot.made === false ? "不中" : "出手"}</p>
     <p>${xfg}</p>
     ${marginLine}
+    ${seasonLine}
     <p>${bits.join(" · ")}</p>
     <p class="muted">${shot.description || ""}</p>
     ${shot.contrast ? `<p class="contrast">${shot.contrast}</p>` : ""}
     ${lineupHtml()}`;
+}
+
+function seasonProfileHtml(shot) {
+  const profile = shot.season_profile;
+  if (!profile) return "";
+  const lines = [];
+  if (profile.xfg != null && profile.fg != null && profile.fg_above != null) {
+    const gap = Number(profile.fg_above) * 100;
+    const word = gap >= 0 ? "高于预期" : "低于预期";
+    const fga = profile.tracked_fga != null ? `（跟踪 ${profile.tracked_fga} 投）` : "";
+    lines.push(`赛季预期命中率 ${(Number(profile.xfg) * 100).toFixed(1)}%，实际 ${(Number(profile.fg) * 100).toFixed(1)}%，${word} ${Math.abs(gap).toFixed(1)} 个百分点${fga}`);
+  }
+  if (profile.quality_ppt != null) {
+    const gap = Number(profile.quality_ppt);
+    lines.push(`出手质量比样本基准${gap >= 0 ? "高" : "低"} ${Math.abs(gap).toFixed(1)} 个百分点`);
+  }
+  if (profile.gravity != null) lines.push(`赛季引力 ${Number(profile.gravity).toFixed(2)}（防守压力，不是命中率）`);
+  if (profile.leverage != null) lines.push(`赛季关键度 ${Number(profile.leverage).toFixed(2)}（官方原始值，不是这一球的胜率变化）`);
+  return lines.map((line) => `<p>${line}</p>`).join("");
+}
+
+function renderFloor() {
+  const box = document.querySelector("#floor");
+  if (!box) return;
+  const court = state.pack?.onCourt || {};
+  const teams = Object.keys(court);
+  if (!teams.length) {
+    box.hidden = true;
+    return;
+  }
+  const t = Number.isFinite(els.reel.currentTime) ? els.reel.currentTime : 0;
+  const offense = offenseTeam(t) || teams[0];
+  const defense = teams.find((team) => team !== offense) || "";
+  box.hidden = false;
+  fillSide(document.querySelector("#floor-offense"), "进攻", offense, court[offense] || []);
+  fillSide(document.querySelector("#floor-defense"), "防守", defense, court[defense] || []);
+}
+
+function offenseTeam(t) {
+  const rows = state.pack?.possessions || [];
+  if (!rows.length) return "";
+  for (let i = 0; i < rows.length; i += 1) {
+    const start = Number(rows[i].t0);
+    const end = Number(rows[i].t1);
+    const next = i + 1 < rows.length ? Number(rows[i + 1].t0) : end + 0.001;
+    if (t >= start && t < next) return rows[i].team || "";
+  }
+  return rows[rows.length - 1].team || "";
+}
+
+function teamName(team) {
+  return team === "HOU" ? "火箭" : team === "DAL" ? "独行侠" : (team || "");
+}
+
+function fillSide(node, role, team, players) {
+  if (!node) return;
+  const color = TEAM_COLOR[team] || "#F3EDE2";
+  const list = players.map((player) => `<li><b>#${player.jersey}</b>${player.name}</li>`).join("");
+  node.innerHTML = `<p style="color:${color}">${role} · ${teamName(team)}</p><ul>${list}</ul>`;
 }
 
 function lineupHtml() {
@@ -481,16 +554,91 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function openKuaishou() {
-  const frame = document.querySelector("#kuaishou-frame");
-  try {
-    const response = await fetch(`${apiBase()}/oauth/kuaishou/start`);
-    const data = await response.json();
-    if (data.url && frame) {
-      frame.hidden = false;
-      frame.src = data.url;
-    }
-  } catch {
-    // 扫码入口没接上时，按钮保持原样。
+const SHARE_TARGETS = {
+  kuaishou: { name: "快手", title: "发布作品", send: "发布", sent: "已发布", meta: "公开可见", accent: "#fe3666" },
+  bilibili: { name: "哔哩哔哩", title: "投稿", send: "投稿", sent: "已投稿", meta: "公开", accent: "#fb7299" },
+  wechat: { name: "视频号", title: "发表视频", send: "发表", sent: "已发表", meta: "公开", accent: "#07c160" },
+  weibo: { name: "微博", title: "发微博", send: "发送", sent: "已发送", meta: "公开", accent: "#ff8200" },
+  douyin: { name: "抖音", title: "发布作品", send: "发布", sent: "已发布", meta: "公开 · 所有人可见", accent: "#fe2c55" },
+};
+
+let shareTarget = SHARE_TARGETS.kuaishou;
+
+function openShare(key) {
+  const target = SHARE_TARGETS[key];
+  const post = document.querySelector("#share-post");
+  const cover = document.querySelector("#share-cover");
+  const caption = document.querySelector("#share-caption");
+  const status = document.querySelector("#share-status");
+  const send = document.querySelector("#ks-send");
+  const title = document.querySelector("#ks-title");
+  const meta = document.querySelector("#share-meta");
+  if (!target || !post || !cover || !caption || !status || !send || !title || !meta) return;
+  shareTarget = target;
+  title.textContent = target.title;
+  meta.textContent = target.meta;
+  send.disabled = false;
+  send.textContent = target.send;
+  send.style.color = target.accent;
+  document.querySelectorAll("[data-share]").forEach((button) => {
+    button.classList.toggle("on", button.dataset.share === key);
+  });
+  if (els.reel.readyState < 2 || !els.reel.videoWidth) {
+    post.hidden = false;
+    status.textContent = "画面还没出来。等这一帧加载完再点。";
+    return;
   }
+  pause(true);
+  render();
+  let dataUrl = "";
+  try {
+    dataUrl = captureFrame(els.reel);
+  } catch (error) {
+    post.hidden = false;
+    status.textContent = "这一帧没能存成图片。";
+    return;
+  }
+  const clock = els.clock.textContent || "frame";
+  downloadDataUrl(dataUrl, `deepcourt-${key}-${clock.replace(/:/g, "-")}.jpg`);
+  cover.src = dataUrl;
+  cover.alt = `${target.name} 当前帧 ${clock}`;
+  caption.value = testCaption();
+  status.textContent = "封面已保存到本机。文案是测试稿。";
+  post.hidden = false;
 }
+
+function publishShareDraft() {
+  const send = document.querySelector("#ks-send");
+  const status = document.querySelector("#share-status");
+  if (send) {
+    send.disabled = true;
+    send.textContent = shareTarget.sent;
+    send.style.color = "";
+  }
+  if (status) status.textContent = `已在${shareTarget.name}用当前帧模拟发布。文案仍是测试稿。`;
+}
+
+function captureFrame(video) {
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const context = canvas.getContext("2d");
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.92);
+}
+
+function downloadDataUrl(url, name) {
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+function testCaption() {
+  const clock = els.clock.textContent || "00:00";
+  const title = state.pack && state.pack.title ? state.pack.title : "当前回放";
+  return `【测试文案】DEEP COURT\n${title}\n画面停在 ${clock}。封面用的是这一帧，正式文案下一步再生成。\n#NBA #DEEPCOURT`;
+}
+

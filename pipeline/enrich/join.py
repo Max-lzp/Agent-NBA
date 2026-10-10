@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
+from .deep_season import season_profile_for_play
 from .margin import season_margin
 from .official import DATA, calibrate_side, clock_seconds, game_roster, load_game, on_court, period_number
 
@@ -203,9 +204,14 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
                                                          play["assist_name"] or "")))
         ev["confidence"] = max(ev["confidence"], OFFICIAL_CONF)
         ev["official"] = official_detail(play, players, shots)
+        if play.get("person_id"):
+            ev["official"]["player_id"] = play["person_id"]
         margin = season_margin(play, players, clock.away, clock.home)
         if margin:
             ev["official"]["season_margin"] = margin
+        profile = season_profile_for_play(play, players)
+        if profile:
+            ev["official"]["season_profile"] = profile
         if play["kind"] == "shot" and play["x_ft"] is not None:
             geom = ev.setdefault("geometry", {})
             geom.update({"x_ft": play["x_ft"], "y_ft": play["y_ft"]})
@@ -298,7 +304,8 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
         "side_basis": side_basis,
         "added_events": added,
         "dropped_cv_turnovers": dropped,
-        "on_court": {team: [{k: players[i][k] for k in ("jersey", "name", "full_name") if k in players[i]} for i in ids]
+        "on_court": {team: [{k: players[i][k] for k in ("jersey", "name", "full_name", "position") if players[i].get(k)}
+                            for i in ids]
                      for team, ids in lineup.items()},
         "named_from_official": filled,
         "track_conflicts": conflicts,

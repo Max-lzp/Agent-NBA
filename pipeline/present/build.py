@@ -22,6 +22,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "lambdas"))
 from common import TEAM_ZH, timeline_from_stream  # noqa: E402
+from pipeline.enrich.deep_season import season_profile  # noqa: E402
+from pipeline.enrich.official import position_zh  # noqa: E402
 from pipeline.present.freeze import render_replay  # noqa: E402
 
 OUT = REPO / "pipeline" / "events" / "out"
@@ -292,6 +294,12 @@ def _shots(stream: dict) -> list[dict]:
             name = display_name(team, number, actor.get("name") or "")
             made = official.get("made")
             xfg = official.get("xfg")
+            profile = official.get("season_profile") or season_profile(
+                player_id=official.get("player_id"),
+                team=team,
+                number=number,
+                name=actor.get("name") or "",
+            )
             assist = official.get("assist") or {}
             assist_name = ""
             if assist:
@@ -314,6 +322,7 @@ def _shots(stream: dict) -> list[dict]:
                 "phrase": shot_phrase(official) if official else "出手",
                 "contrast": contrast(made, xfg),
                 "season_margin": official.get("season_margin"),
+                "season_profile": profile,
                 "zoneKey": geom.get("shot_zone") or "",
                 "release": ev.get("release"),
                 "nearest": _nearest(ev.get("defense") or {}),
@@ -404,6 +413,10 @@ def build_pack(clip: str) -> dict:
         "events": events,
         "shots": shots,
         "onCourt": _on_court(official.get("on_court") or {}),
+        "possessions": [
+            {"t0": p.get("t_start") or 0, "t1": p.get("t_end") or 0, "team": p.get("offense_team") or ""}
+            for p in stream.get("possessions") or []
+        ],
         "script": spoken,
         "voice": "本机中文语音 Tingting。解说由程序根据官方事件生成。Polly 开通后只替换声音。",
         "anchor": focus["t"] if focus else 0.8,
@@ -433,6 +446,7 @@ def _on_court(raw: dict) -> dict:
             "jersey": p.get("jersey") or "",
             "name": display_name(team, str(p.get("jersey") or ""), p.get("name") or ""),
             "full": p.get("full_name") or p.get("name") or "",
+            "position": position_zh(p.get("position")),
         } for p in players]
     return out
 
@@ -454,6 +468,20 @@ def _card_lines(shot: dict) -> tuple[str, str]:
     if shot.get("contrast"):
         bits.append(shot["contrast"].split("：")[0])
     return head, " · ".join(bits)
+
+
+def _deep_line(shot: dict) -> str:
+    profile = shot.get("season_profile") or {}
+    if profile.get("xfg") is not None and profile.get("fg_above") is not None:
+        gap = float(profile["fg_above"]) * 100
+        word = "高于预期" if gap >= 0 else "低于预期"
+        return f"赛季预期 {float(profile['xfg']) * 100:.1f}% · {word} {abs(gap):.1f} 个点"
+    bits = []
+    if profile.get("gravity") is not None:
+        bits.append(f"赛季引力 {float(profile['gravity']):.2f}")
+    if profile.get("leverage") is not None:
+        bits.append(f"赛季关键度 {float(profile['leverage']):.2f}")
+    return " · ".join(bits)
 
 
 def _margin_line(shot: dict) -> str:
@@ -530,9 +558,14 @@ def write_overlay(clip: str, pack: dict) -> Path:
                 _label(draw, font, (28, 84), head)
                 if sub:
                     _label(draw, small, (28, 136), sub)
+                y = 182
                 margin = _margin_line(shot)
                 if margin:
-                    _label(draw, small, (28, 182), margin)
+                    _label(draw, small, (28, y), margin)
+                    y = 228
+                deep = _deep_line(shot)
+                if deep:
+                    _label(draw, small, (28, y), deep)
         proc.stdin.write(image.tobytes())
     proc.stdin.close()
     if proc.wait() != 0:
