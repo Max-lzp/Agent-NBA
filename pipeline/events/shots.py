@@ -19,17 +19,23 @@ from .geometry import dist_ft, shot_zone, qual_distance
 from .possession import FrameObs, HolderSeg
 from .schema import Event, Geometry, PlayerRef
 
-SCORE_LOOKBACK_S = 2.0     # 记分牌跳变向前回溯窗口
+SCORE_LOOKBACK_S = 3.0     # 从球进的时刻（进攻钟重置，没有就用比分跳变）往前找出手人的窗口
+SHOT_TO_MADE_S = 1.0       # 出手到球进（进攻钟重置）最多隔多久；最后看清持球更早时，出手时刻按这个往回推
 RIM_LOCK_RADIUS_FT = 5.0   # 球进入篮筐此半径内视为出手迹象
 MIN_CONF = 0.6             # 出手事件硬门槛，低于此不出
 
 
 @dataclass
 class ScoreTick:
-    """一次记分牌变化（来自 lambdas/ocr_scoreboard）。"""
+    """一次记分牌变化（pipeline/vision/scoreboard.py 或 lambdas/ocr_scoreboard）。"""
     t_sec: float
     team: str
     delta: int               # 2 或 3
+    t_reset: Optional[float] = None   # 比分跳变前最近一次进攻钟重置：球进的那一刻，比分常晚 1–2 秒才更新
+
+    @property
+    def t_made(self) -> float:
+        return self.t_reset if self.t_reset is not None else self.t_sec
 
 
 def _nearest_defender(obs: FrameObs, shooter: PlayerRef) -> tuple[Optional[PlayerXY_like], float]:
@@ -57,9 +63,10 @@ def detect_shots(possession_id: str,
     for tick in score_ticks:
         shooter: Optional[PlayerRef] = None
         t_shot: Optional[float] = None
-        for seg in reversed(holder_segs):          # 跳变前最后一个持球人
-            if seg.t_end <= tick.t_sec and tick.t_sec - seg.t_end <= SCORE_LOOKBACK_S:
-                shooter, t_shot = seg.holder, seg.t_end
+        for seg in reversed(holder_segs):          # 球进之前最后一个持球人
+            if seg.t_start <= tick.t_made and tick.t_made - seg.t_end <= SCORE_LOOKBACK_S:
+                shooter = seg.holder
+                t_shot = max(min(seg.t_end, tick.t_made), tick.t_made - SHOT_TO_MADE_S)
                 break
         if shooter is None or shooter.team != tick.team:
             continue

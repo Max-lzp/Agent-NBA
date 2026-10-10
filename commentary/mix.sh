@@ -10,7 +10,7 @@ voice=$2
 output=$3
 if ffmpeg -i "$video" -hide_banner 2>&1 | grep -q 'Audio:'; then
   ffmpeg -y -i "$video" -i "$voice" \
-    -filter_complex "[0:a][1:a]amix=inputs=2:duration=first:dropout_transition=0[a]" \
+    -filter_complex "[0:a][1:a]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[a]" \
     -map 0:v -map "[a]" -c:v copy "$output"
 else
   ffmpeg -y -i "$video" -i "$voice" -map 0:v -map 1:a -c:v copy -shortest "$output"

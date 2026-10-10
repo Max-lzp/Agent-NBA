@@ -222,6 +222,7 @@ def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_second
     ball_tracks = ball_tracker.remove_wrong_detections(
         ball_tracks, maximum_allowed_distance=25 * stride
     )
+    write_ball_raw(clip_id, times, effective_fps, ball_tracks)
     ball_tracks = ball_tracker.interpolate_ball_positions(ball_tracks)
     print(f"{clip_id}: court keypoints", flush=True)
     court_keypoints = court_detector.get_court_keypoints(frames, read_from_stub=False, stub_path=None)
@@ -325,13 +326,28 @@ def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_second
     }
 
 
+def write_ball_raw(clip_id: str, times: list[float], effective_fps: float, ball_tracks: list[dict]) -> None:
+    """插值前的球：哪些抽帧是真检测到的。与 ball_raw.py 同格式，省掉第二遍球检测。"""
+    frames = []
+    for t, track in zip(times, ball_tracks):
+        det = track.get(1) or {}
+        ball = ({"bbox": [round(v) for v in det["bbox"]], "conf": round(det.get("conf", 0.5), 3)}
+                if det.get("bbox") else None)
+        frames.append({"t": t, "ball": ball})
+    hits = sum(1 for f in frames if f["ball"])
+    out = RESULTS / f"{clip_id}.ball_raw.json"
+    out.write_text(json.dumps({"clip": clip_id, "sampled_fps": round(effective_fps, 3), "frames": frames},
+                              ensure_ascii=False), encoding="utf-8")
+    print(f"{clip_id}: {hits}/{len(frames)} 帧真检测到球 ({hits / max(len(frames), 1):.0%})", flush=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="本地检测、跟踪、号码识别")
-    parser.add_argument("--clip", choices=["flagg", "amen", "all"], default="all")
+    clips = json.loads((VISION / "clips.json").read_text(encoding="utf-8"))
+    parser.add_argument("--clip", choices=[*clips, "all"], default="all")
     parser.add_argument("--fps", type=float, default=8.0)
     parser.add_argument("--max-seconds", type=float, default=None)
     args = parser.parse_args()
-    clips = json.loads((VISION / "clips.json").read_text(encoding="utf-8"))
     jersey_path = MODELS / "jersey_numbers.pt"
     if jersey_path.is_file():
         reader = JerseyNumberReader(jersey_path)
@@ -339,7 +355,7 @@ def main() -> None:
     else:
         reader = RapidJerseyReader()
         print("号码读取器 RapidOCR", flush=True)
-    targets = ["flagg", "amen"] if args.clip == "all" else [args.clip]
+    targets = list(clips) if args.clip == "all" else [args.clip]
     RESULTS.mkdir(parents=True, exist_ok=True)
     for clip_id in targets:
         document = analyze_clip(clip_id, clips[clip_id], args.fps, reader, args.max_seconds)

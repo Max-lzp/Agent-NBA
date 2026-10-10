@@ -26,6 +26,9 @@ def possession_events(possession_id: str, segs: list[HolderSeg],
     for seg in segs:
         if seg.confidence < MIN_CONF:
             continue
+        if prev is not None and seg.holder.key() == prev.holder.key():
+            prev = seg
+            continue
         if prev is None:
             events.append(Event(
                 event_id=f"{possession_id}-E{n}", t=seg.t_start, type="receive",

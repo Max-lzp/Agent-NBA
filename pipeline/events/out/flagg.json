@@ -1,0 +1,1264 @@
+{
+  "version": "0.1",
+  "job_id": "flagg",
+  "video": {
+    "duration_s": 21.488,
+    "fps": 8.563,
+    "source": "../官方资料/train_video/训练_弗拉格2月1日.mp4",
+    "game_id": "0022500701"
+  },
+  "possessions": [
+    {
+      "possession_id": "P01",
+      "t_start": 0.0,
+      "t_end": 18.018,
+      "offense_team": "DAL",
+      "events": [
+        {
+          "event_id": "P01-E1",
+          "t": 0.35,
+          "type": "receive",
+          "actor": {
+            "team": "DAL",
+            "number": "",
+            "track_id": 9
+          },
+          "confidence": 0.949,
+          "source": "cv"
+        },
+        {
+          "event_id": "P01-E2",
+          "t": 8.058,
+          "type": "pass",
+          "actor": {
+            "team": "DAL",
+            "number": "",
+            "track_id": 9
+          },
+          "confidence": 0.893,
+          "source": "cv",
+          "target": {
+            "team": "DAL",
+            "number": "",
+            "track_id": 23
+          }
+        },
+        {
+          "event_id": "P01-E3",
+          "t": 11.094,
+          "type": "pass",
+          "actor": {
+            "team": "DAL",
+            "number": "",
+            "track_id": 23
+          },
+          "confidence": 0.879,
+          "source": "cv",
+          "target": {
+            "team": "DAL",
+            "number": "",
+            "track_id": 25
+          }
+        },
+        {
+          "event_id": "P01-E4",
+          "t": 11.795,
+          "type": "pass",
+          "actor": {
+            "team": "DAL",
+            "number": "",
+            "track_id": 25
+          },
+          "confidence": 0.879,
+          "source": "cv",
+          "target": {
+            "team": "DAL",
+            "number": "00",
+            "name": "Christie",
+            "track_id": 27
+          }
+        },
+        {
+          "event_id": "P01-E5",
+          "t": 12.262,
+          "type": "pass",
+          "actor": {
+            "team": "DAL",
+            "number": "00",
+            "name": "Christie",
+            "track_id": 27
+          },
+          "confidence": 0.879,
+          "source": "cv",
+          "target": {
+            "team": "DAL",
+            "number": "",
+            "track_id": 28
+          }
+        },
+        {
+          "event_id": "P01-E6",
+          "t": 13.43,
+          "type": "pass",
+          "actor": {
+            "team": "DAL",
+            "number": "",
+            "track_id": 28
+          },
+          "confidence": 0.907,
+          "source": "cv",
+          "target": {
+            "team": "DAL",
+            "number": "",
+            "track_id": 30
+          }
+        },
+        {
+          "event_id": "P01-E7",
+          "t": 14.831,
+          "type": "pass",
+          "actor": {
+            "team": "DAL",
+            "number": "",
+            "track_id": 30
+          },
+          "confidence": 0.536,
+          "source": "cv",
+          "target": {
+            "team": "DAL",
+            "number": "32",
+            "track_id": 21,
+            "name": "Flagg",
+            "named_by": "official"
+          }
+        },
+        {
+          "event_id": "P01-E8",
+          "t": 17.018,
+          "type": "shot",
+          "actor": {
+            "team": "DAL",
+            "number": "32",
+            "name": "Flagg",
+            "track_id": 21
+          },
+          "confidence": 0.95,
+          "source": "cv",
+          "geometry": {
+            "x_ft": 2.8,
+            "y_ft": 4.6,
+            "shot_zone": "paint"
+          },
+          "official": {
+            "action_number": 666,
+            "person_id": 1642843,
+            "period": 4,
+            "clock_s": 94.0,
+            "kind": "shot",
+            "description": "C. Flagg driving finger roll Layup (34 PTS)",
+            "made": true,
+            "value": 2,
+            "shot_type": "Layup",
+            "distance_ft": 5.35,
+            "xfg": 0.504,
+            "video_url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/666/734c2a04-b3a2-e414-6430-a04326a4559a_1280x720.mp4",
+            "thumbnail": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/666/734c2a04-b3a2-e414-6430-a04326a4559a_1280x720.jpg",
+            "player_id": 1642843,
+            "season_margin": {
+              "season": "2025-26",
+              "team": "DAL",
+              "margin": -4,
+              "bucket": "close5",
+              "bucket_zh": "分差5分以内",
+              "games": 82,
+              "fga": 525,
+              "efg": 0.4657,
+              "ts": 0.518,
+              "ppp": 0.929,
+              "team_ts": 0.5521,
+              "team_ppp": 0.975
+            },
+            "season_profile": {
+              "player_id": 1642843,
+              "name": "Cooper Flagg",
+              "team": "DAL",
+              "source": "data/deep",
+              "tracked_fga": 1194,
+              "xfg": 0.481,
+              "fg": 0.468,
+              "fg_above": -0.013,
+              "gravity": 3.98313,
+              "leverage": 0.2111231428,
+              "baseline_xfg": 0.46581347311236154,
+              "quality_ppt": 1.518652688763844
+            },
+            "court_half": "right",
+            "defender": {
+              "team": "HOU",
+              "number": "1",
+              "name": "Thompson",
+              "full_name": "Amen Thompson",
+              "person_id": 1641708,
+              "source": "matchup",
+              "vs_shooter": {
+                "seconds": 251.0,
+                "possessions": 21.8,
+                "fgm": 0,
+                "fga": 0,
+                "points": 0,
+                "blocks": 0
+              },
+              "season": {
+                "season": "2025-26",
+                "team": "HOU",
+                "gp": 79,
+                "pts": 18.3,
+                "reb": 7.8,
+                "ast": 5.3,
+                "stl": 1.5,
+                "blk": 0.6,
+                "dreb": 4.8,
+                "fg_pct": 0.534,
+                "fg3_pct": 0.216,
+                "ft_pct": 0.779
+              }
+            },
+            "shooter_season": {
+              "season": "2025-26",
+              "team": "DAL",
+              "gp": 70,
+              "pts": 21.0,
+              "reb": 6.7,
+              "ast": 4.5,
+              "stl": 1.2,
+              "blk": 0.9,
+              "dreb": 5.4,
+              "fg_pct": 0.468,
+              "fg3_pct": 0.295,
+              "ft_pct": 0.827
+            },
+            "zone_chart": {
+              "games": [
+                "0022500160",
+                "0022500356",
+                "0022500491",
+                "0022500701"
+              ],
+              "min_shots": 3,
+              "zones": {
+                "restricted": {
+                  "fga": 13,
+                  "fgm": 7,
+                  "xfg": 0.549,
+                  "league_xfg": 0.669,
+                  "league_fga": 203
+                },
+                "paint": {
+                  "fga": 26,
+                  "fgm": 14,
+                  "xfg": 0.454,
+                  "league_xfg": 0.465,
+                  "league_fga": 206
+                },
+                "midrange": {
+                  "fga": 8,
+                  "fgm": 3,
+                  "xfg": 0.434,
+                  "league_xfg": 0.399,
+                  "league_fga": 71
+                },
+                "corner3_l": {
+                  "fga": 1,
+                  "fgm": 0,
+                  "xfg": null,
+                  "league_xfg": 0.399,
+                  "league_fga": 41
+                },
+                "corner3_r": {
+                  "fga": 0,
+                  "fgm": 0,
+                  "xfg": null,
+                  "league_xfg": 0.398,
+                  "league_fga": 20
+                },
+                "wing3_l": {
+                  "fga": 7,
+                  "fgm": 1,
+                  "xfg": 0.341,
+                  "league_xfg": 0.353,
+                  "league_fga": 67
+                },
+                "wing3_r": {
+                  "fga": 3,
+                  "fgm": 2,
+                  "xfg": 0.354,
+                  "league_xfg": 0.363,
+                  "league_fga": 50
+                },
+                "top3": {
+                  "fga": 2,
+                  "fgm": 1,
+                  "xfg": null,
+                  "league_xfg": 0.36,
+                  "league_fga": 37
+                }
+              }
+            }
+          },
+          "release": {
+            "t": 16.75,
+            "source": "ball_left_hand",
+            "shooter_box": [
+              824.3,
+              248.8,
+              920.6,
+              623.2
+            ],
+            "ball_box": [
+              834.6,
+              222.1,
+              862.0,
+              264.7
+            ],
+            "t_official": 17.018
+          },
+          "defense": {
+            "nearest": {
+              "team": "HOU",
+              "number": "",
+              "source": "cv",
+              "foot_gap_px": 72
+            },
+            "nearest_box": [
+              814.6,
+              315.2,
+              858.4,
+              561.2
+            ],
+            "matchup": {
+              "person_id": 1641708,
+              "team": "HOU",
+              "number": "1",
+              "name": "Thompson",
+              "full_name": "Amen Thompson",
+              "seconds": 251.0,
+              "possessions": 21.8,
+              "fgm": 0,
+              "fga": 0,
+              "points": 0,
+              "blocks": 0,
+              "source": "boxscorematchupsv3"
+            }
+          }
+        }
+      ],
+      "keyframes": [
+        {
+          "t": 0.35,
+          "why": "receive",
+          "calibration": "none",
+          "positions": [
+            {
+              "player": {
+                "team": "HOU",
+                "number": "10",
+                "name": "Smith",
+                "track_id": 5
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 8
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 9
+              },
+              "role": "ballhandler",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 7
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 13
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            }
+          ]
+        },
+        {
+          "t": 8.058,
+          "why": "pass",
+          "calibration": "none",
+          "positions": [
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 21
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "10",
+                "name": "Smith",
+                "track_id": 17
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 8
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 24
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 12
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "00",
+                "name": "Christie",
+                "track_id": 20
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 22
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "31",
+                "name": "Klay",
+                "track_id": 18
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 7
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 23
+              },
+              "role": "ballhandler",
+              "confidence": 0.5
+            }
+          ]
+        },
+        {
+          "t": 11.094,
+          "why": "pass",
+          "calibration": "none",
+          "positions": [
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 21
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 24
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "10",
+                "name": "Smith",
+                "track_id": 17
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 25
+              },
+              "role": "ballhandler",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 7
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 22
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 12
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "31",
+                "name": "Klay",
+                "track_id": 18
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "",
+                "number": "",
+                "track_id": 26
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            }
+          ]
+        },
+        {
+          "t": 11.795,
+          "why": "pass",
+          "calibration": "none",
+          "positions": [
+            {
+              "player": {
+                "team": "HOU",
+                "number": "10",
+                "name": "Smith",
+                "track_id": 17
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "31",
+                "name": "Klay",
+                "track_id": 18
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 21
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "00",
+                "name": "Christie",
+                "track_id": 27
+              },
+              "role": "ballhandler",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 22
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 28
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 12
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 25
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            }
+          ]
+        },
+        {
+          "t": 12.262,
+          "why": "pass",
+          "calibration": "none",
+          "positions": [
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 21
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "00",
+                "name": "Christie",
+                "track_id": 27
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "",
+                "number": "",
+                "track_id": 26
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "31",
+                "name": "Klay",
+                "track_id": 18
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "10",
+                "name": "Smith",
+                "track_id": 17
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 28
+              },
+              "role": "ballhandler",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 22
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 25
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 12
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            }
+          ]
+        },
+        {
+          "t": 13.43,
+          "why": "pass",
+          "calibration": "none",
+          "positions": [
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 25
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "10",
+                "name": "Smith",
+                "track_id": 17
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 22
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 31
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 12
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 21
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "31",
+                "name": "Klay",
+                "track_id": 18
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 30
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            }
+          ]
+        },
+        {
+          "t": 14.831,
+          "why": "pass",
+          "calibration": "none",
+          "positions": [
+            {
+              "player": {
+                "team": "HOU",
+                "number": "1",
+                "name": "Amen",
+                "track_id": 34
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 12
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 25
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 21
+              },
+              "role": "ballhandler",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 22
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 31
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "31",
+                "name": "Klay",
+                "track_id": 18
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "10",
+                "name": "Smith",
+                "track_id": 17
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 23
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 35
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            }
+          ]
+        },
+        {
+          "t": 17.05,
+          "why": "shot",
+          "calibration": "none",
+          "positions": [
+            {
+              "player": {
+                "team": "HOU",
+                "number": "10",
+                "name": "Smith",
+                "track_id": 17
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "1",
+                "name": "Amen",
+                "track_id": 34
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 31
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "28",
+                "name": "Sengun",
+                "track_id": 36
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 38
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 22
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "00",
+                "name": "Christie",
+                "track_id": 27
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 33
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            }
+          ]
+        }
+      ],
+      "official": {
+        "period": 4,
+        "clock_start_s": 112.0,
+        "clock_end_s": 94.0,
+        "score_start": {
+          "DAL": 103,
+          "HOU": 107
+        },
+        "score_end": {
+          "DAL": 103,
+          "HOU": 107
+        }
+      }
+    },
+    {
+      "possession_id": "P02",
+      "t_start": 18.018,
+      "t_end": 21.488,
+      "offense_team": "HOU",
+      "events": [
+        {
+          "event_id": "P02-E1",
+          "t": 18.452,
+          "type": "receive",
+          "actor": {
+            "team": "HOU",
+            "number": "",
+            "track_id": 33
+          },
+          "confidence": 0.91,
+          "source": "cv"
+        }
+      ],
+      "keyframes": [
+        {
+          "t": 18.452,
+          "why": "receive",
+          "calibration": "none",
+          "positions": [
+            {
+              "player": {
+                "team": "DAL",
+                "number": "32",
+                "name": "Flagg",
+                "track_id": 39
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "1",
+                "name": "Amen",
+                "track_id": 34
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "10",
+                "name": "Smith",
+                "track_id": 17
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "28",
+                "name": "Sengun",
+                "track_id": 36
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 22
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 33
+              },
+              "role": "ballhandler",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "HOU",
+                "number": "",
+                "track_id": 31
+              },
+              "role": "off_ball",
+              "confidence": 0.5
+            },
+            {
+              "player": {
+                "team": "DAL",
+                "number": "",
+                "track_id": 38
+              },
+              "role": "help_defender",
+              "confidence": 0.5
+            }
+          ]
+        }
+      ],
+      "official": {
+        "period": 4,
+        "clock_start_s": 94.0,
+        "clock_end_s": 94.0,
+        "score_start": {
+          "DAL": 103,
+          "HOU": 107
+        },
+        "score_end": {
+          "DAL": 105,
+          "HOU": 107
+        }
+      }
+    }
+  ],
+  "meta": {
+    "mode": "full",
+    "generator": "pipeline/events",
+    "created_at": "2026-10-10T02:52:21.571027+00:00"
+  },
+  "official": {
+    "game_id": "0022500701",
+    "files": [
+      "0022500701_boxscore.json",
+      "0022500701_playbyplay.json",
+      "0022500701_shotqualityshotlog.json"
+    ],
+    "period": 4,
+    "clock_window_s": [
+      113.0,
+      94.0
+    ],
+    "matched_by_score": 1,
+    "x_negative_side": "left",
+    "side_basis": "official_calibrated",
+    "added_events": 0,
+    "dropped_cv_turnovers": 0,
+    "on_court": {
+      "DAL": [
+        {
+          "jersey": "31",
+          "name": "Thompson",
+          "full_name": "Klay Thompson"
+        },
+        {
+          "jersey": "21",
+          "name": "Gafford",
+          "full_name": "Daniel Gafford"
+        },
+        {
+          "jersey": "13",
+          "name": "Marshall",
+          "full_name": "Naji Marshall"
+        },
+        {
+          "jersey": "00",
+          "name": "Christie",
+          "full_name": "Max Christie"
+        },
+        {
+          "jersey": "32",
+          "name": "Flagg",
+          "full_name": "Cooper Flagg"
+        }
+      ],
+      "HOU": [
+        {
+          "jersey": "7",
+          "name": "Durant",
+          "full_name": "Kevin Durant"
+        },
+        {
+          "jersey": "28",
+          "name": "Sengun",
+          "full_name": "Alperen Sengun"
+        },
+        {
+          "jersey": "10",
+          "name": "Smith Jr.",
+          "full_name": "Jabari Smith Jr."
+        },
+        {
+          "jersey": "17",
+          "name": "Eason",
+          "full_name": "Tari Eason"
+        },
+        {
+          "jersey": "1",
+          "name": "Thompson",
+          "full_name": "Amen Thompson"
+        }
+      ]
+    },
+    "named_from_official": 1,
+    "track_conflicts": [],
+    "plays": [
+      {
+        "t": 17.351,
+        "action_number": 666,
+        "clock_s": 94.0,
+        "team": "DAL",
+        "name": "Flagg",
+        "kind": "shot",
+        "made": true,
+        "value": 2,
+        "description": "C. Flagg driving finger roll Layup (34 PTS)"
+      }
+    ]
+  }
+}

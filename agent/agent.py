@@ -1,8 +1,11 @@
-"""Deep Court 分析 Agent。由 Bedrock AgentCore Runtime 托管，内部调用 Bedrock。"""
+"""Deep Court 编排 Agent，由 Bedrock AgentCore Runtime 托管。
+
+事件来自本地 CV 管线产出的结构化清单（pipeline/events，schema 0.1），
+Agent 只负责取回、校验并交还，不让任何模型看图生成事件。
+"""
 
 from __future__ import annotations
 
-import base64
 import json
 import os
 
@@ -11,18 +14,8 @@ from bedrock_agentcore.runtime import BedrockAgentCoreApp
 
 app = BedrockAgentCoreApp()
 REGION = os.environ.get("AWS_REGION", "us-east-1")
-TEXT_MODEL = os.environ.get("TEXT_MODEL", "global.anthropic.claude-sonnet-4-6")
-VISION_MODEL = os.environ.get("VISION_MODEL", "qwen.qwen3-vl-235b-a22b")
-
-SYSTEM_PROMPT = (
-    "你是 Deep Court 的比赛事件分析器，跑在 Amazon Bedrock AgentCore 上。"
-    "只输出一个 JSON 对象，不要 Markdown。"
-    "格式："
-    '{"events":[{"eventType":"shot|rebound|turnover|pass|screen|hold",'
-    '"timecode":"MM:SS","players":[],"confidence":0.0,"label":"短标签","detail":""}]}'
-    "没有画面时 confidence 不得超过 0.4，detail 以「未抽帧」开头。"
-    "不要编造输入里没有的球员数据。事件 3 到 8 条。"
-)
+SCHEMA_VERSION = "0.1"
+TEAMS = {"HOU", "DAL"}
 
 
 @app.entrypoint
@@ -33,53 +26,35 @@ def invoke(payload, context=None):
         payload = json.loads(payload)
     if not isinstance(payload, dict):
         payload = {}
-    text = (
-        f"jobId={payload.get('jobId', '')}\n"
-        f"gameMeta={payload.get('gameMeta', '')}\n"
-        f"filename={payload.get('filename', '')}\n"
-        f"sourceUrl={payload.get('sourceUrl', '')}\n"
-        f"frameCount={payload.get('frameCount', 0)}"
-    )
-    blocks: list[dict] = []
-    for image in payload.get("images") or []:
-        encoded = image.get("base64")
-        if not encoded:
-            continue
-        blocks.append(
-            {
-                "image": {
-                    "format": image.get("format") or "jpeg",
-                    "source": {"bytes": base64.b64decode(encoded)},
-                }
-            }
-        )
-    blocks.append({"text": text})
-    model_used, raw = _converse(blocks, bool(blocks[:-1]))
-    start = raw.find("{")
-    end = raw.rfind("}")
-    data = json.loads(raw[start : end + 1]) if start >= 0 and end > start else {"events": []}
-    data["modelUsed"] = model_used
-    data["runtime"] = "bedrock-agentcore"
-    return data
+    bucket, key = payload.get("bucket") or "", payload.get("key") or ""
+    if not bucket or not key:
+        return {"ok": False, "error": "缺少 bucket/key", "runtime": "bedrock-agentcore"}
+    body = boto3.client("s3", region_name=REGION).get_object(Bucket=bucket, Key=key)["Body"].read()
+    stream = json.loads(body)
+    problems = check(stream)
+    return {
+        "ok": not problems,
+        "error": "；".join(problems),
+        "stream": stream if not problems else None,
+        "runtime": "bedrock-agentcore",
+    }
 
 
-def _converse(blocks: list[dict], has_frames: bool) -> tuple[str, str]:
-    client = boto3.client("bedrock-runtime", region_name=REGION)
-    order = [VISION_MODEL, TEXT_MODEL] if has_frames else [TEXT_MODEL, VISION_MODEL]
-    last_error = "no model"
-    for model_id in order:
-        try:
-            resp = client.converse(
-                modelId=model_id,
-                system=[{"text": SYSTEM_PROMPT}],
-                messages=[{"role": "user", "content": blocks}],
-                inferenceConfig={"maxTokens": 1800, "temperature": 0.2},
-            )
-            parts = resp["output"]["message"]["content"]
-            return model_id, "".join(part.get("text", "") for part in parts)
-        except Exception as exc:  # noqa: BLE001 — 视觉模型不可用时回退文本模型
-            last_error = f"{model_id}: {exc}"
-    raise RuntimeError(last_error)
+def check(stream) -> list[str]:
+    if not isinstance(stream, dict):
+        return ["清单不是 JSON 对象"]
+    problems = []
+    if stream.get("version") != SCHEMA_VERSION:
+        problems.append(f"version 应为 {SCHEMA_VERSION}")
+    possessions = stream.get("possessions")
+    if not isinstance(possessions, list) or not possessions:
+        return problems + ["possessions 为空"]
+    for poss in possessions:
+        if poss.get("offense_team") not in TEAMS:
+            problems.append(f"{poss.get('possession_id')} 进攻方不是 HOU/DAL")
+        if not isinstance(poss.get("events"), list):
+            problems.append(f"{poss.get('possession_id')} 缺少 events")
+    return problems
 
 
 if __name__ == "__main__":

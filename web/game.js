@@ -1,57 +1,15 @@
-const SAMPLE = {
-  live: "● LIVE · Q4 01:39",
-  active: 3,
-  // 比赛时间锚点：clipTime（秒，相对 10s 示例成片）↔ gameSec（Q4 比赛时钟，秒）
-  // 数值取自画面转播比分牌（1:39 → 1:34），保证数据层时钟与画面一致
-  anchors: [
-    { clipTime: 0, gameSec: 99 },
-  ],
-  events: [
-    { timecode: "01:39", clipTime: 0.8, gameSec: 99, label: "高位持球 · GRAV 87", eventType: "hold" },
-    { timecode: "01:37", clipTime: 2.8, gameSec: 97, label: "挡拆 · 双人收缩", eventType: "screen" },
-    { timecode: "01:36", clipTime: 4.3, gameSec: 96, label: "分球底角 · 空位 2.1m", eventType: "pass" },
-    {
-      timecode: "01:34",
-      clipTime: 6.3,
-      gameSec: 94,
-      label: "出手 · xFG% 38%",
-      eventType: "shot",
-      difficulty: "62%",
-      player: "弗拉格",
-      grav: "87",
-      xfg: "xFG% 38%",
-      xfgWidth: "38%",
-      detail: "DEF DIST 1.2m · 高于联盟均值 +6%",
-      lvg: "LVG +1.8",
-      dps: [
-        { name: "阿门·汤普森", value: 0.86 },
-        { name: "贾巴里·史密斯", value: 0.71 },
-        { name: "申京", value: 0.42 },
-      ],
-      note: "主防：<b>阿门</b> · 换防指令来自申京<br>底线协防迟到 0.4s → 空位形成",
-    },
-    { timecode: "01:34", clipTime: 8.6, gameSec: 94, label: "磕筐而出 · 长篮板", eventType: "rebound" },
-  ],
-};
+const TEAM_COLOR = { HOU: "#CE1141", DAL: "#0064B1" };
+const PX = 4.4;
+const BASKET_Y = 5.25;
 
 const els = {
   subhead: document.querySelector("#subhead"),
-  live: document.querySelector("#live"),
-  chromeUrl: document.querySelector("#chrome-url"),
-  diff: document.querySelector("#diff"),
-  grav: document.querySelector("#grav"),
-  gravName: document.querySelector("#grav-name"),
-  gravVal: document.querySelector("#grav-val"),
-  zone: document.querySelector("#zone"),
-  pull: document.querySelector("#pull"),
-  xfg: document.querySelector("#xfg"),
-  xfgVal: document.querySelector("#xfg-val"),
-  xfgFill: document.querySelector("#xfg-fill"),
-  xfgSub: document.querySelector("#xfg-sub"),
-  dps: document.querySelector("#dps"),
-  dpsRows: document.querySelector("#dps-rows"),
-  dpsNote: document.querySelector("#dps-note"),
-  lvg: document.querySelector("#lvg"),
+  stage: document.querySelector("#stage"),
+  reel: document.querySelector("#reel"),
+  names: document.querySelector("#names"),
+  court: document.querySelector("#court"),
+  detail: document.querySelector("#detail"),
+  script: document.querySelector("#script"),
   events: document.querySelector("#events"),
   fill: document.querySelector("#fill"),
   ticks: document.querySelector("#ticks"),
@@ -59,65 +17,54 @@ const els = {
   clock: document.querySelector("#clock"),
   pause: document.querySelector("#pause"),
   pauseIcon: document.querySelector("#pause-icon"),
-  reel: document.querySelector("#reel"),
-  court: document.querySelector("#court-art"),
+  switcher: document.querySelector("#clip-switch"),
+  foot: document.querySelector("#foot-note"),
 };
 
-const jobId = new URLSearchParams(location.search).get("jobId");
+const params = new URLSearchParams(location.search);
+const jobId = params.get("jobId");
+const clips = window.DEEPCOURT_CLIPS || {};
+const clipName = params.get("clip") || (clips.flagg ? "flagg" : Object.keys(clips)[0] || "");
+
 const state = {
-  events: SAMPLE.events,
-  anchors: SAMPLE.anchors.concat(SAMPLE.events.map((event) => ({ clipTime: event.clipTime, gameSec: event.gameSec }))),
-  active: SAMPLE.active,
-  clipDuration: 10,
+  pack: null,
+  events: [],
+  active: 0,
+  clipDuration: 1,
   paused: true,
   layers: { resident: true, event: true, expand: true },
-  mode: jobId ? "job" : "sample",
+  freeze: null,
+  replayed: new Set(),
 };
 
 init();
 
 function init() {
-  if (els.chromeUrl) els.chromeUrl.textContent = location.host + location.pathname;
+  renderSwitcher();
   els.reel.addEventListener("timeupdate", onTimeUpdate);
   els.reel.addEventListener("loadedmetadata", () => {
-    if (!Number.isFinite(els.reel.duration) || els.reel.duration <= 0) return;
-    state.clipDuration = els.reel.duration;
-    state.events.forEach((event) => { event.pos = event.clipTime / state.clipDuration; });
-    if (state.mode === "sample" && els.reel.currentTime < 0.1) {
-      els.reel.currentTime = SAMPLE.events[SAMPLE.active].clipTime;
-    }
-    renderTicks();
-    render();
+    if (Number.isFinite(els.reel.duration) && els.reel.duration > 0) state.clipDuration = els.reel.duration;
+    resizeCanvas();
+    if (state.pack && els.reel.currentTime < 0.2) seekEvent(state.active);
+    else render();
   });
   els.reel.addEventListener("ended", () => {
+    state.replayed.clear();
     pause(true);
-    state.active = state.events.length - 1;
+    state.active = Math.max(0, state.events.length - 1);
     render();
   });
+  els.reel.addEventListener("seeked", () => render());
+  window.addEventListener("resize", resizeCanvas);
   els.scrub.addEventListener("click", onScrub);
-  els.pause.addEventListener("click", togglePause);
+  els.pause.addEventListener("click", () => { pause(!state.paused); render(); });
   els.events.addEventListener("click", (event) => {
     const button = event.target.closest(".event");
     if (!button) return;
     seekEvent(Number(button.dataset.index));
   });
-  const shareNote = document.querySelector("#share-note");
   const kuaishou = document.querySelector("#share-kuaishou");
-  if (kuaishou && shareNote) {
-    kuaishou.addEventListener("click", () => openKuaishou(shareNote));
-  }
-  const narrate = document.querySelector("#narrate");
-  const narration = document.querySelector("#narration");
-  if (narrate && narration) {
-    narrate.addEventListener("change", () => {
-      if (!narrate.checked) {
-        narration.pause();
-        return;
-      }
-      narration.play().catch(() => {});
-      requestCommentary();
-    });
-  }
+  if (kuaishou) kuaishou.addEventListener("click", () => openKuaishou());
   document.querySelectorAll(".layer").forEach((button) => {
     button.addEventListener("click", () => {
       const key = button.dataset.layer;
@@ -126,40 +73,152 @@ function init() {
       render();
     });
   });
-
-  if (state.mode === "sample") {
-    els.live.textContent = SAMPLE.live;
-    els.reel.currentTime = SAMPLE.events[SAMPLE.active].clipTime;
-  }
-  state.events.forEach((event) => { event.pos = event.clipTime / state.clipDuration; });
-  renderTicks();
-  render();
-  if (jobId) pollJob();
+  if (clipName && clips[clipName]) loadPack(clips[clipName]);
+  else if (jobId) pollJob();
+  else els.subhead.textContent = "还没有成片。先在仓库里运行 python3 -m pipeline.present --all";
 }
 
-function togglePause() {
-  pause(!state.paused);
+function loadPack(pack) {
+  endFreeze(false);
+  state.replayed.clear();
+  state.pack = pack;
+  state.events = pack.events || [];
+  state.clipDuration = pack.duration || 1;
+  state.active = nearestEventIndex(pack.anchor || 0);
+  els.subhead.innerHTML = `${pack.dataset ? `<span class="dataset">${pack.dataset}</span>` : ""}Team 04 · ${pack.title || pack.clip}${pack.gameId ? " · 官方 " + pack.gameId : ""}`;
+  const start = Number(pack.anchor) || 0;
+  els.reel.src = start > 0 ? `${pack.video}#t=${start}` : pack.video;
+  if (els.foot) {
+    els.foot.textContent = pack.gameId
+      ? `官方比赛 ${pack.gameId}。${pack.voice || ""}`
+      : (pack.voice || "画面上的数字来自记分牌和官方逐回合。");
+    if (pack.replayVideo) {
+      const link = document.createElement("a");
+      link.href = pack.replayVideo;
+      link.download = "";
+      link.className = "replay-link";
+      link.textContent = "下载定格版成片（进球后出手帧定格 5 秒）";
+      els.foot.append(" ", link);
+    }
+  }
+  if (els.script) els.script.textContent = (pack.script || []).join("");
+  drawCourt();
+  renderTicks();
   render();
+}
+
+function renderSwitcher() {
+  if (!els.switcher) return;
+  const names = Object.keys(clips);
+  els.switcher.innerHTML = names.map((name) => {
+    const on = name === clipName ? " on" : "";
+    const label = `${clips[name].dataset ? clips[name].dataset + " · " : ""}${clips[name].title || name}`;
+    return `<a class="clip${on}" href="game.html?clip=${encodeURIComponent(name)}">${label}</a>`;
+  }).join("");
+}
+
+function resizeCanvas() {
+  const canvas = els.names;
+  if (!canvas || !els.stage) return;
+  const rect = els.stage.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.round(rect.width * ratio));
+  canvas.height = Math.max(1, Math.round(rect.height * ratio));
+  canvas.style.width = `${rect.width}px`;
+  canvas.style.height = `${rect.height}px`;
+  drawNames();
+}
+
+function startFreeze(shot) {
+  const freeze = window.DeepFreeze;
+  state.replayed.add(shot.t);
+  state.freeze = { shot, resumeAt: els.reel.currentTime, until: Date.now() + freeze.FREEZE_MS };
+  els.reel.pause();
+  els.reel.currentTime = shot.release.t;
+  let card = document.querySelector("#freeze");
+  if (!card) {
+    card = document.createElement("div");
+    card.id = "freeze";
+    card.className = "freeze";
+    els.stage.appendChild(card);
+  }
+  card.hidden = false;
+  const [x1, , x2] = shot.release.shooter_box;
+  card.classList.toggle("right", (x1 + x2) / 2 < state.pack.width / 2);
+  card.style.fontSize = `${Math.max(8.5, Math.min(12, els.stage.clientWidth / 62)).toFixed(1)}px`;
+  const tick = () => {
+    if (!state.freeze || state.freeze.shot !== shot) return;
+    const left = state.freeze.until - Date.now();
+    if (left <= 0) {
+      endFreeze(true);
+      return;
+    }
+    card.innerHTML = freeze.cardHtml(state.pack, shot, left);
+    state.freeze.timer = setTimeout(tick, 200);
+  };
+  tick();
+  drawCourt();
+}
+
+function endFreeze(resume) {
+  const current = state.freeze;
+  if (!current) return;
+  clearTimeout(current.timer);
+  state.freeze = null;
+  const card = document.querySelector("#freeze");
+  if (card) card.hidden = true;
+  if (resume) {
+    els.reel.currentTime = current.resumeAt;
+    if (!state.paused) els.reel.play().catch(() => {});
+  }
+  render();
+}
+
+function maybeFreeze() {
+  if (!window.DeepFreeze || !state.pack || state.paused || state.freeze) return false;
+  const t = els.reel.currentTime;
+  const shot = window.DeepFreeze.candidates(state.pack).find((item) => !state.replayed.has(item.t)
+    && t >= window.DeepFreeze.goalTime(state.pack, item) && t <= window.DeepFreeze.goalTime(state.pack, item) + 1.5);
+  if (!shot) return false;
+  startFreeze(shot);
+  return true;
+}
+
+function rearmFreeze(t) {
+  endFreeze(false);
+  (state.pack?.shots || []).forEach((shot) => {
+    if (shot.release && t < window.DeepFreeze?.goalTime(state.pack, shot)) state.replayed.delete(shot.t);
+  });
 }
 
 function pause(shouldPause) {
   state.paused = shouldPause;
   state.layers.expand = shouldPause;
-  if (els.reel.src || state.mode === "sample") {
-    if (state.paused) els.reel.pause();
-    else els.reel.play().catch(() => { state.paused = true; state.layers.expand = true; render(); });
+  if (state.freeze) {
+    endFreeze(!shouldPause);
+    return;
   }
+  if (!els.reel.src) return;
+  if (state.paused) els.reel.pause();
+  else els.reel.play().catch(() => { state.paused = true; state.layers.expand = true; });
 }
 
 function seekEvent(index) {
   state.active = index;
-  const event = state.events[state.active];
-  if (event && Number.isFinite(els.reel.duration)) {
-    els.reel.currentTime = Math.min(event.clipTime, Math.max(0, els.reel.duration - 0.05));
-  } else if (event) {
-    els.reel.currentTime = event.clipTime;
-  }
   pause(true);
+  const event = state.events[index];
+  if (event) {
+    rearmFreeze(event.t);
+    const duration = els.reel.duration;
+    const limit = Number.isFinite(duration) && duration > 0.2 ? duration - 0.05 : event.t;
+    try {
+      els.reel.currentTime = Math.min(event.t, Math.max(0, limit));
+    } catch (error) {
+      els.reel.addEventListener("loadedmetadata", () => {
+        els.reel.currentTime = event.t;
+      }, { once: true });
+    }
+  }
   render();
 }
 
@@ -167,134 +226,223 @@ function onScrub(event) {
   const rect = els.scrub.getBoundingClientRect();
   const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
   els.reel.currentTime = ratio * state.clipDuration;
-  let active = 0;
-  state.events.forEach((item, index) => { if (ratio >= item.clipTime / state.clipDuration - 0.01) active = index; });
-  state.active = active;
+  state.active = nearestEventIndex(els.reel.currentTime);
   pause(true);
+  rearmFreeze(els.reel.currentTime);
   render();
 }
 
 function onTimeUpdate() {
-  if (state.paused) return;
-  const t = els.reel.currentTime;
+  drawNames();
+  if (state.paused || state.freeze || maybeFreeze()) return;
+  const next = nearestEventIndex(els.reel.currentTime);
+  if (next !== state.active) state.active = next;
+  render();
+}
+
+function nearestEventIndex(t) {
   let active = 0;
-  state.events.forEach((item, index) => { if (t >= item.clipTime - 0.05) active = index; });
-  if (active !== state.active) {
-    state.active = active;
-    render();
-  } else {
-    updateProgress();
-  }
+  state.events.forEach((item, index) => { if (t + 0.05 >= item.t) active = index; });
+  return active;
 }
 
-// 比赛时钟（Q4 倒计时，秒）：按锚点在 clipTime 上线性插值，保证与画面比分牌一致
-function gameClockAt(t) {
-  const anchors = state.anchors;
-  if (!anchors.length) return 0;
-  if (t <= anchors[0].clipTime) return anchors[0].gameSec;
-  for (let i = 1; i < anchors.length; i += 1) {
-    if (t <= anchors[i].clipTime) {
-      const a = anchors[i - 1];
-      const b = anchors[i];
-      const span = Math.max(0.001, b.clipTime - a.clipTime);
-      return lerp(a.gameSec, b.gameSec, Math.min(1, (t - a.clipTime) / span));
-    }
-  }
-  return anchors[anchors.length - 1].gameSec;
-}
-
-function updateProgress() {
-  const t = els.reel.currentTime || 0;
-  els.fill.style.width = `${Math.min(100, (t / state.clipDuration) * 100)}%`;
-  els.clock.textContent = state.mode === "sample"
-    ? `Q4 ${format(gameClockAt(t))}`
-    : `${format(t)} / ${format(state.clipDuration)}`;
+function scoreAt(t) {
+  const rows = state.pack?.scorebug || [];
+  let found = rows[0] || null;
+  rows.forEach((row) => { if (row.t <= t + 0.05) found = row; });
+  return found;
 }
 
 function render() {
-  updateProgress();
+  const t = Number.isFinite(els.reel.currentTime) ? els.reel.currentTime : 0;
+  els.fill.style.width = `${Math.min(100, (t / state.clipDuration) * 100)}%`;
+  const bug = scoreAt(t);
+  els.clock.textContent = bug ? `${bug.period} ${bug.clock}` : format(t);
   els.pauseIcon.innerHTML = state.paused
     ? '<rect x="1" y="0" width="3.2" height="14" fill="#14110E"/><rect x="7.6" y="0" width="3.2" height="14" fill="#14110E"/>'
     : '<path d="M2 0 L12 7 L2 14 Z" fill="#14110E"/>';
-
-  const showResident = state.layers.resident;
-  const showEvent = state.layers.event;
-  els.diff.classList.toggle("hidden", !showResident);
-  els.grav.classList.toggle("hidden", !showResident);
-  els.xfg.classList.toggle("hidden", !showResident);
-  els.zone.classList.toggle("hidden", !showEvent);
-  els.pull.classList.toggle("hidden", !showEvent);
-  els.dps.classList.toggle("hidden", !state.layers.expand);
-
-  const event = state.events[state.active] || state.events[0];
-  if (event) {
-    els.diff.innerHTML = `投篮难度 <b>${event.difficulty || "—"}</b>`;
-    els.gravName.textContent = event.player || "球员";
-    els.gravVal.textContent = event.grav || "—";
-    els.xfgVal.textContent = event.xfg || event.label || event.eventType || "";
-    els.xfgFill.style.width = event.xfgWidth || "38%";
-    els.xfgSub.textContent = event.detail || "";
-    els.lvg.textContent = event.lvg || "LVG —";
-    els.dpsNote.innerHTML = event.note || "暂停后展开本回合的防守压力。";
-    drawDps(event.dps);
-  }
-
+  els.names.classList.toggle("hidden", !state.layers.resident);
   els.events.innerHTML = state.events.map((item, index) => {
     const on = index === state.active ? " on" : "";
     return `<button class="event${on}" type="button" data-index="${index}"><span class="t">${item.timecode || "--:--"}</span><span class="l">${item.label}</span></button>`;
   }).join("");
-
   document.querySelectorAll(".layer").forEach((button) => {
     button.classList.toggle("on", state.layers[button.dataset.layer]);
   });
+  drawNames();
+  drawDetail();
+  drawCourt();
+}
+
+function drawNames() {
+  const canvas = els.names;
+  const pack = state.pack;
+  if (!canvas || !pack || !state.layers.resident) {
+    if (canvas) canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const frame = nearestFrame(els.reel.currentTime || 0);
+  if (!frame) return;
+  const ratio = window.devicePixelRatio || 1;
+  const scale = canvas.width / pack.width;
+  if (state.freeze && window.DeepFreeze) {
+    window.DeepFreeze.drawMarks(ctx, state.freeze.shot, scale, ratio);
+    return;
+  }
+  ctx.font = `${Math.round(13 * ratio)}px MiSans, "PingFang SC", sans-serif`;
+  ctx.textBaseline = "bottom";
+  const t = els.reel.currentTime || 0;
+  const shotOn = (pack.shots || []).some((shot) => t >= shot.t - 0.3 && t <= shot.t + 3.3);
+  frame.players.forEach((player) => {
+    if (shotOn && player.y < 360) return;
+    const label = `${player.name} ${player.jersey}`.trim();
+    const width = ctx.measureText(label).width + 12 * ratio;
+    const x = player.x * scale + (player.w * scale - width) / 2;
+    const y = player.y * scale - 4 * ratio;
+    const top = Math.max(16 * ratio, y);
+    ctx.fillStyle = "rgba(20,17,14,0.88)";
+    ctx.fillRect(x, top - 18 * ratio, width, 18 * ratio);
+    ctx.fillStyle = TEAM_COLOR[player.team] || "#F1681E";
+    ctx.fillRect(x, top - 18 * ratio, 3 * ratio, 18 * ratio);
+    ctx.fillStyle = "#F3EDE2";
+    ctx.fillText(label, x + 7 * ratio, top - 3 * ratio);
+  });
+}
+
+function nearestFrame(t) {
+  const tags = state.pack?.tags || [];
+  let found = null;
+  for (const frame of tags) {
+    if (frame.t <= t + 0.12) found = frame;
+    else break;
+  }
+  return found;
+}
+
+function drawDetail() {
+  if (!els.detail) return;
+  const event = state.events[state.active];
+  const shot = event?.shot || null;
+  if (!state.layers.expand || !state.paused) {
+    els.detail.innerHTML = shot
+      ? `<p>${shot.name} · ${shot.made ? "命中" : shot.made === false ? "不中" : "出手"}</p><p class="muted">暂停后展开官方记录。</p>`
+      : "<p class='muted'>暂停后展开这一段的官方记录。</p>";
+    return;
+  }
+  if (!shot) {
+    els.detail.innerHTML = `<p>${event ? event.label : "这一段没有出手。"}</p><p class="muted">${event?.detail || ""}</p>${lineupHtml()}`;
+    return;
+  }
+  const xfg = shot.xfg == null ? "清单里没有预期命中率" : `预期命中率 ${(Number(shot.xfg) * 100).toFixed(1)}%（${Number(shot.xfg).toFixed(3)}）`;
+  const margin = shot.season_margin;
+  const vsTeam = margin && margin.ts != null && margin.team_ts != null
+    ? (Number(margin.ts) - Number(margin.team_ts)) * 100
+    : null;
+  const vsTeamText = vsTeam == null ? ""
+    : `，比全队同档${vsTeam >= 0 ? "高" : "低"} ${Math.abs(vsTeam).toFixed(1)} 个百分点`;
+  const marginLine = margin && margin.ts != null
+    ? `<p>赛季${margin.bucket_zh}：真实命中率 ${(Number(margin.ts) * 100).toFixed(1)}%${vsTeamText}，每球权 ${Number(margin.ppp).toFixed(3)}（${margin.fga} 投）</p>`
+    : "";
+  const bits = [shot.zone, shot.distance ? `${Number(shot.distance).toFixed(1)} 英尺` : "", shot.assist ? `${shot.assist} 助攻` : ""].filter(Boolean);
+  els.detail.innerHTML = `<p><b>${shot.name}</b> ${shot.value || ""} 分${shot.made ? "命中" : shot.made === false ? "不中" : "出手"}</p>
+    <p>${xfg}</p>
+    ${marginLine}
+    <p>${bits.join(" · ")}</p>
+    <p class="muted">${shot.description || ""}</p>
+    ${shot.contrast ? `<p class="contrast">${shot.contrast}</p>` : ""}
+    ${lineupHtml()}`;
+}
+
+function lineupHtml() {
+  const court = state.pack?.onCourt || {};
+  const teams = Object.keys(court);
+  if (!teams.length) return "";
+  return `<div class="lineup">${teams.map((team) => `<div><b style="color:${TEAM_COLOR[team] || "#F3EDE2"}">${team === "HOU" ? "火箭" : team === "DAL" ? "独行侠" : team}</b>${
+    court[team].map((player) => `<span>#${player.jersey} ${player.name}</span>`).join("")
+  }</div>`).join("")}</div>`;
+}
+
+function drawCourt() {
+  if (!els.court || !state.layers.event) {
+    if (els.court) els.court.innerHTML = "";
+    return;
+  }
+  const shots = state.pack?.shots || [];
+  const focus = state.freeze?.shot || state.events[state.active]?.shot || shots.find((shot) => shot.zoneChart);
+  const kicker = els.court.parentElement?.querySelector(".rail-kicker");
+  if (window.DeepFreeze && focus?.zoneChart) {
+    if (kicker) kicker.textContent = `${focus.name} · 出手分区热区图`;
+    els.court.innerHTML = window.DeepFreeze.heatmap(focus, Boolean(state.freeze));
+    return;
+  }
+  if (kicker) kicker.textContent = "半场落点 · 官方坐标";
+  const w = 50 * PX;
+  const h = 34 * PX;
+  const sx = (x) => (25 + x) * PX;
+  const sy = (y) => (BASKET_Y + y) * PX;
+  const corner = Math.sqrt(23.75 ** 2 - 22 ** 2);
+  const active = state.events[state.active]?.shot;
+  let marks = "";
+  shots.forEach((shot) => {
+    if (shot.x == null || shot.y == null) return;
+    const color = TEAM_COLOR[shot.team] || "#F3EDE2";
+    const here = active && Math.abs(active.t - shot.t) < 0.05;
+    const radius = here ? 8 : 5;
+    if (shot.made) {
+      marks += `<circle cx="${sx(shot.x)}" cy="${sy(shot.y)}" r="${radius}" fill="${color}" stroke="#fff" stroke-width="2"/>`;
+    } else {
+      const d = radius;
+      marks += `<path d="M ${sx(shot.x) - d} ${sy(shot.y) - d} L ${sx(shot.x) + d} ${sy(shot.y) + d} M ${sx(shot.x) + d} ${sy(shot.y) - d} L ${sx(shot.x) - d} ${sy(shot.y) + d}" stroke="${color}" stroke-width="3"/>`;
+    }
+  });
+  els.court.innerHTML = `<svg viewBox="0 0 ${w} ${h}" class="mini-court">
+    <rect width="${w}" height="${h}" fill="#2a241c"/>
+    <rect x="${sx(-8)}" y="0" width="${16 * PX}" height="${19 * PX}" fill="none" stroke="#5c5146"/>
+    <circle cx="${sx(0)}" cy="${19 * PX}" r="${6 * PX}" fill="none" stroke="#5c5146"/>
+    <line x1="${sx(-22)}" y1="0" x2="${sx(-22)}" y2="${sy(corner)}" stroke="#5c5146"/>
+    <line x1="${sx(22)}" y1="0" x2="${sx(22)}" y2="${sy(corner)}" stroke="#5c5146"/>
+    <path d="M ${sx(-22)} ${sy(corner)} A ${23.75 * PX} ${23.75 * PX} 0 0 0 ${sx(22)} ${sy(corner)}" fill="none" stroke="#5c5146"/>
+    <circle cx="${sx(0)}" cy="${sy(0)}" r="3" fill="none" stroke="#F1681E"/>
+    ${marks}
+  </svg>`;
 }
 
 function renderTicks() {
   els.ticks.innerHTML = state.events.map((item) => {
-    const pos = Math.min(100, Math.max(0, (item.pos ?? 0) * 100));
+    const pos = Math.min(100, Math.max(0, (item.t / state.clipDuration) * 100));
     return `<i style="left:${pos}%"></i>`;
   }).join("");
 }
 
-function drawDps(rows) {
-  if (!rows || !rows.length) {
-    els.dpsRows.innerHTML = "";
-    return;
-  }
-  els.dpsRows.innerHTML = rows.map((row) => {
-    const width = Math.round(Number(row.value) * 100);
-    const low = Number(row.value) < 0.5;
-    return `<div class="dps-row"><span>${row.name}</span><div class="bar"><i class="${low ? "low" : ""}" style="width:${width}%"></i></div><span class="num${low ? " low" : ""}">${Number(row.value).toFixed(2)}</span></div>`;
-  }).join("");
+function format(total) {
+  const seconds = Math.max(0, Math.round(total));
+  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
 async function pollJob() {
-  els.live.textContent = "任务读取中";
+  els.subhead.textContent = "任务读取中";
   let attempts = 0;
   while (attempts < 60) {
     attempts += 1;
     try {
       const job = await getJson(`/jobs/${encodeURIComponent(jobId)}`);
       els.subhead.textContent = `${statusText(job.status)} · ${job.gameMeta || job.filename || jobId}`;
-      els.live.textContent = job.modelUsed ? job.modelUsed : statusText(job.status);
-      if (job.playbackUrl && els.reel.src !== job.playbackUrl) {
-        els.reel.src = job.playbackUrl;
-        els.reel.poster = "";
-        els.reel.classList.remove("hidden");
-        els.court.classList.add("hidden");
-      }
+      if (job.playbackUrl && els.reel.src !== job.playbackUrl) els.reel.src = job.playbackUrl;
       if (job.status === "DONE" || job.status === "FAILED") {
         const listed = await getJson(`/jobs/${encodeURIComponent(jobId)}/events`);
-        if (listed.events?.length) {
-          state.events = listed.events.map(presentEvent);
-          state.anchors = [];
-          state.active = state.events.length - 1;
-          state.clipDuration = Math.max(Number.isFinite(els.reel.duration) ? els.reel.duration : 0,
-            ...state.events.map((item) => item.clipTime), 1);
-          state.events.forEach((item) => { item.pos = item.clipTime / state.clipDuration; });
-          renderTicks();
-          seekEvent(state.active);
-        }
+        state.events = (listed.events || []).map((event) => ({
+          t: Number.isFinite(event.t) ? event.t : 0,
+          timecode: event.timecode || "",
+          label: event.label || event.eventType || "事件",
+          eventType: event.eventType || "",
+          detail: event.detail || "",
+          shot: null,
+        }));
+        state.clipDuration = Math.max(els.reel.duration || 0, ...state.events.map((item) => item.t), 1);
+        state.active = Math.max(0, state.events.length - 1);
+        renderTicks();
         if (job.status === "FAILED") els.subhead.textContent = job.error || "分析失败";
         render();
         return;
@@ -306,29 +454,18 @@ async function pollJob() {
   }
 }
 
-function presentEvent(event) {
-  return {
-    ...event,
-    label: event.label || event.eventType || "事件",
-    player: (event.players && event.players[0]) || "",
-    detail: event.detail || "",
-    xfg: event.label || "",
-    clipTime: toSeconds(event.timecode),
-    pos: 0,
-  };
-}
-
 function statusText(status) {
   return {
-    PENDING: "等待分析",
-    ANALYZING: "AgentCore / Bedrock 分析中",
+    PENDING: "等待上传",
+    TRACKING: "等待本地追踪结果",
+    ANALYZING: "AgentCore 校验结构化清单",
     DONE: "分析完成",
     FAILED: "分析失败",
   }[status] || status || "未知状态";
 }
 
 function apiBase() {
-  const fromQuery = new URLSearchParams(location.search).get("api");
+  const fromQuery = params.get("api");
   if (fromQuery) return fromQuery.replace(/\/$/, "");
   return (window.DEEPCOURT_CONFIG?.apiBase || "/api").replace(/\/$/, "");
 }
@@ -340,25 +477,11 @@ async function getJson(path) {
   return data;
 }
 
-function toSeconds(timecode) {
-  const match = /^(\d+):(\d+)$/.exec(timecode || "");
-  if (!match) return 0;
-  return Number(match[1]) * 60 + Number(match[2]);
-}
-
-function lerp(a, b, t) { return a + (b - a) * t; }
-
-function format(total) {
-  const seconds = Math.max(0, Math.round(total));
-  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
-}
-
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function openKuaishou(note) {
-  note.textContent = "正在打开快手扫码…";
+async function openKuaishou() {
   const frame = document.querySelector("#kuaishou-frame");
   try {
     const response = await fetch(`${apiBase()}/oauth/kuaishou/start`);
@@ -366,38 +489,8 @@ async function openKuaishou(note) {
     if (data.url && frame) {
       frame.hidden = false;
       frame.src = data.url;
-      note.textContent = data.message || "用快手 APP 扫码绑定。";
-      return;
-    }
-    note.textContent = data.message || "敬请期待。快手资质还在审核，通过后再从这里发布片段。";
-  } catch {
-    note.textContent = "敬请期待。快手资质还在审核，通过后再从这里发布片段。";
-  }
-}
-
-async function requestCommentary() {
-  if (!jobId) return;
-  try {
-    const response = await fetch(`${apiBase()}/commentary`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        jobId,
-        gameMeta: "",
-        events: state.events.map((event) => ({
-          timecode: event.timecode,
-          label: event.label,
-          eventType: event.eventType,
-        })),
-      }),
-    });
-    const data = await response.json().catch(() => ({}));
-    const narration = document.querySelector("#narration");
-    if (data.audioUrl && narration) {
-      narration.src = data.audioUrl;
-      narration.play().catch(() => {});
     }
   } catch {
-    return;
+    // 扫码入口没接上时，按钮保持原样。
   }
 }

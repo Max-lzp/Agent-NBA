@@ -39,7 +39,8 @@
         "target": {"$ref": "#/$defs/player_ref", "description": "传球接球人 / 掩护对象防守人"},
         "geometry": {"$ref": "#/$defs/geometry"},
         "confidence": {"type": "number", "minimum": 0, "maximum": 1},
-        "source": {"type": "string", "enum": ["cv", "vlm", "manual"]}
+        "source": {"type": "string", "enum": ["cv", "vlm", "manual", "official"]},
+        "official": {"type": "object", "description": "pipeline/enrich 对上的官方逐回合记录：action_number / period / clock_s / made / value / shot_type / distance_ft / assist / xfg（投篮质量 0–1）/ defender / video_url / thumbnail（官方这一球的视频）/ side（投篮人左右）/ side_basis / court_half（电视画面左右半场）/ description"}
       },
       "additionalProperties": false
     },
@@ -78,6 +79,7 @@
         "offense_team": {"type": "string"},
         "events": {"type": "array", "items": {"$ref": "#/$defs/event"}},
         "keyframes": {"type": "array", "items": {"$ref": "#/$defs/keyframe"}},
+        "official": {"type": "object", "description": "pipeline/enrich：period / clock_start_s / clock_end_s / score_start / score_end"},
         "tactics": {
           "type": "array",
           "description": "④ 战术识别的产出，几何候选 + Claude 措辞",
@@ -85,7 +87,17 @@
             "type": "object",
             "required": ["action", "confidence", "source"],
             "properties": {
-              "action": {"type": "string", "description": "high_pick_and_roll / spain_pnr / pick_and_pop / dribble_handoff / zoom / flare / pin_down / elevator / back_screen / backdoor / iso / post_up / transition / halfcourt_generic ..."},
+              "action": {
+                "type": "string",
+                "description": "闭集，定义见 playbook.json。一个进攻回合只填一个。",
+                "enum": [
+                  "transition", "drag", "high_pick_and_roll", "wing_pick_and_roll",
+                  "pick_and_pop", "spain_pnr", "dribble_handoff", "zoom",
+                  "pin_down", "stagger", "flare", "elevator", "floppy",
+                  "iverson_cut", "back_screen", "backdoor", "give_and_go",
+                  "iso", "post_up", "halfcourt_generic"
+                ]
+              },
               "label_zh": {"type": "string", "description": "Claude 措辞后的中文标签"},
               "confidence": {"type": "number", "minimum": 0, "maximum": 1},
               "source": {"type": "string", "enum": ["rule", "llm_arbitrated", "fallback_class"]}
@@ -112,6 +124,7 @@
       "additionalProperties": false
     },
     "possessions": {"type": "array", "items": {"$ref": "#/$defs/possession"}},
+    "official": {"type": "object", "description": "pipeline/enrich：game_id / files / period / clock_window_s / 对上与补入统计 / 片段内官方记录 plays"},
     "meta": {
       "type": "object",
       "required": ["mode", "generator", "created_at"],
