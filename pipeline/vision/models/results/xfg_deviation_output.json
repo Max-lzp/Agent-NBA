@@ -1,0 +1,157 @@
+{
+  "model": "xfg_decomposition_v1",
+  "baseline_fg_probability": 0.4658134731123617,
+  "scope": "season player aggregates; descriptive, not a single-play or causal estimate",
+  "players": [
+    {
+      "player": "Kevin Durant",
+      "expected_fg_probability": 0.433,
+      "actual_fg_probability_derived": 0.52,
+      "quality_contribution_pp": -3.2813473112361713,
+      "execution_residual_pp": 8.7,
+      "total_vs_baseline_pp": 5.418652688763831,
+      "quadrant": "高难度出手 / 超预期命中",
+      "overlay": {
+        "label": "出手质量 / 命中偏差",
+        "text": "Kevin Durant：每100次出手，质量较基准-3.3次命中，实际较预期+8.7次。"
+      },
+      "player_id": 201142,
+      "team": "HOU",
+      "tracked_attempts": 1376
+    },
+    {
+      "player": "Naji Marshall",
+      "expected_fg_probability": 0.483,
+      "actual_fg_probability_derived": 0.51,
+      "quality_contribution_pp": 1.7186526887638276,
+      "execution_residual_pp": 2.7,
+      "total_vs_baseline_pp": 4.41865268876383,
+      "quadrant": "优质出手 / 超预期命中",
+      "overlay": {
+        "label": "出手质量 / 命中偏差",
+        "text": "Naji Marshall：每100次出手，质量较基准+1.7次命中，实际较预期+2.7次。"
+      },
+      "player_id": 1630230,
+      "team": "DAL",
+      "tracked_attempts": 821
+    },
+    {
+      "player": "Reed Sheppard",
+      "expected_fg_probability": 0.406,
+      "actual_fg_probability_derived": 0.43000000000000005,
+      "quality_contribution_pp": -5.981347311236168,
+      "execution_residual_pp": 2.4,
+      "total_vs_baseline_pp": -3.581347311236166,
+      "quadrant": "高难度出手 / 超预期命中",
+      "overlay": {
+        "label": "出手质量 / 命中偏差",
+        "text": "Reed Sheppard：每100次出手，质量较基准-6.0次命中，实际较预期+2.4次。"
+      },
+      "player_id": 1642263,
+      "team": "HOU",
+      "tracked_attempts": 946
+    },
+    {
+      "player": "Max Christie",
+      "expected_fg_probability": 0.424,
+      "actual_fg_probability_derived": 0.441,
+      "quality_contribution_pp": -4.181347311236172,
+      "execution_residual_pp": 1.7000000000000002,
+      "total_vs_baseline_pp": -2.4813473112361706,
+      "quadrant": "高难度出手 / 超预期命中",
+      "overlay": {
+        "label": "出手质量 / 命中偏差",
+        "text": "Max Christie：每100次出手，质量较基准-4.2次命中，实际较预期+1.7次。"
+      },
+      "player_id": 1631108,
+      "team": "DAL",
+      "tracked_attempts": 725
+    },
+    {
+      "player": "Alperen Sengun",
+      "expected_fg_probability": 0.517,
+      "actual_fg_probability_derived": 0.519,
+      "quality_contribution_pp": 5.118652688763831,
+      "execution_residual_pp": 0.2,
+      "total_vs_baseline_pp": 5.318652688763831,
+      "quadrant": "优质出手 / 超预期命中",
+      "overlay": {
+        "label": "出手质量 / 命中偏差",
+        "text": "Alperen Sengun：每100次出手，质量较基准+5.1次命中，实际较预期+0.2次。"
+      },
+      "player_id": 1630578,
+      "team": "HOU",
+      "tracked_attempts": 1123
+    },
+    {
+      "player": "Jabari Smith Jr.",
+      "expected_fg_probability": 0.461,
+      "actual_fg_probability_derived": 0.45,
+      "quality_contribution_pp": -0.4813473112361688,
+      "execution_residual_pp": -1.0999999999999999,
+      "total_vs_baseline_pp": -1.5813473112361698,
+      "quadrant": "高难度出手 / 低于预期命中",
+      "overlay": {
+        "label": "出手质量 / 命中偏差",
+        "text": "Jabari Smith Jr.：每100次出手，质量较基准-0.5次命中，实际较预期-1.1次。"
+      },
+      "player_id": 1631095,
+      "team": "HOU",
+      "tracked_attempts": 974
+    },
+    {
+      "player": "Cooper Flagg",
+      "expected_fg_probability": 0.481,
+      "actual_fg_probability_derived": 0.46799999999999997,
+      "quality_contribution_pp": 1.5186526887638274,
+      "execution_residual_pp": -1.3,
+      "total_vs_baseline_pp": 0.21865268876382626,
+      "quadrant": "优质出手 / 低于预期命中",
+      "overlay": {
+        "label": "出手质量 / 命中偏差",
+        "text": "Cooper Flagg：每100次出手，质量较基准+1.5次命中，实际较预期-1.3次。"
+      },
+      "player_id": 1642843,
+      "team": "DAL",
+      "tracked_attempts": 1194
+    },
+    {
+      "player": "Amen Thompson",
+      "expected_fg_probability": 0.587,
+      "actual_fg_probability_derived": 0.5339999999999999,
+      "quality_contribution_pp": 12.118652688763826,
+      "execution_residual_pp": -5.3,
+      "total_vs_baseline_pp": 6.818652688763821,
+      "quadrant": "优质出手 / 低于预期命中",
+      "overlay": {
+        "label": "出手质量 / 命中偏差",
+        "text": "Amen Thompson：每100次出手，质量较基准+12.1次命中，实际较预期-5.3次。"
+      },
+      "player_id": 1641708,
+      "team": "HOU",
+      "tracked_attempts": 1044
+    }
+  ],
+  "provenance": {
+    "source": "https://stats.nba.com/stats/shotqualityleaders?Season=2025-26&SeasonType=Regular+Season&LeagueID=00&TeamID=0",
+    "fetched_at": "2026-10-10",
+    "generated_at": "2026-10-10T01:40:49.497880+00:00",
+    "input": {
+      "file": "shot_difficulty.csv",
+      "sha256": "2d9f72e0987e11d83cd0bfecb94414864d4b0733ae5a9bb203901b12e3f6b239"
+    },
+    "baseline_source": "FGA-weighted expected FG probability of the returned qualified-player tracking cohort; not full-league actual FG%; source_raw_sha256=5322a80cc634a2eaa53abbfd1b1387a02beacd860b113736a9e44afa4cf57372",
+    "input_unit": "fraction",
+    "teams_filter": [
+      "HOU",
+      "DAL"
+    ],
+    "columns": {
+      "quality": "AVGSHOTQUALITY",
+      "excess": "FGPCTABOVEEXPECTED",
+      "name": "PLAYERNAME"
+    }
+  },
+  "replay_candidates": [],
+  "replay_status": "unavailable: verified event-level leverage and video alignment not supplied"
+}
