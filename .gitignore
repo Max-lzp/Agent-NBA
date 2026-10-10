@@ -8,3 +8,4 @@ __pycache__/
 cdk/node_modules/
 cdk/cdk.out/
 cdk/dist/
+pipeline/vision/.env.local

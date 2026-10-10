@@ -184,11 +184,12 @@ HSV 规则是高明度、低饱和度算白，明度低于 110 算深色。抽�
 
 | 组件 | 状态 | 本地看到的差别 |
 | --- | --- | --- |
-| [basketball_analysis](https://github.com/abdullahtarek/basketball_analysis) | 两段都有结果 | 每帧大约 7–9 个球员框。球几乎每帧都有。弗拉格 5 个传球/抢断，阿门 6 个。 |
-| [Ultralytics YOLOv8n COCO](https://github.com/ultralytics/ultralytics) | 两段都有结果，`*.yolov8n_coco.json` | 人框数量接近，但会多框到场边的人。球几乎检不出来（弗拉格 185 帧里只有 1 帧有球）。没有传球/抢断。 |
-| [RF-DETR](https://github.com/roboflow/rf-detr) | 还没跑 | 任务书里的备选检测器。权重还没下到本地，按钮是灰的。 |
+| [basketball_analysis](https://github.com/abdullahtarek/basketball_analysis) | 两段都重跑过，Ref 写进时间线 | 球员大约每帧 8.3 / 7.1 人。裁判大约每帧 2.6 / 2.4 人，弗拉格 183/185 帧、阿门 183/196 帧有裁判。7.12s 这一帧是 3 个灰虚线框。球仍是每帧都有。持球没有落到裁判轨迹上。传球/抢断变成弗拉格 3 个、阿门 2 个：跟踪现在只吃 Player 类，轨迹编号和上一版不同。 |
+| [Ultralytics YOLOv8n COCO](https://github.com/ultralytics/ultralytics) | 两段都有结果，`*.yolov8n_coco.json` | 人框数量接近，但会多框到场边的人。没有裁判类。球几乎检不出来（弗拉格 185 帧里只有 1 帧有球）。没有传球/抢断。 |
+| [RF-DETR](https://github.com/roboflow/rf-detr) | 还没跑 | 任务书里的备选检测器。权重还没下到本地，按钮是灰的。没有裁判类，先不跑。 |
+| [E-BARD YOLOv8n](https://github.com/GabrieleGiudic/E-BARD) | 两段都有结果，`*.ebard_yolov8n.json` | 权重 `BODD_yolov8n_0001.pt`，类是 basketball / hoop / player / referee。裁判大约每帧 2.5 / 2.3 人，和上面接近。同一帧 7.12s 也是 3 个裁判。球只覆盖弗拉格 105/185 帧、阿门 114/196 帧，没有传球/抢断。用来对裁判，不替换现在的球。 |
 
 球衣颜色不再用上身平均明度。深色球衣的白背心和浅色地板会把平均明度抬高，白球衣框进深色前景又会把明度压低。现在看下摆和短裤，而且按这一帧单独上色。跟踪串人时，一条轨迹不再被涂成同一个队。
 
-号码仍没有开源 OCR 权重。又试了两次单张裁切：弗拉格轨迹 14 侧面的 32 被读成 12，没有写进画面；阿门轨迹 27 读成 17，对上 Eason。两次 $0.000466。视觉线累计 **$0.0245**。
+号码不再等 Roboflow 权重。RapidOCR 对每条球员轨迹最多 8 张躯干裁切投票，至少两票（或一票且置信度不低于 0.95）才收下，而且只有对上出场名单才写姓名。basketball_analysis 弗拉格写出 Amen、Christie、Flagg、Klay、Sengun、Smith，185 帧里 182 帧至少有一个姓名；阿门写出 Amen、Capela、Christie、Davis、Durant、Eason、Flagg、Marshall、Smith。侧面和背面仍然是空的。E-BARD 用同一次投票，弗拉格还多认出 Gafford 和 Durant。没有再调用 Qwen。
 

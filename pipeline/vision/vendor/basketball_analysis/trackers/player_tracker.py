@@ -20,6 +20,9 @@ class PlayerTracker:
         """
         self.model = YOLO(model_path) 
         self.tracker = sv.ByteTrack()
+        self.ref_tracker = sv.ByteTrack()
+        self.ref_tracks = []
+        self.suppressed_players = 0
 
     def detect_frames(self, frames):
         """
@@ -54,33 +57,79 @@ class PlayerTracker:
         tracks = read_stub(read_from_stub,stub_path)
         if tracks is not None:
             if len(tracks) == len(frames):
+                self.ref_tracks = [{} for _ in frames]
                 return tracks
 
         detections = self.detect_frames(frames)
 
         tracks=[]
+        self.ref_tracks = []
+        self.suppressed_players = 0
 
-        for frame_num, detection in enumerate(detections):
-            cls_names = detection.names
-            cls_names_inv = {str(v).lower(): k for k, v in cls_names.items()}
+        for detection in detections:
+            cls_names_inv = {str(v).lower(): k for k, v in detection.names.items()}
             if "player" not in cls_names_inv:
-                raise KeyError(f"球员权重里没有 Player 类，实际类名是 {list(cls_names.values())}")
+                raise KeyError(f"球员权重里没有 Player 类，实际类名是 {list(detection.names.values())}")
 
-            # Covert to supervision Detection format
-            detection_supervision = sv.Detections.from_ultralytics(detection)
-
-            # Track Objects
-            detection_with_tracks = self.tracker.update_with_detections(detection_supervision)
-
-            tracks.append({})
-
-            for frame_detection in detection_with_tracks:
-                bbox = frame_detection[0].tolist()
-                cls_id = frame_detection[3]
-                track_id = frame_detection[4]
-
-                if cls_id == cls_names_inv["player"] and track_id is not None:
-                    tracks[frame_num][int(track_id)] = {"bbox": bbox}
+            parsed = sv.Detections.from_ultralytics(detection)
+            player_dets, ref_dets = split_player_and_ref(parsed, cls_names_inv)
+            player_map = tracks_to_map(self.tracker.update_with_detections(player_dets))
+            ref_map = tracks_to_map(self.ref_tracker.update_with_detections(ref_dets), offset=10_000)
+            self.suppressed_players += drop_overlapping(player_map, ref_map)
+            tracks.append(player_map)
+            self.ref_tracks.append(ref_map)
         
         save_stub(stub_path,tracks)
         return tracks
+
+
+def split_player_and_ref(parsed, names):
+    """Player 和 Ref 分开跟踪。权重里有 Ref，不能和球、记分牌一起送进同一个 ByteTrack。"""
+    empty = sv.Detections.empty()
+    if parsed.class_id is None or len(parsed) == 0:
+        return empty, empty
+    players = parsed[parsed.class_id == names["player"]]
+    ref_id = names.get("ref")
+    refs = parsed[parsed.class_id == ref_id] if ref_id is not None else empty
+    return players, refs
+
+
+def tracks_to_map(tracked, offset=0):
+    frame = {}
+    if tracked is None or tracked.tracker_id is None:
+        return frame
+    for xyxy, track_id in zip(tracked.xyxy, tracked.tracker_id):
+        if track_id is None:
+            continue
+        frame[int(track_id) + offset] = {"bbox": [float(v) for v in xyxy]}
+    return frame
+
+
+def box_iou(a, b):
+    ax1, ay1, ax2, ay2 = a
+    bx1, by1, bx2, by2 = b
+    ix1, iy1 = max(ax1, bx1), max(ay1, by1)
+    ix2, iy2 = min(ax2, bx2), min(ay2, by2)
+    inter = max(0.0, ix2 - ix1) * max(0.0, iy2 - iy1)
+    if inter <= 0:
+        return 0.0
+    area_a = max(0.0, ax2 - ax1) * max(0.0, ay2 - ay1)
+    area_b = max(0.0, bx2 - bx1) * max(0.0, by2 - by1)
+    union = area_a + area_b - inter
+    if union <= 0:
+        return 0.0
+    return inter / union
+
+
+def drop_overlapping(players, refs, threshold=0.45):
+    """同一具身体上球员框和裁判框叠在一起时，留下裁判。"""
+    if not refs:
+        return 0
+    drop = [
+        track_id
+        for track_id, info in players.items()
+        if any(box_iou(info["bbox"], ref["bbox"]) >= threshold for ref in refs.values())
+    ]
+    for track_id in drop:
+        del players[track_id]
+    return len(drop)
