@@ -93,12 +93,12 @@
       <li>
         <span class="step">04</span>
         <b>成片</b>
-        <span>Batch 做 GPU 跟踪，Textract 读记分牌，MediaConvert 合成。</span>
+        <span>同一台 c7i.48xlarge 跟踪、读记分牌并合成，成片直传网页桶。</span>
       </li>
       <li>
         <span class="step">05</span>
         <b>回放</b>
-        <span>DynamoDB 里的事件画到时间线。Polly 出两句解说。</span>
+        <span>DynamoDB 里的事件画到时间线。中文解说和英文原声可以自己选。</span>
       </li>
     </ol>
 
@@ -129,7 +129,7 @@
         <article>
           <h3>跟踪与成片</h3>
           <ul>
-            <li><b>AWS Batch</b><span>c7i.48xlarge，192 vCPU，空闲时缩到 0</span></li>
+            <li><b>AWS Batch</b><span>c7i.48xlarge，192 vCPU，保持开着</span></li>
             <li><b>Amazon EC2 · EBS</b><span>跟踪实例与加密系统盘</span></li>
             <li><b>Amazon ECR</b><span>跟踪镜像 deepcourt-tracker</span></li>
             <li><b>Textract · MediaConvert</b><span>记分牌文字，叠加层合成 1080p</span></li>
@@ -138,7 +138,7 @@
         <article>
           <h3>解说与密钥</h3>
           <ul>
-            <li><b>Amazon Polly</b><span>中文解说，语音 Zhiyu</span></li>
+            <li><b>Amazon Polly</b><span>中文解说，Neural 知语</span></li>
             <li><b>AWS X-Ray</b><span>按任务号看处理段</span></li>
             <li><b>Secrets Manager</b><span>飞书、GitHub、快手密钥</span></li>
             <li><b>Cost Explorer</b><span>按 project 标签看花费</span></li>

@@ -86,7 +86,8 @@ class RapidJerseyReader:
     def __init__(self):
         from rapidocr_onnxruntime import RapidOCR
 
-        self.ocr = RapidOCR()
+        # 裁切只有一百多像素高。不限制的话检测会放大到默认边长，一张要一秒多。
+        self.ocr = RapidOCR(det_limit_side_len=192)
 
     def read_crop(self, crop: np.ndarray) -> tuple[str | None, float]:
         if crop is None or crop.size == 0:

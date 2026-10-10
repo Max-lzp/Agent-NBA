@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib/core';
 import * as batch from 'aws-cdk-lib/aws-batch';
+import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
@@ -11,28 +12,42 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as mediaconvert from 'aws-cdk-lib/aws-mediaconvert';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 
-function bootTrack(): string {
-  return [
-    'set -eu',
-    'export DEBIAN_FRONTEND=noninteractive',
-    'apt-get update -y',
-    'apt-get install -y --no-install-recommends libglib2.0-0 libgomp1',
-    'python3 -m pip install --no-cache-dir boto3',
-    'python3 -c "import boto3,os; boto3.client(\'s3\').download_file(os.environ[\'MEDIA_BUCKET\'], \'bootstrap/track.py\', \'/tmp/track.py\')"',
-    'python3 -m pip install --no-cache-dir ultralytics opencv-python-headless',
-    'python3 /tmp/track.py',
-  ].join(' && ');
-}
+const TRACK_BOOTSTRAP = [
+  'import os, boto3, runpy',
+  'from pathlib import Path',
+  'bucket = os.environ["MEDIA_BUCKET"]',
+  'root = Path("/opt/track")',
+  's3 = boto3.client("s3")',
+  'required = {"run_job.py", "chain.py", "dub.py", "commentary.py"}',
+  'missing = []',
+  'names = ["run_job.py", "chain.py", "dub.py", "commentary.py", "web/game.html", "web/game.js", "web/styles.css"]',
+  'for name in names:',
+  '    dest = root / name',
+  '    dest.parent.mkdir(parents=True, exist_ok=True)',
+  '    try:',
+  '        s3.download_file(bucket, "bootstrap/track/" + name, str(dest))',
+  '        print("overlay", name)',
+  '    except Exception as exc:',
+  '        print("keep baked", name, type(exc).__name__)',
+  '        if name in required:',
+  '            missing.append(name)',
+  'if missing:',
+  '    raise SystemExit("解说脚本没拉下来: " + ",".join(missing))',
+  'runpy.run_path(str(root / "run_job.py"), run_name="__main__")',
+].join('\n');
 
 /**
  * P1 加在同一个栈里，避免再做一层跨栈导出。
  * 上下文 enableP1=false 时整段跳过。
  * G/VT 配额为 0，跟踪用标准配额 256 vCPU 里最大的 c7i.48xlarge（192 vCPU）。
+ * minvCpus 保持 192，下一支片子不再等开机。镜像在主机上烤好后，作业直接跑 run_job.py。
  */
 export function addP1(
   stack: cdk.Stack,
   props: {
     mediaBucket: s3.Bucket;
+    webBucket: s3.Bucket;
+    distribution: cloudfront.Distribution;
     jobs: dynamodb.Table;
     events: dynamodb.Table;
     analyzeFn: lambda.Function;
@@ -63,15 +78,28 @@ export function addP1(
       },
     ],
   });
+  const instanceRole = new iam.Role(stack, 'TrackInstanceRole', {
+    assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
+    description: 'Deep Court Batch host pulls and pushes the tracker image',
+    managedPolicies: [
+      iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonEC2ContainerServiceforEC2Role'),
+      iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
+    ],
+  });
+  repo.grantPullPush(instanceRole);
+  props.mediaBucket.grantRead(instanceRole, 'bootstrap/*');
+  props.mediaBucket.grantPut(instanceRole, 'bootstrap/bake.log');
+
   const compute = new batch.ManagedEc2EcsComputeEnvironment(stack, 'GpuCompute', {
     vpc,
     vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
     instanceTypes: [ec2.InstanceType.of(ec2.InstanceClass.C7I, ec2.InstanceSize.XLARGE48)],
     useOptimalInstanceClasses: false,
     images: [{ imageType: batch.EcsMachineImageType.ECS_AL2023 }],
-    minvCpus: 0,
+    minvCpus: 192,
     maxvCpus: 256,
     launchTemplate,
+    instanceRole,
   });
   const queue = new batch.JobQueue(stack, 'TrackQueue', {
     jobQueueName: 'deepcourt-track',
@@ -80,23 +108,66 @@ export function addP1(
 
   const jobRole = new iam.Role(stack, 'TrackJobRole', {
     assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
-    description: 'Deep Court Batch tracker reads raw video and writes tracking JSON',
+    description: 'Deep Court Batch tracker reads raw video and writes the film to the site bucket',
   });
   props.mediaBucket.grantRead(jobRole, 'raw/*');
   props.mediaBucket.grantRead(jobRole, 'bootstrap/*');
+  props.mediaBucket.grantRead(jobRole, 'official/*');
   props.mediaBucket.grantPut(jobRole, 'tracking/*');
+  props.mediaBucket.grantPut(jobRole, 'identity/*');
+  props.mediaBucket.grantPut(jobRole, 'structured/*');
   props.jobs.grantWriteData(jobRole);
+  props.webBucket.grantRead(jobRole);
+  props.webBucket.grantPut(jobRole, 'assets/*');
+  props.webBucket.grantPut(jobRole, 'replay/*');
+  props.webBucket.grantPut(jobRole, 'game.html');
+  props.webBucket.grantPut(jobRole, 'game.js');
+  props.webBucket.grantPut(jobRole, 'styles.css');
+  props.mediaBucket.grantReadWrite(jobRole, 'commentary/asr/*');
+  jobRole.addToPolicy(new iam.PolicyStatement({
+    actions: ['bedrock:InvokeModel'],
+    resources: ['arn:aws:bedrock:us-east-1::foundation-model/qwen.qwen3-vl-235b-a22b'],
+  }));
+  jobRole.addToPolicy(new iam.PolicyStatement({
+    actions: ['rekognition:DetectText'],
+    resources: ['*'],
+  }));
+  jobRole.addToPolicy(new iam.PolicyStatement({
+    actions: [
+      'transcribe:StartTranscriptionJob',
+      'transcribe:GetTranscriptionJob',
+      'translate:TranslateText',
+      'polly:SynthesizeSpeech',
+      'textract:DetectDocumentText',
+    ],
+    resources: ['*'],
+  }));
+  jobRole.addToPolicy(new iam.PolicyStatement({
+    actions: ['cloudfront:CreateInvalidation'],
+    resources: [`arn:aws:cloudfront::${stack.account}:distribution/${props.distribution.distributionId}`],
+  }));
+  const executionRole = new iam.Role(stack, 'TrackExecutionRole', {
+    assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+    description: 'Deep Court Batch agent pulls the baked tracker image',
+    managedPolicies: [
+      iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy'),
+    ],
+  });
+  repo.grantPull(executionRole);
 
   const jobDef = new batch.EcsJobDefinition(stack, 'TrackJob', {
     jobDefinitionName: 'deepcourt-track',
     container: new batch.EcsEc2ContainerDefinition(stack, 'TrackContainer', {
-      image: ecs.ContainerImage.fromRegistry('public.ecr.aws/docker/library/python:3.12-slim'),
+      image: ecs.ContainerImage.fromEcrRepository(repo, 'ready'),
       cpu: 180,
       memory: cdk.Size.gibibytes(340),
       jobRole,
-      command: ['bash', '-lc', bootTrack()],
+      executionRole,
+      command: ['python3', '-c', TRACK_BOOTSTRAP],
       environment: {
         MEDIA_BUCKET: props.mediaBucket.bucketName,
+        WEB_BUCKET: props.webBucket.bucketName,
+        DISTRIBUTION_ID: props.distribution.distributionId,
         OMP_NUM_THREADS: '180',
         MKL_NUM_THREADS: '180',
       },
@@ -246,7 +317,7 @@ export function addP1(
     }),
   );
   dashboard.addWidgets(new cloudwatch.TextWidget({
-    markdown: `Batch 队列 \`${queue.jobQueueName}\`，实例 c7i.48xlarge（192 vCPU），空闲时缩到 0，上限 256 vCPU。G/VT 配额为 0。跟踪作业由 SubmitTrack 提交。`,
+    markdown: `Batch 队列 \`${queue.jobQueueName}\`，实例 c7i.48xlarge（192 vCPU）保持开着，上限 256 vCPU。镜像 \`deepcourt-tracker:ready\`。G/VT 配额为 0。作业在同一台机器上写轨迹、记分牌和成片。`,
     width: 24,
     height: 2,
   }));

@@ -1,0 +1,479 @@
+{
+  "input_kind": "SYNTHETIC_CONTRACT_DEMO_NOT_NBA_GAME",
+  "coordinate_unit": "meters",
+  "attack_basket": [
+    0,
+    0
+  ],
+  "offense_team": "SYNTHETIC_A",
+  "frames": [
+    {
+      "t": 0,
+      "camera_segment": "synthetic-fixed-camera",
+      "calibration_valid": true,
+      "ball_handler_track_id": "o1",
+      "players": [
+        {
+          "track_id": "o1",
+          "team": "SYNTHETIC_A",
+          "x": 0,
+          "y": 8,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o2",
+          "team": "SYNTHETIC_A",
+          "x": -2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o3",
+          "team": "SYNTHETIC_A",
+          "x": 2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o4",
+          "team": "SYNTHETIC_A",
+          "x": -6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o5",
+          "team": "SYNTHETIC_A",
+          "x": 6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d1",
+          "team": "SYNTHETIC_B",
+          "x": 0,
+          "y": 7,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d2",
+          "team": "SYNTHETIC_B",
+          "x": -2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d3",
+          "team": "SYNTHETIC_B",
+          "x": 2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d4",
+          "team": "SYNTHETIC_B",
+          "x": -6,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d5",
+          "team": "SYNTHETIC_B",
+          "x": 6,
+          "y": 1,
+          "tracking_confidence": 1
+        }
+      ]
+    },
+    {
+      "t": 0.2,
+      "camera_segment": "synthetic-fixed-camera",
+      "calibration_valid": true,
+      "ball_handler_track_id": "o1",
+      "players": [
+        {
+          "track_id": "o1",
+          "team": "SYNTHETIC_A",
+          "x": 0,
+          "y": 8,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o2",
+          "team": "SYNTHETIC_A",
+          "x": -2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o3",
+          "team": "SYNTHETIC_A",
+          "x": 2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o4",
+          "team": "SYNTHETIC_A",
+          "x": -6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o5",
+          "team": "SYNTHETIC_A",
+          "x": 6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d1",
+          "team": "SYNTHETIC_B",
+          "x": 0,
+          "y": 7,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d2",
+          "team": "SYNTHETIC_B",
+          "x": -2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d3",
+          "team": "SYNTHETIC_B",
+          "x": 2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d4",
+          "team": "SYNTHETIC_B",
+          "x": -6,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d5",
+          "team": "SYNTHETIC_B",
+          "x": 6,
+          "y": 1,
+          "tracking_confidence": 1
+        }
+      ]
+    },
+    {
+      "t": 0.4,
+      "camera_segment": "synthetic-fixed-camera",
+      "calibration_valid": true,
+      "ball_handler_track_id": "o1",
+      "players": [
+        {
+          "track_id": "o1",
+          "team": "SYNTHETIC_A",
+          "x": 0,
+          "y": 8,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o2",
+          "team": "SYNTHETIC_A",
+          "x": -2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o3",
+          "team": "SYNTHETIC_A",
+          "x": 2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o4",
+          "team": "SYNTHETIC_A",
+          "x": -6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o5",
+          "team": "SYNTHETIC_A",
+          "x": 6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d1",
+          "team": "SYNTHETIC_B",
+          "x": 0,
+          "y": 7,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d2",
+          "team": "SYNTHETIC_B",
+          "x": -2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d3",
+          "team": "SYNTHETIC_B",
+          "x": 2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d4",
+          "team": "SYNTHETIC_B",
+          "x": -6,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d5",
+          "team": "SYNTHETIC_B",
+          "x": 6,
+          "y": 1,
+          "tracking_confidence": 1
+        }
+      ]
+    },
+    {
+      "t": 0.6,
+      "camera_segment": "synthetic-fixed-camera",
+      "calibration_valid": true,
+      "ball_handler_track_id": "o1",
+      "players": [
+        {
+          "track_id": "o1",
+          "team": "SYNTHETIC_A",
+          "x": 0,
+          "y": 8,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o2",
+          "team": "SYNTHETIC_A",
+          "x": -2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o3",
+          "team": "SYNTHETIC_A",
+          "x": 2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o4",
+          "team": "SYNTHETIC_A",
+          "x": -6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o5",
+          "team": "SYNTHETIC_A",
+          "x": 6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d1",
+          "team": "SYNTHETIC_B",
+          "x": 0,
+          "y": 7,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d2",
+          "team": "SYNTHETIC_B",
+          "x": -2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d3",
+          "team": "SYNTHETIC_B",
+          "x": 2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d4",
+          "team": "SYNTHETIC_B",
+          "x": -6,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d5",
+          "team": "SYNTHETIC_B",
+          "x": 6,
+          "y": 1,
+          "tracking_confidence": 1
+        }
+      ]
+    },
+    {
+      "t": 0.8,
+      "camera_segment": "synthetic-fixed-camera",
+      "calibration_valid": true,
+      "ball_handler_track_id": "o1",
+      "players": [
+        {
+          "track_id": "o1",
+          "team": "SYNTHETIC_A",
+          "x": 0,
+          "y": 8,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o2",
+          "team": "SYNTHETIC_A",
+          "x": -2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o3",
+          "team": "SYNTHETIC_A",
+          "x": 2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o4",
+          "team": "SYNTHETIC_A",
+          "x": -6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o5",
+          "team": "SYNTHETIC_A",
+          "x": 6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d1",
+          "team": "SYNTHETIC_B",
+          "x": 0,
+          "y": 7,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d2",
+          "team": "SYNTHETIC_B",
+          "x": -2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d3",
+          "team": "SYNTHETIC_B",
+          "x": 2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d4",
+          "team": "SYNTHETIC_B",
+          "x": -6,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d5",
+          "team": "SYNTHETIC_B",
+          "x": 6,
+          "y": 1,
+          "tracking_confidence": 1
+        }
+      ]
+    },
+    {
+      "t": 1.0,
+      "camera_segment": "synthetic-fixed-camera",
+      "calibration_valid": true,
+      "ball_handler_track_id": "o1",
+      "players": [
+        {
+          "track_id": "o1",
+          "team": "SYNTHETIC_A",
+          "x": 0,
+          "y": 8,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o2",
+          "team": "SYNTHETIC_A",
+          "x": -2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o3",
+          "team": "SYNTHETIC_A",
+          "x": 2.44,
+          "y": 4.19,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o4",
+          "team": "SYNTHETIC_A",
+          "x": -6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "o5",
+          "team": "SYNTHETIC_A",
+          "x": 6.7,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d1",
+          "team": "SYNTHETIC_B",
+          "x": 0,
+          "y": 7,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d2",
+          "team": "SYNTHETIC_B",
+          "x": -2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d3",
+          "team": "SYNTHETIC_B",
+          "x": 2.4,
+          "y": 3.5,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d4",
+          "team": "SYNTHETIC_B",
+          "x": -6,
+          "y": 1,
+          "tracking_confidence": 1
+        },
+        {
+          "track_id": "d5",
+          "team": "SYNTHETIC_B",
+          "x": 6,
+          "y": 1,
+          "tracking_confidence": 1
+        }
+      ]
+    }
+  ]
+}

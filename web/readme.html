@@ -27,9 +27,9 @@
     <h2>作品亮点</h2>
     <ol>
       <li>比分条跟着记分牌走：节次、比赛钟、客队和主队比分。出手后约三秒弹出这一球的预期命中率、区域和距离。</li>
-      <li>人名标在球衣号码对得上、而且票数够的轨迹上。对不上的人不编名字。</li>
+      <li>这一回合场上 10 个人先对上身体：号码、持球和领防是钉子，剩下的人只在同队还空着的坑里排除。成片前 3 秒标出已经对上的人，之后只标持球人、传球双方和领防人。两个差不多高、又没有号码的坑先空着。</li>
       <li>暂停后展开官方逐回合原文、助攻和当时场上的十个人。半场图上的点用官方坐标。</li>
-      <li>中文解说由程序根据这些事件写成，已经混进成片。当前声音是本机中文语音；Amazon Polly 开通后只换声音，不改词。</li>
+      <li>播放器可以选英文原声或中文解说。中文是整段英文解说的译文，用 Polly 的知语说出来，不再只写两句，原解说也不留在这条音轨里。</li>
     </ol>
 
     <h2>数字从哪来</h2>
@@ -38,14 +38,15 @@
     <p>引力和关键度来自官方赛季汇总。暂停后写在该球员这一球旁边，标明不是这一球的胜率变化。</p>
 
     <h2>数据管道</h2>
-    <p>本地追踪写出结构化清单，上传到 S3 <code>structured/</code>。Lambda 调 Bedrock AgentCore 校验；Agent 不可用时 Lambda 直接读清单，回放不会停住。页面通过 CloudFront 打开成片。上传入口在 <a href="/index.html">/index.html</a>，只给我们自己用。</p>
+    <p>考试片在云上写出结构化清单，上传到 S3 <code>structured/</code>。Lambda 调 Bedrock AgentCore 校验；Agent 不可用时 Lambda 直接读清单，回放不会停住。页面通过 CloudFront 打开成片。上传入口在 <a href="/index.html">/index.html</a>，只给我们自己用。</p>
     <ol>
       <li>收片：浏览器经 CloudFront、API Gateway、Lambda 把视频直传到 S3，任务记在 DynamoDB。本地命令也可以直接读文件。</li>
-      <li>追踪和记分牌：追踪提交到 Batch，机器是 c7i.48xlarge。记分牌仍用本机 RapidOCR，不走 Textract。本机 MPS 也能出片。</li>
-      <li>事件清单在本地生成，再用本地的官方逐回合数据补出手人、助攻和预期命中率。独行侠的出手还会按当时分差，带上 2025-26 赛季效率。对得上的人再带上赛季出手质量、引力和关键度。每次出手还会找到球离手那一帧，记下投篮人。再从出手往前看 5 秒，跟住投篮人，贴他最久的对方球员就是领防人。号码只在当时在场的人里认，读不准就写「号码没读出」，不拿对位表顶替。投篮人和领防人还会带上队内排名：得分、命中率、抢断、盖帽、防守效率等，队内第 1 名五星，每往后一名少半星。</li>
-      <li>回放时，进球后画面跳回出手那一帧，定格 5 秒：投篮人脚下画红圈，领防人脚下画黄色虚线圈；卡片写当时比分、投篮人和领防人的队内排名星级；认出领防人才写他的名字、本场对位和赛季场均。右栏是投篮人的分区热区图，红圈标出这一投，并写出这个位置的预期命中率。</li>
+      <li>追踪和记分牌：考试片交给 Batch，机器是保持开着的 c7i.48xlarge。同一台机器读记分牌，再用 ffmpeg 把比分烧进成片，直接放进网页桶。训练片仍可以在本机用 MPS 出片。记分牌检测边长限制在 640。</li>
+      <li>认人、事件和官方数据：考试片在同一台机器上把轨迹帧交给 Qwen3 VL 读号码和球衣颜色，多数票定人；Rekognition 算第二票。号码只在这一刻场上的同队 5 人里对，同一个名字只留一条轨迹。官方逐回合的得分人、助攻人先钉。按持球写出接球和传球；从 S3 的官方逐回合对上是哪一场，比分跳动时补上命中、助攻和预期命中率。清单写到 <code>structured/</code>。训练片的领防、脱手帧、分差效率和队内排名仍在本机。</li>
+      <li>回放时，进球后画面跳回出手那一帧，定格 5 秒：投篮人脚下画红圈，领防人脚下画黄色虚线圈，领防名签贴在他躯干旁、背向投篮人一侧；卡片写投篮人和领防人的队内排名星级（定格卡不再烧比分条）；认出领防人才写他的名字、本场对位和赛季场均。右栏是投篮人的分区热区图，红圈标出这一投，并写出这个位置的预期命中率。</li>
       <li>清单放到 S3。Lambda 调 Bedrock AgentCore 校验，页面事件写入 DynamoDB。</li>
-      <li>CloudFront 打开回放。两句解说可以交给 Bedrock 写；现在混进成片的声音仍是本机中文语音。Polly 已接通，还没替换这段声音。</li>
+      <li>成片之后才做音轨。英文是原声。中文把这条原声转写、译成中文，用 Polly Neural 知语按原句时间合成。播放器上自己选。探测片的中文音轨已经能播。</li>
+      <li>网页呈现：CloudFront 根路径打开播放器 <code>game.html</code>。作品说明在 <code>/readme</code>。上传页只给我们自己用。</li>
     </ol>
     <table>
       <thead>
@@ -53,12 +54,16 @@
       </thead>
       <tbody>
         <tr><td>收片、任务</td><td>CloudFront、API Gateway、Lambda、S3、DynamoDB</td><td>主路径</td></tr>
-        <tr><td>追踪</td><td>Batch、EC2 c7i.48xlarge、EBS、ECR、S3</td><td>部署中。G/VT 配额为 0，改用 192 vCPU 的 c7i.48xlarge</td></tr>
-        <tr><td>记分牌、认人、事件、官方数据</td><td>无。Textract 只做过探测</td><td>本地</td></tr>
+        <tr><td>追踪</td><td>Batch、EC2 c7i.48xlarge、EBS、ECR、S3</td><td>已接通。192 vCPU 保持开着，镜像已烤好</td></tr>
+        <tr><td>记分牌</td><td>同一台 c7i.48xlarge 上的 RapidOCR</td><td>已接通</td></tr>
+        <tr><td>认人</td><td>Bedrock Qwen3 VL、Rekognition DetectText、S3 逐回合和 identity/</td><td>已接通。探测片第 1 秒写出 3 个名字，都在场上 10 人里。同一个名字只留一条轨迹</td></tr>
+        <tr><td>事件清单</td><td>S3 structured/、Lambda、Bedrock AgentCore、DynamoDB</td><td>已接通。探测片 3 条事件已写入。领防仍在本地</td></tr>
+        <tr><td>官方数据</td><td>S3 official/ 逐回合和 shot quality</td><td>已接通。探测片对上 0022500356。这 5 秒没有比分跳动，没有出手行</td></tr>
         <tr><td>校验清单</td><td>Lambda、Bedrock AgentCore、DynamoDB、CloudWatch Logs</td><td>主路径</td></tr>
-        <tr><td>回放</td><td>CloudFront、S3、API Gateway、Lambda</td><td>主路径</td></tr>
-        <tr><td>解说</td><td>Bedrock、Polly、S3</td><td>成片仍用本机语音</td></tr>
-        <tr><td>成片</td><td>无。MediaConvert 模板已建</td><td>本地 ffmpeg。还没提交转码作业</td></tr>
+        <tr><td>回放</td><td>API Gateway、Lambda</td><td>主路径</td></tr>
+        <tr><td>解说</td><td>Transcribe、Translate、Polly Neural 知语、S3</td><td>已接通。探测片的中文音轨已在播放器里</td></tr>
+        <tr><td>成片</td><td>同一台机器上的 ffmpeg，只烧记分牌，原声留在成片里。MediaConvert 模板已建</td><td>已接通。探测成片已在网页桶。MediaConvert 还没提交转码作业</td></tr>
+        <tr><td>网页呈现</td><td>CloudFront、S3 网页桶</td><td>主路径。根路径是播放器，/readme 是作品说明</td></tr>
         <tr><td>观测和密钥</td><td>CloudWatch、X-Ray、Secrets Manager、Cost Explorer</td><td>已接通。密钥是空占位</td></tr>
       </tbody>
     </table>

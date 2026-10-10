@@ -1,0 +1,101 @@
+{
+  "input_kind": "SYNTHETIC_CONTRACT_DEMO_NOT_NBA_GAME",
+  "thresholds": {
+    "min_track_quality": 0.7,
+    "screen_distance_m": 2.0,
+    "screen_defender_distance_m": 1.0,
+    "screen_max_speed_mps": 0.6,
+    "handoff_distance_m": 1.5,
+    "min_motion_m": 0.4,
+    "cut_speed_mps": 2.0,
+    "elbow_x_m": 2.44,
+    "elbow_y_m": 4.19,
+    "elbow_tolerance_m": 1.2,
+    "isolation_spacing_m": 6.7,
+    "min_window_s": 0.4,
+    "max_frame_gap_s": 0.5
+  },
+  "labels_supported": {
+    "pick_and_roll": "挡拆",
+    "handoff": "手递手",
+    "isolation": "单打",
+    "horns": "牛角",
+    "cut": "空切",
+    "off_ball_screen": "无球掩护",
+    "floppy": "Floppy"
+  },
+  "candidates": [
+    {
+      "label": "horns",
+      "label_zh": "牛角",
+      "t": 0.2,
+      "camera_segment": "synthetic-fixed-camera",
+      "track_ids": [
+        "o1",
+        "o2",
+        "o3"
+      ],
+      "evidence": {
+        "two_elbow_occupants": true,
+        "handler_central_above_elbows": true
+      },
+      "status": "geometry_rule_candidate_requires_video_review"
+    },
+    {
+      "label": "horns",
+      "label_zh": "牛角",
+      "t": 0.4,
+      "camera_segment": "synthetic-fixed-camera",
+      "track_ids": [
+        "o1",
+        "o2",
+        "o3"
+      ],
+      "evidence": {
+        "two_elbow_occupants": true,
+        "handler_central_above_elbows": true
+      },
+      "status": "geometry_rule_candidate_requires_video_review"
+    },
+    {
+      "label": "horns",
+      "label_zh": "牛角",
+      "t": 0.6,
+      "camera_segment": "synthetic-fixed-camera",
+      "track_ids": [
+        "o1",
+        "o2",
+        "o3"
+      ],
+      "evidence": {
+        "two_elbow_occupants": true,
+        "handler_central_above_elbows": true
+      },
+      "status": "geometry_rule_candidate_requires_video_review"
+    },
+    {
+      "label": "horns",
+      "label_zh": "牛角",
+      "t": 0.8,
+      "camera_segment": "synthetic-fixed-camera",
+      "track_ids": [
+        "o1",
+        "o2",
+        "o3"
+      ],
+      "evidence": {
+        "two_elbow_occupants": true,
+        "handler_central_above_elbows": true
+      },
+      "status": "geometry_rule_candidate_requires_video_review"
+    }
+  ],
+  "skipped_windows": 0,
+  "limitations": [
+    "Not trained or evaluated on labeled game video",
+    "Requires upstream calibration, stable IDs and verified possession",
+    "No calibrated confidence probabilities",
+    "Multiple labels may coexist; no forced majority label",
+    "Missed shots do not necessarily end a possession; offensive rebounds retain possession"
+  ]
+}

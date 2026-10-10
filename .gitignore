@@ -12,6 +12,10 @@ pipeline/vision/.env.local
 pipeline/present/work/
 # 评委成片走 CloudFront / 本机生成，不进仓库
 web/assets/*-broadcast.mp4
+web/assets/*-en.mp4
+web/assets/*-zh.mp4
+web/assets/*-en.m4a
+web/assets/*-zh.m4a
 # 批量调试产物（python3 -m pipeline.batch）
 pipeline/batch/out/
 pipeline/vision/results/local/b_*

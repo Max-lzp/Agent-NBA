@@ -1,23 +1,37 @@
 {
- "frames_total": 305,
+ "frames_total": 5252,
  "outcomes": {
-  "hit": 24,
-  "miss_with_reads": 167,
-  "no_read": 89,
-  "no_player": 25
+  "hit": 640,
+  "miss_with_reads": 3149,
+  "no_read": 1254,
+  "no_player": 209
  },
- "hit_rate": 0.0787,
- "miss_rate": 0.5475,
+ "hit_rate": 0.1219,
+ "miss_rate": 0.5996,
  "per_number": {
+  "0": {
+   "no_read": 48,
+   "miss_with_reads": 157,
+   "hit": 6,
+   "no_player": 9
+  },
   "00": {
-   "no_read": 6,
-   "miss_with_reads": 11,
-   "no_player": 3
+   "no_read": 74,
+   "miss_with_reads": 131,
+   "no_player": 13,
+   "hit": 17
   },
   "1": {
-   "no_read": 12,
-   "hit": 5,
-   "miss_with_reads": 22
+   "no_read": 103,
+   "hit": 49,
+   "miss_with_reads": 296,
+   "no_player": 6
+  },
+  "10": {
+   "miss_with_reads": 410,
+   "no_read": 138,
+   "hit": 90,
+   "no_player": 19
   },
   "12": {
    "no_player": 4,
@@ -26,187 +40,254 @@
    "hit": 2
   },
   "13": {
-   "miss_with_reads": 23,
-   "no_read": 17,
-   "no_player": 4
+   "miss_with_reads": 248,
+   "no_read": 110,
+   "no_player": 12,
+   "hit": 42
+  },
+  "15": {
+   "miss_with_reads": 143,
+   "no_read": 30,
+   "hit": 23,
+   "no_player": 9
+  },
+  "16": {
+   "no_read": 7,
+   "miss_with_reads": 15
+  },
+  "17": {
+   "miss_with_reads": 259,
+   "no_read": 88,
+   "hit": 37,
+   "no_player": 6
+  },
+  "20": {
+   "miss_with_reads": 83,
+   "hit": 25,
+   "no_read": 33,
+   "no_player": 1
+  },
+  "21": {
+   "no_read": 8,
+   "miss_with_reads": 25,
+   "hit": 1,
+   "no_player": 3
+  },
+  "25": {
+   "miss_with_reads": 170,
+   "no_read": 77,
+   "no_player": 17,
+   "hit": 48
+  },
+  "28": {
+   "no_read": 74,
+   "miss_with_reads": 151,
+   "hit": 27,
+   "no_player": 15
+  },
+  "3": {
+   "miss_with_reads": 182,
+   "hit": 38,
+   "no_read": 36,
+   "no_player": 24
+  },
+  "30": {
+   "no_player": 17,
+   "miss_with_reads": 85,
+   "no_read": 28,
+   "hit": 26
   },
   "31": {
-   "miss_with_reads": 13,
-   "no_read": 6
+   "no_read": 68,
+   "hit": 17,
+   "miss_with_reads": 111,
+   "no_player": 2
   },
   "32": {
-   "hit": 14,
-   "miss_with_reads": 37,
-   "no_read": 19,
-   "no_player": 4
+   "hit": 64,
+   "miss_with_reads": 242,
+   "no_read": 119,
+   "no_player": 18
   },
-  "5": {
-   "no_read": 8,
+  "4": {
+   "no_read": 6,
+   "hit": 1,
    "miss_with_reads": 13
   },
+  "5": {
+   "no_read": 17,
+   "miss_with_reads": 56,
+   "hit": 13
+  },
   "7": {
-   "miss_with_reads": 25,
-   "no_read": 10,
-   "hit": 1,
-   "no_player": 7
+   "miss_with_reads": 249,
+   "no_read": 152,
+   "hit": 84,
+   "no_player": 22
   },
   "8": {
-   "hit": 2,
-   "no_read": 5,
-   "miss_with_reads": 13,
-   "no_player": 3
+   "hit": 11,
+   "no_read": 15,
+   "miss_with_reads": 53,
+   "no_player": 5
+  },
+  "9": {
+   "no_read": 17,
+   "miss_with_reads": 60,
+   "no_player": 7,
+   "hit": 19
   }
  },
  "confusion_top": [
   {
+   "true": "17",
+   "pred": "32",
+   "count": 67
+  },
+  {
+   "true": "10",
+   "pred": "15",
+   "count": 66
+  },
+  {
+   "true": "17",
+   "pred": "10",
+   "count": 61
+  },
+  {
+   "true": "10",
+   "pred": "00",
+   "count": 58
+  },
+  {
+   "true": "10",
+   "pred": "32",
+   "count": 58
+  },
+  {
+   "true": "1",
+   "pred": "7",
+   "count": 57
+  },
+  {
    "true": "32",
    "pred": "7",
-   "count": 13
+   "count": 56
+  },
+  {
+   "true": "1",
+   "pred": "10",
+   "count": 56
+  },
+  {
+   "true": "7",
+   "pred": "10",
+   "count": 56
+  },
+  {
+   "true": "3",
+   "pred": "10",
+   "count": 55
+  },
+  {
+   "true": "7",
+   "pred": "32",
+   "count": 54
+  },
+  {
+   "true": "25",
+   "pred": "7",
+   "count": 51
+  },
+  {
+   "true": "10",
+   "pred": "2",
+   "count": 50
+  },
+  {
+   "true": "1",
+   "pred": "20",
+   "count": 50
+  },
+  {
+   "true": "13",
+   "pred": "10",
+   "count": 49
+  },
+  {
+   "true": "10",
+   "pred": "25",
+   "count": 47
+  },
+  {
+   "true": "10",
+   "pred": "1",
+   "count": 46
+  },
+  {
+   "true": "10",
+   "pred": "7",
+   "count": 44
+  },
+  {
+   "true": "32",
+   "pred": "10",
+   "count": 44
   },
   {
    "true": "13",
    "pred": "15",
-   "count": 12
+   "count": 40
   },
   {
-   "true": "8",
-   "pred": "32",
-   "count": 12
+   "true": "3",
+   "pred": "13",
+   "count": 40
   },
   {
-   "true": "7",
-   "pred": "32",
-   "count": 11
-  },
-  {
-   "true": "5",
-   "pred": "1",
-   "count": 10
-  },
-  {
-   "true": "1",
-   "pred": "7",
-   "count": 9
-  },
-  {
-   "true": "1",
-   "pred": "28",
-   "count": 7
-  },
-  {
-   "true": "13",
-   "pred": "28",
-   "count": 7
-  },
-  {
-   "true": "32",
-   "pred": "1",
-   "count": 6
-  },
-  {
-   "true": "5",
-   "pred": "7",
-   "count": 6
-  },
-  {
-   "true": "7",
-   "pred": "1",
-   "count": 6
-  },
-  {
-   "true": "7",
-   "pred": "15",
-   "count": 6
-  },
-  {
-   "true": "31",
-   "pred": "8",
-   "count": 6
-  },
-  {
-   "true": "32",
-   "pred": "12",
-   "count": 5
-  },
-  {
-   "true": "32",
-   "pred": "3",
-   "count": 5
-  },
-  {
-   "true": "8",
-   "pred": "5",
-   "count": 5
-  },
-  {
-   "true": "1",
-   "pred": "15",
-   "count": 5
-  },
-  {
-   "true": "5",
-   "pred": "15",
-   "count": 4
-  },
-  {
-   "true": "8",
-   "pred": "30",
-   "count": 4
-  },
-  {
-   "true": "7",
-   "pred": "5",
-   "count": 4
-  },
-  {
-   "true": "7",
-   "pred": "30",
-   "count": 4
+   "true": "17",
+   "pred": "13",
+   "count": 40
   },
   {
    "true": "00",
    "pred": "7",
-   "count": 4
+   "count": 39
   },
   {
-   "true": "32",
-   "pred": "21",
-   "count": 3
+   "true": "1",
+   "pred": "28",
+   "count": 38
   },
   {
-   "true": "32",
-   "pred": "5",
-   "count": 3
+   "true": "1",
+   "pred": "32",
+   "count": 38
   },
   {
-   "true": "32",
-   "pred": "2",
-   "count": 3
+   "true": "10",
+   "pred": "3",
+   "count": 38
   },
   {
-   "true": "32",
-   "pred": "90",
-   "count": 3
+   "true": "15",
+   "pred": "10",
+   "count": 38
   },
   {
-   "true": "32",
+   "true": "17",
    "pred": "30",
-   "count": 3
+   "count": 38
   },
   {
-   "true": "13",
-   "pred": "5",
-   "count": 3
+   "true": "10",
+   "pred": "30",
+   "count": 37
   },
   {
-   "true": "7",
-   "pred": "8",
-   "count": 3
-  },
-  {
-   "true": "7",
-   "pred": "12",
-   "count": 3
+   "true": "25",
+   "pred": "32",
+   "count": 36
   }
  ]
 }

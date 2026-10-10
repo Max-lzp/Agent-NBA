@@ -31,11 +31,15 @@ from roster_map import lookup_number  # noqa: E402
 from team_color import jersey_color, stable_color  # noqa: E402
 
 
+DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+
+
 def quiet_predict(model):
     original = model.predict
 
     def predict(*args, **kwargs):
         kwargs.setdefault("verbose", False)
+        kwargs.setdefault("device", DEVICE)
         return original(*args, **kwargs)
 
     model.predict = predict
@@ -63,20 +67,25 @@ def read_sampled(video: Path, target_fps: float) -> tuple[list, list[float], flo
     return frames, times, effective_fps, step
 
 
-def load_detectors():
+def load_detectors(court: bool = False):
     from trackers import BallTracker, PlayerTracker
-    from court_keypoint_detector import CourtKeypointDetector
 
     player = PlayerTracker(str(MODELS / "player_detector.pt"))
     ball = BallTracker(str(MODELS / "ball_detector_model.pt"))
-    court = CourtKeypointDetector(str(MODELS / "court_keypoint_detector.pt"))
-    for model in (player.model, ball.model, court.model):
+    models = [player.model, ball.model]
+    court_detector = None
+    if court:
+        from court_keypoint_detector import CourtKeypointDetector
+
+        court_detector = CourtKeypointDetector(str(MODELS / "court_keypoint_detector.pt"))
+        models.append(court_detector.model)
+    for model in models:
         quiet_predict(model)
     print(
         f"classes player={player.model.names} ball={ball.model.names}",
         flush=True,
     )
-    return player, ball, court
+    return player, ball, court_detector
 
 
 def keypoint_counts(court_keypoints) -> list[int]:
@@ -195,7 +204,8 @@ def hard_tracks(identified) -> list[dict]:
     ]
 
 
-def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_seconds: float | None) -> dict:
+def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_seconds: float | None,
+                 court: bool = False) -> dict:
     from ball_aquisition import BallAquisitionDetector
     from pass_and_interception_detector import PassAndInterceptionDetector
 
@@ -207,7 +217,7 @@ def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_second
         times = [times[i] for i in keep]
     print(f"{clip_id}: {len(frames)} frames @ {effective_fps:.2f} fps", flush=True)
 
-    player_tracker, ball_tracker, court_detector = load_detectors()
+    player_tracker, ball_tracker, court_detector = load_detectors(court)
     print(f"{clip_id}: player detect", flush=True)
     player_tracks = player_tracker.get_object_tracks(frames, read_from_stub=False, stub_path=None)
     ref_tracks = player_tracker.ref_tracks
@@ -224,9 +234,11 @@ def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_second
     )
     write_ball_raw(clip_id, times, effective_fps, ball_tracks)
     ball_tracks = ball_tracker.interpolate_ball_positions(ball_tracks)
-    print(f"{clip_id}: court keypoints", flush=True)
-    court_keypoints = court_detector.get_court_keypoints(frames, read_from_stub=False, stub_path=None)
-    counts = keypoint_counts(court_keypoints)
+    if court_detector is not None:
+        print(f"{clip_id}: court keypoints", flush=True)
+        counts = keypoint_counts(court_detector.get_court_keypoints(frames, read_from_stub=False, stub_path=None))
+    else:
+        counts = [0] * len(frames)
 
     identified = identify_tracks(
         frames,
@@ -313,7 +325,7 @@ def analyze_clip(clip_id: str, clip: dict, target_fps: float, reader, max_second
             if reader is not None
             else "local basketball_analysis weights; Ref kept; jersey OCR absent; no per-frame Qwen"
         ),
-        "device": "mps" if torch.backends.mps.is_available() else "cpu",
+        "device": DEVICE,
         "sampled_fps": round(effective_fps, 3),
         "frame_count": len(frames),
         "duration_sec": times[-1] if times else 0,
@@ -347,6 +359,7 @@ def main() -> None:
     parser.add_argument("--clip", choices=[*clips, "all"], default="all")
     parser.add_argument("--fps", type=float, default=8.0)
     parser.add_argument("--max-seconds", type=float, default=None)
+    parser.add_argument("--court", action="store_true", help="额外跑球场关键点。生成成片不需要，默认跳过")
     args = parser.parse_args()
     jersey_path = MODELS / "jersey_numbers.pt"
     if jersey_path.is_file():
@@ -358,7 +371,7 @@ def main() -> None:
     targets = list(clips) if args.clip == "all" else [args.clip]
     RESULTS.mkdir(parents=True, exist_ok=True)
     for clip_id in targets:
-        document = analyze_clip(clip_id, clips[clip_id], args.fps, reader, args.max_seconds)
+        document = analyze_clip(clip_id, clips[clip_id], args.fps, reader, args.max_seconds, args.court)
         suffix = "" if args.max_seconds is None else f"_{args.max_seconds:.0f}s"
         out = RESULTS / f"{clip_id}{suffix}.json"
         out.write_text(json.dumps(document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

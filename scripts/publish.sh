@@ -1,7 +1,8 @@
 #!/bin/sh
 # 生成评委成片，并部署到 CloudFront。
 # 提交链接是 CloudFront 根路径，打开的是回放页，不是上传页。发布台在 /hub.html。
-# 追踪用 c7i.48xlarge，P1 留在栈里。Polly 若仍拒绝，解说留在已经混好的本地成片里，所以关掉 P2。
+# 追踪用保持开着的 c7i.48xlarge，P1 留在栈里。只换首页成片时用 scripts/publish_homepage.sh，不要为两个文件重跑整栈。
+# Polly 若仍拒绝，解说留在已经混好的本地成片里，所以关掉 P2。
 # 可部署账号是 Workshop 参赛账号（profile nba → 382918437747）。SSO team04 目前不能建栈。
 set -eu
 cd "$(dirname "$0")/.."

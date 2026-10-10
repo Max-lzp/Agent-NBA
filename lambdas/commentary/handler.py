@@ -38,7 +38,7 @@ def handler(event, _context):
         Text=script,
         OutputFormat="mp3",
         VoiceId="Zhiyu",
-        Engine="standard",
+        Engine="neural",
         LanguageCode="cmn-CN",
     )
     key = f"commentary/{job_id}.mp3"

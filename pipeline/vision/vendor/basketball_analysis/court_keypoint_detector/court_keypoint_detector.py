@@ -33,7 +33,7 @@ class CourtKeypointDetector:
             if len(court_keypoints) == len(frames):
                 return court_keypoints
         
-        batch_size=4
+        batch_size=16
         court_keypoints = []
         for i in range(0,len(frames),batch_size):
             detections_batch = self.model.predict(frames[i:i+batch_size],conf=0.5)
