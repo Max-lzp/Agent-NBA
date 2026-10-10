@@ -20,6 +20,9 @@
     "#deepcourt-analyst button[disabled]{opacity:.6}",
     "#deepcourt-analyst .dc-answer{margin-top:12px}",
     "#deepcourt-analyst .dc-sources{margin:8px 0 0;padding:0;list-style:none;color:var(--teal,#5fbfa9);font-size:12px;word-break:break-all}",
+    "#deepcourt-analyst .dc-presets{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}",
+    "#deepcourt-analyst .dc-presets button{background:rgba(241,104,30,.12);color:var(--cream,#f3ede2);border:1px solid rgba(241,104,30,.45);font-weight:500;font-size:14px;cursor:pointer}",
+    "#deepcourt-analyst .dc-presets button:hover{background:rgba(241,104,30,.25)}",
     "#deepcourt-analyst .dc-status{min-height:1.2em;margin:8px 0 0;color:var(--muted,#a3988a);font-size:13px}",
   ].join("");
 
@@ -70,6 +73,21 @@
     root.appendChild(el("h2", "", "问分析师"));
     var highlights = el("ol", "dc-highlights");
     root.appendChild(highlights);
+    // 示例问题：答案写在 config.js 的 analystPresets 里，每条都带数据来源
+    var presets = ((window.DEEPCOURT_CONFIG || {}).analystPresets || []).filter(function (p) { return p && p.q && p.zh; });
+    var presetBox = el("div", "dc-presets");
+    presets.forEach(function (preset) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.textContent = preset.q;
+      chip.addEventListener("click", function () {
+        input.value = preset.q;
+        setStatus("");
+        renderAnswer({ answer: { zh: preset.zh, en: preset.en || "", sources: preset.sources || [] } });
+      });
+      presetBox.appendChild(chip);
+    });
+    if (presets.length) root.appendChild(presetBox);
     var form = document.createElement("form");
     var input = document.createElement("input");
     input.type = "text";
@@ -96,7 +114,18 @@
 
     function renderHighlights(analysis) {
       highlights.textContent = "";
-      var rows = (analysis && analysis.highlights) || [];
+      var seen = {};
+      var rows = ((analysis && analysis.highlights) || []).filter(function (item) {
+        var key = (item && (item.zh || item.en) || "").trim();
+        if (!key || seen[key] || /没有更多|No further highlight/i.test(key)) return false;
+        seen[key] = 1;
+        return true;
+      });
+      if (!rows.length && presets.length) {
+        highlights.hidden = true;
+        return;
+      }
+      highlights.hidden = false;
       if (!rows.length) {
         highlights.appendChild(el("li", "", jobId ? "这场还没有三条亮点。" : "打开带 jobId 的回放后，这里会显示三条亮点。"));
         return;
