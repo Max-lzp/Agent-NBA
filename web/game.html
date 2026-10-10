@@ -4,24 +4,65 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DEEP COURT 播放器</title>
-  <link rel="stylesheet" href="styles.css?v=29">
+  <link rel="stylesheet" href="styles.css?v=31">
 </head>
 <body>
+  <a class="readme-fab" href="/readme" aria-label="打开作品说明 Read Me">Read Me</a>
+  <div class="mode-modal" id="mode-modal" role="dialog" aria-modal="true" aria-labelledby="mode-title" hidden>
+    <div class="mode-sheet">
+      <p class="mode-kicker">NBA × AWS BROADCAST CODE 12 · Team 04</p>
+      <h2 id="mode-title">你想怎么看这段比赛？</h2>
+      <p class="mode-sub">选一种观看方式，随时可在右上角切换</p>
+      <div class="mode-options">
+        <button class="mode-opt" type="button" data-mode="laofan">
+          <span class="mode-ic" aria-hidden="true">🏀</span>
+          <b>老球迷</b>
+          <span>数据最密：定格卡全量、攻防三区、预期命中率，术语不解释。</span>
+        </button>
+        <button class="mode-opt" type="button" data-mode="xinfan">
+          <span class="mode-ic" aria-hidden="true">🔰</span>
+          <b>新球迷</b>
+          <span>少而精：只留关键数据，每个术语配一句白话解释。</span>
+        </button>
+        <button class="mode-opt" type="button" data-mode="daikan">
+          <span class="mode-ic" aria-hidden="true">👥</span>
+          <b>带新球迷一起看</b>
+          <span>球员头像、球队订阅与商城，陪身边人一起看球。</span>
+        </button>
+      </div>
+    </div>
+  </div>
   <div class="court court-tr"></div>
   <main class="page">
     <p class="kicker"><span class="mark">NBA × AWS BROADCAST CODE 12</span>　·　Team 04　·　DEEP COURT 播放器</p>
     <h1 class="player-title">DEEP COURT <span class="accent">播放器</span></h1>
-    <p class="subhead" id="subhead">Team 04 · 打开即看。比分和出手卡来自记分牌与官方逐回合，人名来自球衣号码。</p>
-    <nav class="clip-switch" id="clip-switch" aria-label="选择片段"></nav>
-    <nav class="watch-switch" id="watch-switch" aria-label="观看风格">
-      <button type="button" data-watch="commentary">解说向</button>
-      <button type="button" data-watch="date">陪女友观看</button>
-      <span class="soon">陪孩子观看<small>Coming Soon</small></span>
+    <p class="tagline">上传一段比赛录像，AI 识别球员、对齐官方数据，渲染成带数据叠加和解说的深度回放——打开即看。</p>
+    <p class="subhead" id="subhead">Team 04 · 比分和出手卡来自记分牌与官方逐回合，人名来自球衣号码。</p>
+    <p class="howto" aria-label="怎么看这段回放">
+      <span><i class="dot red"></i>红圈 = 投篮人</span>
+      <span><i class="dot gold"></i>黄色虚线圈 = 领防人</span>
+      <span>进球后定格卡回看这一投</span>
+      <span>可切换 中文解说 / 英文原声</span>
+    </p>
+    <nav class="watch-switch" id="watch-switch" aria-label="观看方式">
+      <button type="button" data-watch="laofan">老球迷</button>
+      <button type="button" data-watch="xinfan">新球迷</button>
+      <button type="button" data-watch="daikan">带新球迷一起看</button>
     </nav>
     <nav class="lang-switch" id="lang-switch" aria-label="音轨" hidden>
       <button type="button" data-lang="zh">中文解说</button>
       <button type="button" data-lang="en">英文原声</button>
     </nav>
+    <div class="glossary" id="glossary" aria-label="术语白话" hidden>
+      <b>术语白话</b>
+      <ul>
+        <li><em>预期命中率（xFG）</em>：这个出手位置，联盟历史上平均能进的概率；越高说明机会越好。</li>
+        <li><em>真实命中率（TS%）</em>：把两分、三分、罚球都算进去的综合得分效率。</li>
+        <li><em>攻防三区</em>：把半场分成外线三分、中距离、禁区三块，分别看命中率。</li>
+        <li><em>定格卡</em>：进球后画面定在出手那一帧，弹出这一投的关键数据。</li>
+        <li><em>领防人</em>：出手时贴防投篮人最久的那名防守球员。</li>
+      </ul>
+    </div>
     <p class="track-script" id="track-script" hidden></p>
     <hr class="rule">
 
@@ -30,6 +71,7 @@
         <section class="stage" id="stage">
           <video id="reel" controls playsinline preload="metadata"></video>
           <canvas id="names" aria-hidden="true"></canvas>
+          <div class="stage-status" id="stage-status" role="status" aria-live="polite" hidden></div>
         </section>
         <section class="share" aria-labelledby="share-title">
           <div class="share-head">
@@ -38,27 +80,27 @@
           </div>
           <div class="share-row">
             <button class="share-btn" type="button" data-share="kuaishou">
-              <img src="brands/kuaishou.svg" alt="" width="28" height="28">
+              <img src="brands/kuaishou.svg" alt="" width="28" height="28" loading="lazy" decoding="async">
               <span>快手</span>
               <em>官方短视频平台</em>
             </button>
             <button class="share-btn" type="button" data-share="bilibili">
-              <img src="brands/bilibili.svg" alt="" width="28" height="28">
+              <img src="brands/bilibili.svg" alt="" width="28" height="28" loading="lazy" decoding="async">
               <span>哔哩哔哩</span>
               <em>官方优质内容社区</em>
             </button>
             <button class="share-btn" type="button" data-share="wechat">
-              <img src="brands/wechat.svg" alt="" width="28" height="28">
+              <img src="brands/wechat.svg" alt="" width="28" height="28" loading="lazy" decoding="async">
               <span>视频号</span>
               <em>官方内容账号</em>
             </button>
             <button class="share-btn" type="button" data-share="weibo">
-              <img src="brands/weibo.svg" alt="" width="28" height="28">
+              <img src="brands/weibo.svg" alt="" width="28" height="28" loading="lazy" decoding="async">
               <span>微博</span>
               <em>官方社交媒体平台</em>
             </button>
             <button class="share-btn" type="button" data-share="douyin">
-              <img src="brands/douyin.svg" alt="" width="28" height="28">
+              <img src="brands/douyin.svg" alt="" width="28" height="28" loading="lazy" decoding="async">
               <span>抖音</span>
               <em>内容智能分发平台</em>
             </button>
@@ -75,6 +117,13 @@
         <div id="floor-away"></div>
       </section>
     </div>
+
+    <section id="deepcourt-analyst" aria-label="问分析师"></section>
+
+    <section class="more-clips" id="more-clips" aria-label="更多片段" hidden>
+      <h2 class="more-label">更多片段</h2>
+      <nav class="clip-switch" id="clip-switch" aria-label="选择片段"></nav>
+    </section>
 
     <footer class="foot">
       <span id="foot-note">训练片来自组委会发放的火箭、独行侠录像。官方比赛号写在右侧说明里。</span>
@@ -99,9 +148,11 @@
       <p class="ks-status" id="share-status"></p>
     </form>
   </div>
-  <script src="config.js"></script>
+  <script src="config.js?v=2"></script>
   <script src="replay/clips.js?v=6"></script>
   <script src="replay-freeze.js?v=5"></script>
-  <script src="game.js?v=28"></script>
+  <script src="game.js?v=33"></script>
+  <!-- 问分析师面板（PR #31 web/analyst.js）。接口报错/超时时面板内部优雅降级；脚本缺失时静默移除，均不影响播放器 -->
+  <script src="analyst.js?v=1" onerror="this.remove()"></script>
 </body>
 </html>
