@@ -91,14 +91,18 @@ def rank_rows(ranks: dict | None, spec) -> list[tuple]:
     return out
 
 
+def lead_side(shooter_box: list[float], lead_box: list[float] | None) -> str | None:
+    """领防标签贴在防守人躯干旁、背向投篮人的一侧：
+    防守人中心在投篮人右边就放右边，否则放左边。没有领防框就不贴。"""
+    if not lead_box:
+        return None
+    return "right" if (lead_box[0] + lead_box[2]) >= (shooter_box[0] + shooter_box[2]) else "left"
+
+
 def card_lines(pack: dict, shot: dict) -> list[tuple]:
-    """(样式, 文字[, 星级])。样式 head / score / off / def / line / rank。"""
+    """(样式, 文字[, 星级])。样式 head / off / def / line / rank。
+    不再写比分条：比分跟着记分牌走，定格卡只讲这一投和领防。"""
     lines: list[tuple[str, str]] = [("head", "回放 · 出手瞬间")]
-    bug = _bug_at(pack, float(shot["release"]["t"]))
-    if bug:
-        mine = bug["awayScore"] - bug["homeScore"] if shot.get("team") == bug["away"] else bug["homeScore"] - bug["awayScore"]
-        gap = "打平" if mine == 0 else f"{TEAM_ZH.get(shot.get('team'), shot.get('team'))}{'领先' if mine > 0 else '落后'} {abs(mine)} 分"
-        lines.append(("score", f"{bug['period']} {bug['clock']} · {bug['awayName']} {bug['awayScore']} : {bug['homeScore']} {bug['homeName']} · {gap}"))
     lines.append(("off", f"{shot['name']} #{shot.get('number') or ''}（{shooter_source(shot)}）"))
     season = shot.get("season")
     ranked = rank_rows(shot.get("shooterRank"), OFF_RANKS)
@@ -195,6 +199,36 @@ def _cover(a: list[float], b: list[float]) -> float:
     return max(w, 0) * max(h, 0) / max(1e-6, (a[2] - a[0]) * (a[3] - a[1]))
 
 
+def _overlaps(rect: tuple, placed: list[tuple]) -> bool:
+    return any(rect[0] < r[2] and r[0] < rect[2] and rect[1] < r[3] and r[1] < rect[3] for r in placed)
+
+
+def draw_lead_tag(draw, font, text: str, lead_box: list[float], scale: float, side: str | None,
+                  placed: list[tuple], color, width: float = OUT_W) -> None:
+    """领防标签贴在防守人躯干旁、背向投篮人的一侧。
+    背向那一侧放不下就换到另一侧；两侧都被卡片挡住时仍贴在背向侧，保证定格里能看到领防名签。"""
+    from pipeline.present.build import draw_tag
+
+    tb = draw.textbbox((0, 0), text, font=font)
+    w, h = tb[2] - tb[0] + 16, tb[3] - tb[1] + 10
+    x1, _, x2, y2 = (v * scale for v in lead_box)
+    y1 = lead_box[1] * scale
+    y = y1 + (y2 - y1) * 0.45 - h / 2  # 躯干高度，不再贴在头肩
+    away = side or "right"
+    toward = "left" if away == "right" else "right"
+    for candidate in (away, toward):
+        x = x2 + 6 if candidate == "right" else x1 - w - 6
+        rect = (x, y, x + w, y + h)
+        if 0 <= x and x + w <= width and not _overlaps(rect, placed):
+            placed.append(rect)
+            draw_tag(draw, font, text, rect, color, edge_right=(candidate == "left"))
+            return
+    x = x2 + 6 if away == "right" else x1 - w - 6
+    rect = (x, y, x + w, y + h)
+    placed.append(rect)
+    draw_tag(draw, font, text, rect, color, edge_right=(away == "left"))
+
+
 def card_on_right(shooter: list[float], lead: list[float] | None, side: str | None, tag_w: float,
                   scale: float, card_w: float, width: float = OUT_W) -> bool:
     """卡片默认放投篮人对面；挡住领防人的标签就换边，换过去不挡投篮人和领防人才换。"""
@@ -278,17 +312,19 @@ def draw_still(frame: Path, dest: Path, pack: dict, shot: dict, font_path: Path,
     lead = shot.get("leadBox")
     d = shot.get("defender") or {}
     label = f"领防 · {d.get('display') or d.get('name')} #{d.get('number')}" if d.get("name") else "领防"
-    side = ("right" if lead[0] + lead[2] >= box[0] + box[2] else "left") if lead else None
+    side = lead_side(box, lead)
     lead_w = draw.textlength(label, font=small) + 22 if lead else 0
     right = card_on_right(box, lead, side, lead_w, scale, card_w)
     card_x = OUT_W - card_w - 24 if right else 24
     tags = [(f"出手 · {shot['name']}", box, RED, None)]
     if lead:
         _ellipse(draw, lead, scale, GOLD, dashed=True)
-        tags.append((label, lead, GOLD, side))
     tags.extend(t for t in others if not any(_cover(t[1], b) > 0.2 for b in (box, lead) if b))
     _ellipse(draw, box, scale, RED, fill=(255, 43, 43, 80))
-    draw_names(draw, small, tags, scale, placed=[(card_x, 0, card_x + card_w, OUT_H)], width=OUT_W)
+    placed = [(card_x, 0, card_x + card_w, OUT_H)]
+    draw_names(draw, small, tags, scale, placed=placed, width=OUT_W)
+    if lead:
+        draw_lead_tag(draw, small, label, lead, scale, side, placed, GOLD, width=OUT_W)
 
     x0 = card_x
     y = 78
