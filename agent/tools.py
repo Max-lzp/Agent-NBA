@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass, field
 
 from manifest import check, game_id_of, job_id_of
-from season_data import find_player, load_slice
+from season_data import find_player, load_slice, match_name
 
 OFFICIAL_PREFIX = "official/2025-26/"
 GAME_FILE = re.compile(r"(\d{10})_(playbyplay|shotquality)", re.I)
@@ -115,13 +115,30 @@ class Ctx:
         return data
 
 
+def _spoken(name: str) -> dict:
+    """工具里带上统一译名，模型就不用自己翻译。"""
+    raw = str(name or "")
+    person = match_name(raw)
+    shown = raw
+    alias = person["alias_zh"] if person else ""
+    if person and alias and len(raw) == len(alias) and sum(a != b for a, b in zip(raw, alias)) == 1:
+        shown = alias
+    out = {"name": shown}
+    if person:
+        out["name_zh"] = alias or person["name_zh"]
+        out["name_en"] = person["name_en"]
+    return out
+
+
 def _who(ref) -> dict:
     if not isinstance(ref, dict):
         return {}
+    spoken = _spoken(ref.get("name") or ref.get("nameZh") or "")
     return {
         "team": ref.get("team") or "",
         "number": ref.get("number") or "",
-        "name": ref.get("name") or ref.get("nameZh") or "",
+        "name": spoken.get("name") or "",
+        **{key: spoken[key] for key in ("name_zh", "name_en") if key in spoken},
     }
 
 
@@ -149,7 +166,8 @@ def public_manifest(stream: dict, job_id: str) -> dict:
                 if xfg is not None:
                     view["xfg_pct"] = _pct(xfg)
                 if official.get("assist"):
-                    view["assist"] = _who(official.get("assist")) if isinstance(official.get("assist"), dict) else {"name": official.get("assist")}
+                    assist = official.get("assist")
+                    view["assist"] = _who(assist) if isinstance(assist, dict) else _spoken(str(assist))
                 item["official"] = view
             events.append(item)
         possessions.append({
@@ -194,6 +212,11 @@ def validate_manifest(ctx: Ctx, _payload: dict) -> dict:
     return ctx.remember(source, {"source": source, "ok": not problems, "problems": problems})
 
 
+def _name_fields(name: str) -> dict:
+    spoken = _spoken(name)
+    return {key: spoken[key] for key in ("name_zh", "name_en") if key in spoken}
+
+
 def _assist(description: str) -> str:
     match = ASSIST.search(description or "")
     return match.group(1).strip() if match else ""
@@ -214,7 +237,7 @@ def play_from_action(raw: dict) -> dict:
         "description": description,
         "assist": _assist(description),
         "player": raw.get("playerNameI") or raw.get("playerName") or "",
-    }
+    } | _name_fields(raw.get("playerNameI") or raw.get("playerName") or "")
 
 
 def _quality_index(shots: list) -> list[dict]:
@@ -404,6 +427,10 @@ def _optional_float(value):
 def read_season(ctx: Ctx, payload: dict) -> dict:
     name = str(payload.get("name") or payload.get("player") or "").strip()
     team = str(payload.get("team") or "").strip().upper()
+    resolved = match_name(name)
+    if resolved and (not team or resolved["team"] == team):
+        name = resolved["name_en"]
+        team = team or resolved["team"]
     doc = load_slice()
     player, matches = find_player(doc, name, team)
     if player is None and matches:
@@ -424,6 +451,7 @@ def read_season(ctx: Ctx, payload: dict) -> dict:
         "team": player["team"],
         "player_id": player["player_id"],
         "player_name": player["player_name"],
+        **_name_fields(player["player_name"]),
         "offense": player.get("offense") or {},
         "defense": player.get("defense") or {},
         "profile": player.get("profile"),
@@ -441,35 +469,47 @@ def read_identity(ctx: Ctx, _payload: dict) -> dict:
     for item in (doc.get("votes") or [])[:30]:
         if not isinstance(item, dict):
             continue
+        spoken = _spoken(item.get("nameZh") or item.get("name") or "")
         votes.append({
             "team": item.get("team") or "",
             "number": item.get("number") or "",
-            "name": item.get("nameZh") or item.get("name") or "",
+            "name": spoken.get("name") or "",
+            **{key: spoken[key] for key in ("name_zh", "name_en") if key in spoken},
         })
     matches = []
     for item in (doc.get("matches") or [])[:30]:
         if not isinstance(item, dict):
             continue
+        spoken = _spoken(item.get("name") or item.get("nameZh") or "")
         matches.append({
             "t": item.get("t"),
             "team": item.get("team") or "",
             "number": item.get("number") or "",
-            "name": item.get("name") or item.get("nameZh") or "",
+            "name": spoken.get("name") or "",
+            **{key: spoken[key] for key in ("name_zh", "name_en") if key in spoken},
         })
     pinned = []
     for item in doc.get("pinned") or []:
         if not isinstance(item, dict):
             continue
+        spoken = _spoken(item.get("nameZh") or item.get("name") or "")
         pinned.append({
             "team": item.get("team") or "",
             "number": item.get("number") or "",
-            "name": item.get("nameZh") or item.get("name") or "",
+            "name": spoken.get("name") or "",
             "role": item.get("role") or "",
+            **{key: spoken[key] for key in ("name_zh", "name_en") if key in spoken},
         })
+    first_second = []
+    for item in doc.get("firstSecond") or []:
+        if isinstance(item, str):
+            first_second.append(_spoken(item).get("name") or item)
+        else:
+            first_second.append(item)
     return ctx.remember(source, {
         "source": source,
         "found": True,
-        "firstSecond": doc.get("firstSecond") or [],
+        "firstSecond": first_second,
         "pinned": pinned,
         "votes": votes,
         "matches": matches,
