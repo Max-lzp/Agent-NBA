@@ -24,7 +24,7 @@ sys.path.insert(0, str(REPO / "lambdas"))
 from common import TEAM_ZH, timeline_from_stream  # noqa: E402
 from pipeline.enrich.deep_season import season_profile  # noqa: E402
 from pipeline.enrich.official import position_zh  # noqa: E402
-from pipeline.present.freeze import render_replay  # noqa: E402
+from pipeline.present.freeze import pick, render_replay  # noqa: E402
 
 OUT = REPO / "pipeline" / "events" / "out"
 VISION = REPO / "pipeline" / "vision" / "results" / "local"
@@ -317,9 +317,11 @@ def _shots(stream: dict) -> list[dict]:
                 "zoneKey": geom.get("shot_zone") or "",
                 "release": ev.get("release"),
                 "leadBox": (ev.get("defense") or {}).get("lead_box"),
+                "leadPath": (ev.get("defense") or {}).get("lead_path"),
                 "shooterCheck": official.get("shooter_check"),
                 "defender": _defender(official.get("defender")),
                 "season": official.get("shooter_season"),
+                "shooterRank": official.get("shooter_rank"),
                 "zoneChart": official.get("zone_chart"),
             })
     return shots
@@ -443,10 +445,6 @@ def _on_court(raw: dict) -> dict:
     return out
 
 
-def _scorebug_text(read: dict) -> str:
-    return f"{read['awayName']} {read['awayScore']}    {read['period']} {read['clock']}    {read['homeName']} {read['homeScore']}"
-
-
 def _card_lines(shot: dict) -> tuple[str, str]:
     result = "命中" if shot.get("made") else "不中" if shot.get("made") is False else "出手"
     head = f"{shot['name']} · {result}"
@@ -505,25 +503,128 @@ def _label(draw, font, xy, text: str) -> None:
     draw.text((x, y), text, font=font, fill=(243, 237, 226, 255))
 
 
-def _read_at(pack: dict, t: float) -> dict | None:
-    found = None
-    for read in pack["scorebug"]:
-        if read["t"] <= t + 0.05:
-            found = read
-        else:
-            break
-    return found
+NAME_RED = (255, 43, 43, 255)
+NAME_GOLD = (245, 197, 66, 255)
+NAME_EDGE = {"DAL": (70, 140, 220, 255), "HOU": (205, 205, 205, 255)}
+
+
+def _at_path(path: list | None, t: float, slack: float = 0.12) -> list[float] | None:
+    best = None
+    for row in path or []:
+        gap = abs(row[0] - t)
+        if gap <= slack and (best is None or gap < best[0]):
+            best = (gap, row[1:])
+    return best[1] if best else None
+
+
+def _iou(a: list[float], b: list[float]) -> float:
+    w = min(a[2], b[2]) - max(a[0], b[0])
+    h = min(a[3], b[3]) - max(a[1], b[1])
+    if w <= 0 or h <= 0:
+        return 0.0
+    inter = w * h
+    return inter / ((a[2] - a[0]) * (a[3] - a[1]) + (b[2] - b[0]) * (b[3] - b[1]) - inter)
+
+
+def name_tags_at(pack: dict, t: float) -> list[tuple]:
+    """(文字, 源视频坐标框 x1 y1 x2 y2, 边色, 贴边)。出手前跟住的投篮人和领防人一定标；
+    领防人贴在球衣旁、背向投篮人那一侧（贴边 right / left），其他人放头顶（贴边 None）。
+    其他人只标号码票数够、对上在场名单的轨迹。"""
+    out: list[tuple] = []
+    taken: set[tuple[str, str]] = set()
+    for shot in pack.get("shots") or []:
+        release = shot.get("release") or {}
+        if release.get("t") is None or not (t <= float(release["t"]) + 0.3):
+            continue
+        shooter = _at_path(release.get("shooter_path"), t)
+        if shooter:
+            out.append((f"{shot['name']} #{shot.get('number') or ''}".strip(), shooter, NAME_RED, None))
+            taken.add((shot.get("team") or "", str(shot.get("number") or "")))
+        d = shot.get("defender") or {}
+        box = _at_path(shot.get("leadPath"), t) if d.get("name") else None
+        if box:
+            ref = shooter or release.get("shooter_box") or box
+            side = "right" if box[0] + box[2] >= ref[0] + ref[2] else "left"
+            out.append((f"{d.get('display') or d['name']} #{d['number']}", box, NAME_GOLD, side))
+            taken.add((d.get("team") or "", str(d.get("number") or "")))
+    frame = None
+    for row in pack.get("tags") or []:
+        if abs(row["t"] - t) <= 0.15 and (frame is None or abs(row["t"] - t) < abs(frame["t"] - t)):
+            frame = row
+    for p in (frame or {}).get("players") or []:
+        if (p.get("team") or "", str(p.get("jersey") or "")) in taken:
+            continue
+        box = [p["x"], p["y"], p["x"] + p["w"], p["y"] + p["h"]]
+        if any(_iou(box, row[1]) > 0.4 for row in out):
+            continue
+        out.append((f"{p['name']} #{p['jersey']}", box, NAME_EDGE.get(p.get("team"), NAME_EDGE["HOU"]), None))
+    return out
+
+
+def _hits(rect: tuple, placed: list[tuple]) -> bool:
+    return any(rect[0] < r[2] and r[0] < rect[2] and rect[1] < r[3] and r[1] < rect[3] for r in placed)
+
+
+def tag_rect(draw, font, text: str, box: list[float], scale: float, side, placed: list[tuple],
+             width: float = 1e9) -> tuple | None:
+    """标签放哪：贴边的放在躯干旁，那一侧放不下换另一侧；头顶的撞到已放标签就往上挪，挪不开就不画。"""
+    tb = draw.textbbox((0, 0), text, font=font)
+    w, h = tb[2] - tb[0] + 16, tb[3] - tb[1] + 10
+    x1, y1, x2, y2 = (v * scale for v in box)
+    if side:
+        y = y1 + (y2 - y1) * 0.25
+        for s in (side, "left" if side == "right" else "right"):
+            x = x2 + 6 if s == "right" else x1 - w - 6
+            rect = (x, y, x + w, y + h)
+            if x >= 0 and x + w <= width and not _hits(rect, placed):
+                return rect
+        return None
+    x = (x1 + x2) / 2 - w / 2
+    for k in range(3):
+        y = y1 - h - 6 - k * (h + 4)
+        rect = (x, y, x + w, y + h)
+        if y >= 4 and not _hits(rect, placed):
+            return rect
+    return None
+
+
+def draw_tag(draw, font, text: str, rect: tuple, edge: tuple, edge_right: bool = False) -> None:
+    tb = draw.textbbox((0, 0), text, font=font)
+    x, y, x2, y2 = rect
+    draw.rectangle(rect, fill=(20, 17, 14, 214))
+    ex = x2 - 4 if edge_right else x
+    draw.rectangle((ex, y, ex + 4, y2), fill=edge)
+    draw.text((x + (7 if edge_right else 9), y + 4 - tb[1]), text, font=font, fill=(243, 237, 226, 255))
+
+
+def draw_names(draw, font, tags: list[tuple], scale: float, placed: list[tuple] | None = None,
+               width: float = 1e9) -> None:
+    placed = placed if placed is not None else []
+    for text, box, edge, side in tags:
+        rect = tag_rect(draw, font, text, box, scale, side, placed, width)
+        if rect:
+            placed.append(rect)
+            draw_tag(draw, font, text, rect, edge, edge_right=rect[0] < box[0] * scale)
+
+
+def freeze_others(pack: dict) -> list[tuple[str, list[float], tuple]]:
+    shot = pick(pack)
+    if not shot:
+        return []
+    return [row for row in name_tags_at(pack, float(shot["release"]["t"])) if row[2] not in (NAME_RED, NAME_GOLD)]
 
 
 def write_overlay(clip: str, pack: dict) -> Path:
     """本机 ffmpeg 没有 drawtext。用 Pillow 画透明层，再交给 overlay。"""
     Image, ImageDraw, ImageFont = _pil()
     WORK.mkdir(parents=True, exist_ok=True)
-    width, height, fps = 1280, 720, 4
+    width, height, fps = 1280, 720, 10
     duration = float(pack["duration"] or 23)
     frames = int(duration * fps) + 1
     font = ImageFont.truetype(str(FONT), 34)
     small = ImageFont.truetype(str(FONT), 26)
+    tiny = ImageFont.truetype(str(FONT), 18)
+    scale = width / float(pack.get("width") or width)
     dest = WORK / f"{clip}-overlay.mov"
     proc = subprocess.Popen(
         [
@@ -538,23 +639,18 @@ def write_overlay(clip: str, pack: dict) -> Path:
         t = index / fps
         image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
-        read = _read_at(pack, t)
-        if read:
-            _label(draw, font, (28, 22), _scorebug_text(read))
-        if pack.get("dataset"):
-            tag_w = draw.textbbox((0, 0), pack["dataset"], font=small)[2]
-            _label(draw, small, (width - 28 - 14 - tag_w, 26), pack["dataset"])
+        draw_names(draw, tiny, name_tags_at(pack, t), scale, width=width)
         for shot in pack["shots"]:
             if float(shot["t"]) - 0.25 <= t <= float(shot["t"]) + 3.2:
                 head, sub = _card_lines(shot)
-                _label(draw, font, (28, 84), head)
+                _label(draw, font, (28, 22), head)
                 if sub:
-                    _label(draw, small, (28, 136), sub)
-                y = 182
+                    _label(draw, small, (28, 74), sub)
+                y = 120
                 margin = _margin_line(shot)
                 if margin:
                     _label(draw, small, (28, y), margin)
-                    y = 228
+                    y = 166
                 deep = _deep_line(shot)
                 if deep:
                     _label(draw, small, (28, y), deep)
@@ -613,7 +709,8 @@ def render_video(clip: str, pack: dict) -> Path:
     final = WEB / "assets" / f"{clip}-broadcast.mp4"
     final.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(["sh", str(MIX), str(bed), str(padded), str(final)], check=True)
-    replay = render_replay(clip, pack, bed, padded, WEB / "assets" / f"{clip}-replay.mp4", WORK, FONT)
+    replay = render_replay(clip, pack, bed, padded, WEB / "assets" / f"{clip}-replay.mp4", WORK, FONT,
+                           source, freeze_others(pack))
     if replay:
         pack["replayVideo"] = f"assets/{replay.name}"
         print("定格回放", replay)

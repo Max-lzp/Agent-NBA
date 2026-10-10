@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DEEP COURT 播放器</title>
-  <link rel="stylesheet" href="styles.css?v=21">
+  <link rel="stylesheet" href="styles.css?v=27">
 </head>
 <body>
   <div class="court court-tr"></div>
@@ -13,22 +13,18 @@
     <h1 class="player-title">DEEP COURT <span class="accent">播放器</span></h1>
     <p class="subhead" id="subhead">Team 04 · 打开即看。比分和出手卡来自记分牌与官方逐回合，人名来自球衣号码。</p>
     <nav class="clip-switch" id="clip-switch" aria-label="选择片段"></nav>
+    <nav class="watch-switch" id="watch-switch" aria-label="观看风格">
+      <button type="button" data-watch="commentary">解说向</button>
+      <button type="button" data-watch="date">陪女友观看</button>
+      <span class="soon">陪孩子观看<small>Coming Soon</small></span>
+    </nav>
     <hr class="rule">
 
     <div class="replay">
       <div class="player-col">
         <section class="stage" id="stage">
-          <video id="reel" playsinline preload="metadata"></video>
+          <video id="reel" controls playsinline preload="metadata"></video>
           <canvas id="names" aria-hidden="true"></canvas>
-        </section>
-        <div class="scrub" id="scrub">
-          <div class="track"></div>
-          <div class="fill" id="fill"></div>
-          <div class="ticks" id="ticks"></div>
-        </div>
-        <section class="floor" id="floor" hidden aria-label="场上球员">
-          <div id="floor-offense"></div>
-          <div id="floor-defense"></div>
         </section>
         <section class="share" aria-labelledby="share-title">
           <div class="share-head">
@@ -64,33 +60,16 @@
           </div>
         </section>
       </div>
-      <aside class="rail" aria-label="这一球">
+      <aside class="rail" aria-label="这一球" hidden>
         <p class="rail-kicker">半场落点 · 官方坐标</p>
         <div id="court"></div>
         <div id="detail"></div>
       </aside>
+      <section class="floor" id="floor" hidden aria-label="场上球员">
+        <div id="floor-home"></div>
+        <div id="floor-away"></div>
+      </section>
     </div>
-
-    <div class="transport">
-      <button class="pause" id="pause" type="button" aria-label="暂停或播放">
-        <svg id="pause-icon" width="12" height="14" viewBox="0 0 12 14" aria-hidden="true"><rect x="1" y="0" width="3.2" height="14" fill="#14110E"/><rect x="7.6" y="0" width="3.2" height="14" fill="#14110E"/></svg>
-      </button>
-      <div>
-        <div class="clock" id="clock">00:00</div>
-        <div class="aside"><span class="teal">◆</span> 解说由程序根据官方事件生成，已混入成片<br><span class="brand">TEAM 04 · DEEP COURT</span></div>
-      </div>
-    </div>
-
-    <div class="events" id="events"></div>
-
-    <section class="spec">
-      <hr class="rule">
-      <h2>三层信息</h2>
-      <button class="layer on" type="button" data-layer="resident"><b>常驻层</b><span>比分条烧进成片。人名只标票数够的轨迹，跟着框走。</span></button>
-      <button class="layer on" type="button" data-layer="event"><b>事件层</b><span>出手后三秒弹出预期命中率、区域和距离。点时间线跳到那一球。</span></button>
-      <button class="layer on" type="button" data-layer="expand"><b>展开层</b><span>暂停后写出官方描述和助攻。决策反差只在预期和结果打架时出现。</span></button>
-      <p class="baseline">画面上的数字都能在事件清单里对上。引力和关键度是赛季汇总，暂停后出现，不写成这一球的胜率变化。</p>
-    </section>
 
     <footer class="foot">
       <span id="foot-note">训练片来自组委会发放的火箭、独行侠录像。官方比赛号写在右侧说明里。</span>
@@ -118,6 +97,6 @@
   <script src="config.js"></script>
   <script src="replay/clips.js?v=3"></script>
   <script src="replay-freeze.js?v=4"></script>
-  <script src="game.js?v=18"></script>
+  <script src="game.js?v=26"></script>
 </body>
 </html>

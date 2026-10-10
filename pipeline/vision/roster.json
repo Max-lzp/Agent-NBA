@@ -77,12 +77,54 @@
         ]
       },
       "q4_dal_shots_last3min": [
-        {"clock": "2:14", "player": "Gafford", "jersey": "21", "made": true, "xfg": 0.659, "desc": "DUNK"},
-        {"clock": "1:34", "player": "Flagg", "jersey": "32", "made": true, "xfg": 0.504, "desc": "driving finger roll Layup（训练片）"},
-        {"clock": "0:50", "player": "Flagg", "jersey": "32", "made": false, "xfg": 0.407, "desc": "17' pullup"},
-        {"clock": "0:47", "player": "Marshall", "jersey": "13", "made": true, "xfg": 0.573, "desc": "12' pullup（Christie 助攻）"},
-        {"clock": "0:25", "player": "Flagg", "jersey": "32", "made": false, "xfg": 0.215, "desc": "driving Layup"},
-        {"clock": "0:09", "player": "Flagg", "jersey": "32", "made": false, "xfg": 0.336, "desc": "25' pullup 3PT"}
+        {
+          "clock": "2:14",
+          "player": "Gafford",
+          "jersey": "21",
+          "made": true,
+          "xfg": 0.659,
+          "desc": "DUNK"
+        },
+        {
+          "clock": "1:34",
+          "player": "Flagg",
+          "jersey": "32",
+          "made": true,
+          "xfg": 0.504,
+          "desc": "driving finger roll Layup（训练片）"
+        },
+        {
+          "clock": "0:50",
+          "player": "Flagg",
+          "jersey": "32",
+          "made": false,
+          "xfg": 0.407,
+          "desc": "17' pullup"
+        },
+        {
+          "clock": "0:47",
+          "player": "Marshall",
+          "jersey": "13",
+          "made": true,
+          "xfg": 0.573,
+          "desc": "12' pullup（Christie 助攻）"
+        },
+        {
+          "clock": "0:25",
+          "player": "Flagg",
+          "jersey": "32",
+          "made": false,
+          "xfg": 0.215,
+          "desc": "driving Layup"
+        },
+        {
+          "clock": "0:09",
+          "player": "Flagg",
+          "jersey": "32",
+          "made": false,
+          "xfg": 0.336,
+          "desc": "25' pullup 3PT"
+        }
       ]
     },
     "amen_20260104": {
@@ -147,6 +189,270 @@
           "17",
           "30",
           "7"
+        ]
+      }
+    },
+    "0022500701": {
+      "active": {
+        "HOU": {
+          "7": "Durant",
+          "10": "Smith Jr.",
+          "28": "Sengun",
+          "17": "Eason",
+          "1": "Thompson",
+          "20": "Okogie",
+          "15": "Sheppard",
+          "2": "Finney-Smith",
+          "30": "Capela"
+        },
+        "DAL": {
+          "32": "Flagg",
+          "25": "Washington",
+          "21": "Gafford",
+          "13": "Marshall",
+          "00": "Christie",
+          "7": "Powell",
+          "10": "Williams",
+          "16": "Martin",
+          "31": "Thompson",
+          "30": "Cisse",
+          "9": "Nembhard"
+        }
+      },
+      "dnp": {
+        "HOU": {
+          "27": "Crawford",
+          "32": "Green",
+          "0": "Holiday",
+          "8": "Tate",
+          "12": "Adams",
+          "4": "Davison",
+          "13": "Newton",
+          "5": "VanVleet"
+        },
+        "DAL": {
+          "1": "Hardy",
+          "5": "Russell",
+          "3": "Davis",
+          "0": "Exum",
+          "11": "Irving",
+          "14": "Kelly",
+          "2": "Lively II"
+        }
+      },
+      "source": "official boxscore",
+      "on_court": {
+        "DAL": [
+          "00",
+          "13",
+          "21",
+          "25",
+          "32"
+        ],
+        "HOU": [
+          "1",
+          "10",
+          "17",
+          "28",
+          "7"
+        ]
+      }
+    },
+    "0022500160": {
+      "active": {
+        "HOU": {
+          "7": "Durant",
+          "17": "Eason",
+          "28": "Sengun",
+          "20": "Okogie",
+          "1": "Thompson",
+          "12": "Adams",
+          "15": "Sheppard",
+          "8": "Tate",
+          "30": "Capela",
+          "0": "Holiday"
+        },
+        "DAL": {
+          "31": "Thompson",
+          "25": "Washington",
+          "21": "Gafford",
+          "32": "Flagg",
+          "00": "Christie",
+          "7": "Powell",
+          "5": "Russell",
+          "13": "Marshall",
+          "1": "Hardy",
+          "30": "Cisse",
+          "10": "Williams",
+          "16": "Martin"
+        }
+      },
+      "dnp": {
+        "HOU": {
+          "32": "Green",
+          "00": "Harris",
+          "10": "Smith Jr.",
+          "27": "Crawford",
+          "4": "Davison",
+          "2": "Finney-Smith",
+          "5": "VanVleet"
+        },
+        "DAL": {
+          "9": "Nembhard",
+          "3": "Davis",
+          "0": "Exum",
+          "11": "Irving",
+          "14": "Kelly",
+          "2": "Lively II"
+        }
+      },
+      "source": "official boxscore",
+      "on_court": {
+        "DAL": [
+          "00",
+          "21",
+          "25",
+          "31",
+          "32"
+        ],
+        "HOU": [
+          "1",
+          "17",
+          "20",
+          "28",
+          "7"
+        ]
+      }
+    },
+    "0022500356": {
+      "active": {
+        "DAL": {
+          "32": "Flagg",
+          "25": "Washington",
+          "3": "Davis",
+          "13": "Marshall",
+          "9": "Nembhard",
+          "00": "Christie",
+          "7": "Powell",
+          "10": "Williams",
+          "5": "Russell",
+          "1": "Hardy",
+          "16": "Martin",
+          "30": "Cisse"
+        },
+        "HOU": {
+          "7": "Durant",
+          "10": "Smith Jr.",
+          "30": "Capela",
+          "20": "Okogie",
+          "1": "Thompson",
+          "0": "Holiday",
+          "15": "Sheppard",
+          "8": "Tate",
+          "32": "Green",
+          "4": "Davison",
+          "27": "Crawford"
+        }
+      },
+      "dnp": {
+        "DAL": {
+          "0": "Exum",
+          "21": "Gafford",
+          "11": "Irving",
+          "14": "Kelly",
+          "2": "Lively II",
+          "31": "Thompson"
+        },
+        "HOU": {
+          "21": "Smith",
+          "12": "Adams",
+          "17": "Eason",
+          "2": "Finney-Smith",
+          "28": "Sengun",
+          "5": "VanVleet"
+        }
+      },
+      "source": "official boxscore",
+      "on_court": {
+        "DAL": [
+          "00",
+          "10",
+          "25",
+          "3",
+          "32"
+        ],
+        "HOU": [
+          "0",
+          "1",
+          "10",
+          "4",
+          "7"
+        ]
+      }
+    },
+    "0022500491": {
+      "active": {
+        "DAL": {
+          "25": "Washington",
+          "3": "Davis",
+          "21": "Gafford",
+          "00": "Christie",
+          "32": "Flagg",
+          "13": "Marshall",
+          "10": "Williams",
+          "31": "Thompson",
+          "9": "Nembhard",
+          "16": "Martin"
+        },
+        "HOU": {
+          "7": "Durant",
+          "10": "Smith Jr.",
+          "28": "Sengun",
+          "17": "Eason",
+          "1": "Thompson",
+          "30": "Capela",
+          "15": "Sheppard",
+          "2": "Finney-Smith",
+          "0": "Holiday",
+          "8": "Tate",
+          "20": "Okogie"
+        }
+      },
+      "dnp": {
+        "DAL": {
+          "1": "Hardy",
+          "7": "Powell",
+          "5": "Russell",
+          "30": "Cisse",
+          "0": "Exum",
+          "11": "Irving",
+          "14": "Kelly",
+          "2": "Lively II"
+        },
+        "HOU": {
+          "4": "Davison",
+          "32": "Green",
+          "12": "Adams",
+          "27": "Crawford",
+          "13": "Newton",
+          "5": "VanVleet"
+        }
+      },
+      "source": "official boxscore",
+      "on_court": {
+        "DAL": [
+          "00",
+          "13",
+          "21",
+          "32",
+          "9"
+        ],
+        "HOU": [
+          "0",
+          "10",
+          "17",
+          "20",
+          "8"
         ]
       }
     }

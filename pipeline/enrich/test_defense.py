@@ -9,6 +9,7 @@ from .official import load_game
 
 FLAGG = 1642843
 THOMPSON = 1641708
+EASON = 1631106
 
 
 class DefenseTest(unittest.TestCase):
@@ -59,6 +60,17 @@ class DefenseTest(unittest.TestCase):
                                         "guard_seconds": 0.4}})
         self.assertEqual(ev["official"]["defender"]["status"], "short_guard")
         self.assertNotIn("name", ev["official"]["defender"])
+
+    def test_stars_drop_half_per_rank(self):
+        self.assertEqual([defense.stars(n) for n in (1, 2, 5, 9, 12)], [5.0, 4.5, 3.0, 1.0, 0.5])
+
+    def test_team_rank_lower_def_rating_is_better(self):
+        ranks = defense._team_rank()
+        self.assertEqual(ranks[FLAGG]["pts"]["rank"], 1)
+        season = defense._season()
+        hou = [r["def_rating"] for pid, r in ranks.items() if "def_rating" in r and season[pid]["team"] == "HOU"]
+        best = min(hou, key=lambda r: r["rank"])
+        self.assertEqual(best["value"], min(r["value"] for r in hou))
 
 
 if __name__ == "__main__":

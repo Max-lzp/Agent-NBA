@@ -490,7 +490,8 @@ def lead_pair(model, reader, video: Path, release_t: float, shooter_box: list[fl
         "status": "ok", "window_s": [round(times[0], 3), round(times[-1], 3)], "fps": round(fps, 1),
         "catch_t": round(catch, 3),
         "shooter": {"seconds": round(len(shooter) / fps, 2), "from_t": times[span[0]],
-                    "hold_seconds": round(held / fps, 2), "color": mine, "team": shooter_team, **shooter_read},
+                    "hold_seconds": round(held / fps, 2), "color": mine, "team": shooter_team, **shooter_read,
+                    "path": _path(shooter, times)},
     }
     if not near:
         result["defender"] = {"status": "none_close", "team": defender_team}
@@ -502,6 +503,8 @@ def lead_pair(model, reader, video: Path, release_t: float, shooter_box: list[fl
     read = _read_number(reader, _crops(video, t0, release_t, LEAD_STEP, _thin(picks, OCR_CROPS)), court(defender_team))
     others = sorted((len(v) / fps for k, v in near.items() if k != lead_id), reverse=True)
     last = len(rows) - 1
+    end = max(lead)
+    lead = {**lead, **_chain(rows, end, lead[end], last, rival, {})} if end < last else lead
     result["defender"] = {
         "status": "ok" if guard_s >= MIN_GUARD_S else "short",
         "team": defender_team, "color": rival,
@@ -509,8 +512,14 @@ def lead_pair(model, reader, video: Path, release_t: float, shooter_box: list[fl
         "guard_from_t": times[min(near[lead_id])], "guard_to_t": times[max(near[lead_id])],
         "box_at_release": lead.get(last) or next((lead[k] for k in range(last, last - int(0.3 * fps) - 1, -1) if k in lead), None),
         **read,
+        "path": _path(lead, times),
     }
     return result, debug
+
+
+def _path(boxes: dict[int, list[float]], times: list[float]) -> list[list]:
+    """[[t, x1, y1, x2, y2], ...]，给成片和网页沿路标人名。"""
+    return [[times[i], *(round(v, 1) for v in boxes[i])] for i in sorted(boxes)]
 
 
 def _thin(picks: dict[int, list[float]], limit: int) -> dict[int, list[float]]:

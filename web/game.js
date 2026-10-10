@@ -1,4 +1,82 @@
 const TEAM_COLOR = { HOU: "#CE1141", DAL: "#0064B1" };
+const TEAM_MARK = {
+  DAL: {
+    name: "独行侠",
+    jersey: "深色衣",
+    swatch: "dark",
+    logo: "https://cdn.nba.com/logos/nba/1610612742/global/L/logo.svg",
+  },
+  HOU: {
+    name: "火箭",
+    jersey: "白衣",
+    swatch: "white",
+    logo: "https://cdn.nba.com/logos/nba/1610612745/global/L/logo.svg",
+  },
+};
+const HEADSHOTS = {
+  "DAL:00": 1631108,
+  "DAL:2": 1641726,
+  "DAL:3": 203076,
+  "DAL:7": 203939,
+  "DAL:8": 1642358,
+  "DAL:9": 1642948,
+  "DAL:10": 1630314,
+  "DAL:11": 202681,
+  "DAL:13": 1630230,
+  "DAL:16": 1628997,
+  "DAL:20": 203114,
+  "DAL:21": 1629655,
+  "DAL:25": 1629023,
+  "DAL:30": 1630619,
+  "DAL:31": 202691,
+  "DAL:32": 1642843,
+  "DAL:35": 1628963,
+  "HOU:0": 1628988,
+  "HOU:1": 1641708,
+  "HOU:2": 1627827,
+  "HOU:4": 1631120,
+  "HOU:5": 1627832,
+  "HOU:7": 201142,
+  "HOU:8": 1630256,
+  "HOU:10": 1631095,
+  "HOU:12": 203500,
+  "HOU:13": 1641803,
+  "HOU:15": 1642263,
+  "HOU:17": 1631106,
+  "HOU:20": 1629006,
+  "HOU:27": 1642384,
+  "HOU:28": 1630578,
+  "HOU:30": 203991,
+  "HOU:32": 201145,
+};
+const TEAM_LINKS = {
+  DAL: {
+    ics: "schedules/dal-2026-27.ics",
+    store: "https://store.nba.com/dallas-mavericks/t-25921725+z-9808307-1099833793",
+  },
+  HOU: {
+    ics: "schedules/hou-2026-27.ics",
+    store: "https://store.nba.com/houston-rockets/t-25701720+z-9900621-3740132585",
+  },
+};
+const PLAYER_INFO = {
+  "DAL:00": { position: "后卫", stars: 0, titles: 0 },
+  "DAL:3": { position: "前锋", stars: 10, titles: 1 },
+  "DAL:13": { position: "前锋", stars: 0, titles: 0 },
+  "DAL:21": { position: "前锋/中锋", stars: 0, titles: 0 },
+  "DAL:31": { position: "后卫", stars: 5, titles: 4 },
+  "DAL:32": { position: "前锋", stars: 0, titles: 0 },
+  "HOU:1": { position: "后卫/前锋", stars: 0, titles: 0 },
+  "HOU:7": { position: "前锋", stars: 16, titles: 2 },
+  "HOU:10": { position: "前锋", stars: 0, titles: 0 },
+  "HOU:17": { position: "前锋", stars: 0, titles: 0 },
+  "HOU:28": { position: "中锋", stars: 2, titles: 0 },
+  "HOU:30": { position: "中锋", stars: 0, titles: 0 },
+};
+const WATCH_LINKS = {
+  league: "https://www.nba.com/league-pass-purchase",
+  tencent: "https://v.qq.com/channel/nba",
+};
 const PX = 4.4;
 const BASKET_Y = 5.25;
 
@@ -10,12 +88,6 @@ const els = {
   court: document.querySelector("#court"),
   detail: document.querySelector("#detail"),
   events: document.querySelector("#events"),
-  fill: document.querySelector("#fill"),
-  ticks: document.querySelector("#ticks"),
-  scrub: document.querySelector("#scrub"),
-  clock: document.querySelector("#clock"),
-  pause: document.querySelector("#pause"),
-  pauseIcon: document.querySelector("#pause-icon"),
   switcher: document.querySelector("#clip-switch"),
   foot: document.querySelector("#foot-note"),
 };
@@ -34,6 +106,7 @@ const state = {
   layers: { resident: true, event: true, expand: true },
   freeze: null,
   replayed: new Set(),
+  watch: params.get("watch") === "date" ? "date" : "commentary",
 };
 
 init();
@@ -53,11 +126,26 @@ function init() {
     state.active = Math.max(0, state.events.length - 1);
     render();
   });
-  els.reel.addEventListener("seeked", () => render());
+  els.reel.addEventListener("play", () => {
+    if (state.freeze) return;
+    state.paused = false;
+    state.layers.expand = false;
+    render();
+  });
+  els.reel.addEventListener("pause", () => {
+    if (state.freeze) return;
+    state.paused = true;
+    state.layers.expand = true;
+    render();
+  });
+  els.reel.addEventListener("seeked", () => {
+    if (state.freeze) return;
+    rearmFreeze(els.reel.currentTime);
+    state.active = nearestEventIndex(els.reel.currentTime);
+    render();
+  });
   window.addEventListener("resize", resizeCanvas);
-  els.scrub.addEventListener("click", onScrub);
-  els.pause.addEventListener("click", () => { pause(!state.paused); render(); });
-  els.events.addEventListener("click", (event) => {
+  if (els.events) els.events.addEventListener("click", (event) => {
     const button = event.target.closest(".event");
     if (!button) return;
     seekEvent(Number(button.dataset.index));
@@ -75,6 +163,15 @@ function init() {
   });
   const closePost = document.querySelector("#ks-close");
   if (closePost && postForm) closePost.addEventListener("click", () => { postForm.hidden = true; });
+  const watchSwitch = document.querySelector("#watch-switch");
+  if (watchSwitch) {
+    watchSwitch.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-watch]");
+      if (!button) return;
+      setWatch(button.dataset.watch);
+    });
+  }
+  syncWatch();
   document.querySelectorAll(".layer").forEach((button) => {
     button.addEventListener("click", () => {
       const key = button.dataset.layer;
@@ -122,7 +219,8 @@ function renderSwitcher() {
   els.switcher.innerHTML = names.map((name) => {
     const on = name === clipName ? " on" : "";
     const label = `${clips[name].dataset ? clips[name].dataset + " · " : ""}${clips[name].title || name}`;
-    return `<a class="clip${on}" href="game.html?clip=${encodeURIComponent(name)}">${label}</a>`;
+    const watch = state.watch === "date" ? "&watch=date" : "";
+    return `<a class="clip${on}" href="game.html?clip=${encodeURIComponent(name)}${watch}">${label}</a>`;
   }).join("");
 }
 
@@ -231,16 +329,6 @@ function seekEvent(index) {
   render();
 }
 
-function onScrub(event) {
-  const rect = els.scrub.getBoundingClientRect();
-  const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
-  els.reel.currentTime = ratio * state.clipDuration;
-  state.active = nearestEventIndex(els.reel.currentTime);
-  pause(true);
-  rearmFreeze(els.reel.currentTime);
-  render();
-}
-
 function onTimeUpdate() {
   drawNames();
   if (state.paused || state.freeze || maybeFreeze()) return;
@@ -263,19 +351,14 @@ function scoreAt(t) {
 }
 
 function render() {
-  const t = Number.isFinite(els.reel.currentTime) ? els.reel.currentTime : 0;
-  els.fill.style.width = `${Math.min(100, (t / state.clipDuration) * 100)}%`;
-  const bug = scoreAt(t);
-  els.clock.textContent = bug ? `${bug.period} ${bug.clock}` : format(t);
-  els.pauseIcon.innerHTML = state.paused
-    ? '<rect x="1" y="0" width="3.2" height="14" fill="#14110E"/><rect x="7.6" y="0" width="3.2" height="14" fill="#14110E"/>'
-    : '<path d="M2 0 L12 7 L2 14 Z" fill="#14110E"/>';
   els.names.classList.toggle("hidden", !state.layers.resident);
   renderFloor();
-  els.events.innerHTML = state.events.map((item, index) => {
-    const on = index === state.active ? " on" : "";
-    return `<button class="event${on}" type="button" data-index="${index}"><span class="t">${item.timecode || "--:--"}</span><span class="l">${item.label}</span></button>`;
-  }).join("");
+  if (els.events) {
+    els.events.innerHTML = state.events.map((item, index) => {
+      const on = index === state.active ? " on" : "";
+      return `<button class="event${on}" type="button" data-index="${index}"><span class="t">${item.timecode || "--:--"}</span><span class="l">${item.label}</span></button>`;
+    }).join("");
+  }
   document.querySelectorAll(".layer").forEach((button) => {
     button.classList.toggle("on", state.layers[button.dataset.layer]);
   });
@@ -385,6 +468,26 @@ function seasonProfileHtml(shot) {
   return lines.map((line) => `<p>${line}</p>`).join("");
 }
 
+function setWatch(next) {
+  if (next !== "commentary" && next !== "date") return;
+  state.watch = next;
+  const url = new URL(location.href);
+  if (next === "date") url.searchParams.set("watch", "date");
+  else url.searchParams.delete("watch");
+  history.replaceState(null, "", url);
+  syncWatch();
+  renderSwitcher();
+  const box = document.querySelector("#floor");
+  if (box) delete box.dataset.signature;
+  renderFloor();
+}
+
+function syncWatch() {
+  document.querySelectorAll("[data-watch]").forEach((button) => {
+    button.classList.toggle("on", button.dataset.watch === state.watch);
+  });
+}
+
 function renderFloor() {
   const box = document.querySelector("#floor");
   if (!box) return;
@@ -392,47 +495,90 @@ function renderFloor() {
   const teams = Object.keys(court);
   if (!teams.length) {
     box.hidden = true;
+    delete box.dataset.signature;
     return;
   }
-  const t = Number.isFinite(els.reel.currentTime) ? els.reel.currentTime : 0;
-  const offense = offenseTeam(t) || teams[0];
-  const defense = teams.find((team) => team !== offense) || "";
+  const home = state.pack.home || teams[0];
+  const away = state.pack.away || teams.find((team) => team !== home) || "";
+  const signature = [
+    state.watch,
+    home,
+    away,
+    (court[home] || []).map((player) => player.jersey).join(","),
+    (court[away] || []).map((player) => player.jersey).join(","),
+  ].join("|");
+  if (box.dataset.signature === signature) return;
+  box.dataset.signature = signature;
   box.hidden = false;
-  fillSide(document.querySelector("#floor-offense"), "进攻", offense, court[offense] || []);
-  fillSide(document.querySelector("#floor-defense"), "防守", defense, court[defense] || []);
-}
-
-function offenseTeam(t) {
-  const rows = state.pack?.possessions || [];
-  if (!rows.length) return "";
-  let found = "";
-  rows.forEach((row) => {
-    const start = Number(row.t0);
-    const end = Number(row.t1);
-    if (t + 1e-4 >= start && t <= end + 1e-4) {
-      const onSharedBoundary = found && Math.abs(t - start) < 1e-3;
-      found = onSharedBoundary ? found : (row.team || "");
-    }
-  });
-  if (found) return found;
-  const last = rows[rows.length - 1];
-  return t >= Number(last.t0) ? (last.team || "") : (rows[0].team || "");
+  box.classList.toggle("date", state.watch === "date");
+  fillSide(document.querySelector("#floor-home"), "主队", home, court[home] || []);
+  fillSide(document.querySelector("#floor-away"), "客队", away, court[away] || []);
 }
 
 function teamName(team) {
-  return team === "HOU" ? "火箭" : team === "DAL" ? "独行侠" : (team || "");
+  return TEAM_MARK[team]?.name || team || "";
 }
 
 function fillSide(node, role, team, players) {
   if (!node) return;
   const color = TEAM_COLOR[team] || "#F3EDE2";
+  const mark = TEAM_MARK[team] || {};
+  const dating = state.watch === "date";
   const list = players.map((player) => {
     const en = player.full || player.name || "";
     const zh = player.name && player.name !== en ? player.name : "";
-    const pos = player.position || "";
-    return `<li><b>#${player.jersey}</b><span class="who"><strong>${en}</strong>${zh ? `<em>${zh}</em>` : ""}</span><i>${pos}</i></li>`;
+    const info = PLAYER_INFO[`${team}:${player.jersey}`] || {};
+    const pos = info.position || player.position || "";
+    const honors = info.stars == null ? "" : `<span class="honors">🌟 * ${info.stars}，🏆 * ${info.titles}</span>`;
+    const face = dating ? faceHtml(team, player.jersey, en || zh) : "";
+    return `<li>${face}<b>#${escapeHtml(player.jersey)}</b><span class="who"><strong>${escapeHtml(en)}</strong>${zh ? `<em>${escapeHtml(zh)}</em>` : ""}${honors}</span><i>${escapeHtml(pos)}</i></li>`;
   }).join("");
-  node.innerHTML = `<p style="color:${color}">${role} · ${teamName(team)}</p><ul>${list}</ul>`;
+  const logo = mark.logo
+    ? `<img class="team-logo" alt="" src="${mark.logo}" width="28" height="28" referrerpolicy="no-referrer">`
+    : "";
+  const jersey = mark.jersey
+    ? `<i class="jersey-swatch ${mark.swatch}" title="${escapeHtml(mark.jersey)}"></i>`
+    : "";
+  const jerseyText = mark.jersey ? `<em class="jersey-name">${escapeHtml(mark.jersey)}</em>` : "";
+  node.innerHTML = `<header class="floor-head">${logo}<p style="color:${color}">${jersey}${role} · ${teamName(team)}${jerseyText}</p>${dating ? followHtml(team) : ""}</header><ul>${list}</ul>${dating ? companionHtml(team) : ""}`;
+}
+
+function followHtml(team) {
+  const links = TEAM_LINKS[team];
+  if (!links) return "";
+  return `<span class="floor-actions"><a class="companion-add" href="${links.ics}">关注本队未来赛程</a></span>`;
+}
+
+function faceHtml(team, jersey, name) {
+  const id = HEADSHOTS[`${team}:${jersey}`];
+  if (!id) return `<span class="face-frame missing" aria-hidden="true"></span>`;
+  const src = `headshots/${team.toLowerCase()}/${id}.png`;
+  return `<span class="face-frame"><img alt="${escapeHtml(name)} 头部特写" src="${src}" referrerpolicy="no-referrer" onerror="this.parentElement.classList.add('missing');this.remove()"></span>`;
+}
+
+function companionHtml(team) {
+  const links = TEAM_LINKS[team];
+  if (!links) return "";
+  return `<div class="companion">
+    <p class="companion-label">线上观看比赛订阅</p>
+    <div class="companion-row">
+      <a href="${WATCH_LINKS.league}" target="_blank" rel="noopener noreferrer">NBA League Pass</a>
+      <a href="${WATCH_LINKS.tencent}" target="_blank" rel="noopener noreferrer">腾讯视频</a>
+    </div>
+    <div class="companion-row">
+      <a href="${links.store}" target="_blank" rel="noopener noreferrer">浏览球队周边</a>
+    </div>
+  </div>`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[ch]));
 }
 
 function drawCourt() {
@@ -481,6 +627,7 @@ function drawCourt() {
 }
 
 function renderTicks() {
+  if (!els.ticks) return;
   els.ticks.innerHTML = state.events.map((item) => {
     const pos = Math.min(100, Math.max(0, (item.t / state.clipDuration) * 100));
     return `<i style="left:${pos}%"></i>`;
@@ -490,6 +637,12 @@ function renderTicks() {
 function format(total) {
   const seconds = Math.max(0, Math.round(total));
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function frameLabel() {
+  const t = Number.isFinite(els.reel.currentTime) ? els.reel.currentTime : 0;
+  const bug = scoreAt(t);
+  return bug ? `${bug.period} ${bug.clock}` : format(t);
 }
 
 async function pollJob() {
@@ -596,7 +749,7 @@ function openShare(key) {
     status.textContent = "这一帧没能存成图片。";
     return;
   }
-  const clock = els.clock.textContent || "frame";
+  const clock = frameLabel();
   downloadDataUrl(dataUrl, `deepcourt-${key}-${clock.replace(/:/g, "-")}.jpg`);
   cover.src = dataUrl;
   cover.alt = `${target.name} 当前帧 ${clock}`;
@@ -635,7 +788,7 @@ function downloadDataUrl(url, name) {
 }
 
 function testCaption() {
-  const clock = els.clock.textContent || "00:00";
+  const clock = frameLabel();
   const title = state.pack && state.pack.title ? state.pack.title : "当前回放";
   return `【测试文案】DEEP COURT\n${title}\n画面停在 ${clock}。封面用的是这一帧，正式文案下一步再生成。\n#NBA #DEEPCOURT`;
 }

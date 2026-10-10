@@ -1,13 +1,13 @@
 #!/bin/sh
 # 生成评委成片，并部署到 CloudFront。
-# 提交链接是 CloudFront 根路径，打开的是回放页，不是上传页。协作台在 /hub.html。
-# GPU 配额为 0，所以关掉 Batch。Polly 若仍拒绝，解说留在已经混好的本地成片里，所以关掉 P2。
+# 提交链接是 CloudFront 根路径，打开的是回放页，不是上传页。发布台在 /hub.html。
+# 追踪用 c7i.48xlarge，P1 留在栈里。Polly 若仍拒绝，解说留在已经混好的本地成片里，所以关掉 P2。
 # 可部署账号是 Workshop 参赛账号（profile nba → 382918437747）。SSO team04 目前不能建栈。
 set -eu
 cd "$(dirname "$0")/.."
 python3 -m pipeline.present --all
 echo "本地回放：web/game.html"
-echo "协作台：web/hub.html"
+echo "发布台：web/hub.html"
 echo "成片：web/assets/*-broadcast.mp4"
 
 PROFILE=nba
@@ -19,5 +19,5 @@ ACCOUNT=$(aws sts get-caller-identity --profile "$PROFILE" --region us-east-1 --
 export CDK_DEFAULT_ACCOUNT="$ACCOUNT"
 export CDK_DEFAULT_REGION=us-east-1
 cd cdk
-npx cdk deploy Team04DeepCourt -c enableP1=false -c enableP2=false --profile "$PROFILE" --require-approval never
-echo "提交门户时填栈输出 CloudFrontUrl（根路径=回放页）。全队协作台：同一域名 /hub.html。/readme 是作品说明。"
+npx cdk deploy Team04DeepCourt -c enableP2=false --profile "$PROFILE" --require-approval never
+echo "提交门户时填栈输出 CloudFrontUrl（根路径=回放页）。发布台：同一域名 /hub.html。/readme 是作品说明。"

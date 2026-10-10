@@ -56,7 +56,7 @@ URL 模式不经过 S3：create_job 只把任务标成 TRACKING，等本地追�
 | 服务 | 代码位置 | 为什么是它 |
 | --- | --- | --- |
 | ECR | `TrackerRepo` `deepcourt-tracker` | 跟踪镜像的仓库。镜像定义在 `inference/`，推送要等账号恢复。 |
-| Batch + EC2 + EBS | `GpuCompute` g4dn.xlarge，启动模板 gp3 100GB，队列 `deepcourt-track` | 整段视频的 GPU 跟踪。空闲 vCPU 为 0。`submit_track` 单独提交作业。 |
+| Batch + EC2 + EBS | `GpuCompute` c7i.48xlarge，启动模板 gp3 1000GB，队列 `deepcourt-track` | G/VT 配额为 0，跟踪改用标准配额里最大的 CPU 实例（192 vCPU，环境上限 256）。空闲 vCPU 为 0。`submit_track` 单独提交作业。 |
 | Textract | `lambdas/ocr_scoreboard` | 读记分牌帧上的比分、节次、时钟。解析失败置信度记 0。 |
 | MediaConvert | 模板 `deepcourt-render-template` | 把 PNG 叠加层合成 1080p MP4，写到 `rendered/`。 |
 | CloudWatch | 仪表盘 `deepcourt-overview`，两条告警 | 看分析吞吐、延迟、Bedrock 限流。告警先不接通知。 |

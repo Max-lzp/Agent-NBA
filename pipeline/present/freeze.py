@@ -76,8 +76,23 @@ def _pct(v, digits: int = 1) -> str:
     return f"{float(v) * 100:.{digits}f}%"
 
 
-def card_lines(pack: dict, shot: dict) -> list[tuple[str, str]]:
-    """(样式, 文字)。样式 head / score / off / def / line。"""
+OFF_RANKS = (("pts", "场均得分", "{:.1f}"), ("fg_pct", "投篮命中率", "pct"), ("ts_pct", "真实命中率", "pct"))
+DEF_RANKS = (("stl", "场均抢断", "{:.1f}"), ("blk", "场均盖帽", "{:.1f}"), ("dreb", "场均防守篮板", "{:.1f}"),
+             ("def_rating", "防守效率", "{:.1f}"))
+
+
+def rank_rows(ranks: dict | None, spec) -> list[tuple]:
+    out = []
+    for key, label, fmt in spec:
+        r = (ranks or {}).get(key)
+        if r:
+            value = _pct(r["value"]) if fmt == "pct" else fmt.format(r["value"])
+            out.append(("rank", f"{label} {value} · 队内第 {r['rank']}/{r['of']}", r["stars"]))
+    return out
+
+
+def card_lines(pack: dict, shot: dict) -> list[tuple]:
+    """(样式, 文字[, 星级])。样式 head / score / off / def / line / rank。"""
     lines: list[tuple[str, str]] = [("head", "回放 · 出手瞬间")]
     bug = _bug_at(pack, float(shot["release"]["t"]))
     if bug:
@@ -86,7 +101,9 @@ def card_lines(pack: dict, shot: dict) -> list[tuple[str, str]]:
         lines.append(("score", f"{bug['period']} {bug['clock']} · {bug['awayName']} {bug['awayScore']} : {bug['homeScore']} {bug['homeName']} · {gap}"))
     lines.append(("off", f"{shot['name']} #{shot.get('number') or ''}（{shooter_source(shot)}）"))
     season = shot.get("season")
-    if season:
+    ranked = rank_rows(shot.get("shooterRank"), OFF_RANKS)
+    lines.extend(ranked)
+    if season and not ranked:
         lines.append(("line", f"赛季场均 {season['pts']} 分 · 投篮 {_pct(season['fg_pct'])} · 三分 {_pct(season['fg3_pct'])}"))
     if shot.get("xfg") is not None:
         where = " · ".join(b for b in (shot.get("zone"), f"{float(shot['distance']):.0f} 英尺" if shot.get("distance") else "") if b)
@@ -110,9 +127,38 @@ def card_lines(pack: dict, shot: dict) -> list[tuple[str, str]]:
         if vs:
             lines.append(("line", f"本场对位 {round(vs['seconds'] / 60)} 分钟，{shot['name']} {vs['fgm']}/{vs['fga']}、得 {vs['points']} 分"))
         ds = d.get("season")
-        if ds:
+        ranked = rank_rows(d.get("team_rank"), DEF_RANKS)
+        lines.extend(ranked)
+        if ds and not ranked:
             lines.append(("line", f"赛季场均 抢断 {ds['stl']} · 盖帽 {ds['blk']} · 防守篮板 {ds['dreb']}"))
     return lines
+
+
+def _star_points(cx: float, cy: float, r: float) -> list[tuple[float, float]]:
+    pts = []
+    for k in range(10):
+        a = -math.pi / 2 + k * math.pi / 5
+        rr = r if k % 2 == 0 else r * 0.45
+        pts.append((cx + rr * math.cos(a), cy + rr * math.sin(a)))
+    return pts
+
+
+def _stars(draw, x: float, y: float, size: float, rating: float) -> None:
+    """五颗星，金色填到 rating（半星画左半边）。"""
+    from PIL import Image, ImageDraw
+
+    for k in range(5):
+        cx, cy, r = x + k * (size + 2) + size / 2, y + size / 2, size / 2
+        draw.polygon(_star_points(cx, cy, r), fill=(88, 80, 70, 255))
+        fill = min(max(rating - k, 0.0), 1.0)
+        if fill <= 0:
+            continue
+        w = int(size) + 2
+        star = Image.new("L", (w, w), 0)
+        ImageDraw.Draw(star).polygon(_star_points(w / 2, w / 2, r), fill=255)
+        if fill < 1:
+            star.paste(0, (int(w * fill), 0, w, w))
+        draw._image.paste(Image.new("RGBA", (w, w), GOLD), (int(cx - w / 2), int(cy - w / 2)), star)
 
 
 def shooter_source(shot: dict) -> str:
@@ -140,13 +186,33 @@ def _ellipse(draw, box, scale, color, fill=None, dashed=False):
     return cx, cy
 
 
-def _tag(draw, font, text, cx, top, color):
-    box = draw.textbbox((0, 0), text, font=font)
-    w, h = box[2] - box[0] + 16, box[3] - box[1] + 10
-    x, y = cx - w / 2, max(4, top - h - 6)
-    draw.rectangle((x, y, x + w, y + h), fill=PANEL)
-    draw.rectangle((x, y, x + 4, y + h), fill=color)
-    draw.text((x + 9, y + 4 - box[1]), text, font=font, fill=CREAM)
+
+
+def _cover(a: list[float], b: list[float]) -> float:
+    """a 有多大比例被 b 盖住。"""
+    w = min(a[2], b[2]) - max(a[0], b[0])
+    h = min(a[3], b[3]) - max(a[1], b[1])
+    return max(w, 0) * max(h, 0) / max(1e-6, (a[2] - a[0]) * (a[3] - a[1]))
+
+
+def card_on_right(shooter: list[float], lead: list[float] | None, side: str | None, tag_w: float,
+                  scale: float, card_w: float, width: float = OUT_W) -> bool:
+    """卡片默认放投篮人对面；挡住领防人的标签就换边，换过去不挡投篮人和领防人才换。"""
+    def span(right: bool):
+        return (width - card_w - 24, width - 24) if right else (24, 24 + card_w)
+
+    def blocks(right: bool) -> bool:
+        lo, hi = span(right)
+        boxes = [shooter] + ([lead] if lead else [])
+        if any(b[0] * scale < hi and lo < b[2] * scale for b in boxes):
+            return True
+        if lead and side:
+            x = lead[2] * scale + 6 if side == "right" else lead[0] * scale - tag_w - 6
+            return x < hi and lo < x + tag_w
+        return False
+
+    first = (shooter[0] + shooter[2]) / 2 * scale < width / 2
+    return first if not blocks(first) or blocks(not first) else not first
 
 
 def _heat_fill(zone: dict | None):
@@ -193,7 +259,7 @@ def heatmap(Image, ImageDraw, font, shot: dict, px: float = 5.0):
     return img
 
 
-def draw_still(frame: Path, dest: Path, pack: dict, shot: dict, font_path: Path) -> Path:
+def draw_still(frame: Path, dest: Path, pack: dict, shot: dict, font_path: Path, others=()) -> Path:
     from PIL import Image, ImageDraw, ImageFont
 
     base = Image.open(frame).convert("RGBA").resize((OUT_W, OUT_H))
@@ -205,31 +271,38 @@ def draw_still(frame: Path, dest: Path, pack: dict, shot: dict, font_path: Path)
     tiny = ImageFont.truetype(str(font_path), 13)
     scale = OUT_W / float(pack.get("width") or OUT_W)
 
-    lead = shot.get("leadBox")
-    if lead:
-        cx, _ = _ellipse(draw, lead, scale, GOLD, dashed=True)
-        d = shot.get("defender") or {}
-        label = f"领防 · {d.get('display') or d.get('name')} #{d.get('number')}" if d.get("name") else "领防"
-        _tag(draw, small, label, cx, lead[1] * scale, GOLD)
-    box = shot["release"]["shooter_box"]
-    cx, _ = _ellipse(draw, box, scale, RED, fill=(255, 43, 43, 80))
-    _tag(draw, small, f"出手 · {shot['name']}", cx, box[1] * scale, RED)
+    from pipeline.present.build import draw_names
 
-    right = (box[0] + box[2]) / 2 * scale < OUT_W / 2
+    box = shot["release"]["shooter_box"]
     card_w = 470
-    x0 = OUT_W - card_w - 24 if right else 24
+    lead = shot.get("leadBox")
+    d = shot.get("defender") or {}
+    label = f"领防 · {d.get('display') or d.get('name')} #{d.get('number')}" if d.get("name") else "领防"
+    side = ("right" if lead[0] + lead[2] >= box[0] + box[2] else "left") if lead else None
+    lead_w = draw.textlength(label, font=small) + 22 if lead else 0
+    right = card_on_right(box, lead, side, lead_w, scale, card_w)
+    card_x = OUT_W - card_w - 24 if right else 24
+    tags = [(f"出手 · {shot['name']}", box, RED, None)]
+    if lead:
+        _ellipse(draw, lead, scale, GOLD, dashed=True)
+        tags.append((label, lead, GOLD, side))
+    tags.extend(t for t in others if not any(_cover(t[1], b) > 0.2 for b in (box, lead) if b))
+    _ellipse(draw, box, scale, RED, fill=(255, 43, 43, 80))
+    draw_names(draw, small, tags, scale, placed=[(card_x, 0, card_x + card_w, OUT_H)], width=OUT_W)
+
+    x0 = card_x
     y = 78
     rows = []
-    for style, text in card_lines(pack, shot):
+    for style, text, *extra in card_lines(pack, shot):
         font = {"head": big, "score": mid, "off": mid, "def": mid}.get(style, small)
         height = draw.textbbox((0, 0), text, font=font)[3] + (12 if style in ("off", "def") else 7)
-        rows.append((style, text, font, height))
+        rows.append((style, text, font, height, extra[0] if extra else None))
     card_h = sum(r[3] for r in rows) + 24
     draw.rectangle((x0, y, x0 + card_w, y + card_h), fill=PANEL)
     edge = x0 + card_w - 5 if right else x0
     draw.rectangle((edge, y, edge + 5, y + card_h), fill=RED)
     ty = y + 12
-    for style, text, font, height in rows:
+    for style, text, font, height, rating in rows:
         tx = x0 + 18
         if style in ("off", "def"):
             ty += 5
@@ -238,6 +311,8 @@ def draw_still(frame: Path, dest: Path, pack: dict, shot: dict, font_path: Path)
             tx += 18
         color = RED if style == "head" else CREAM if style in ("score", "off", "def") else MUTED
         draw.text((tx, ty), text, font=font, fill=color)
+        if rating is not None:
+            _stars(draw, x0 + card_w - 22 - 5 * 18, ty + 1, 16, rating)
         ty += height
 
     if shot.get("zoneChart"):
@@ -266,7 +341,9 @@ def draw_still(frame: Path, dest: Path, pack: dict, shot: dict, font_path: Path)
     return dest
 
 
-def render_replay(clip: str, pack: dict, bed: Path, voice_pad: Path, dest: Path, work: Path, font_path: Path) -> Path | None:
+def render_replay(clip: str, pack: dict, bed: Path, voice_pad: Path, dest: Path, work: Path, font_path: Path,
+                  source: Path | None = None, others=()) -> Path | None:
+    """定格帧从没烧字的原视频截（source），others 是这一刻除投篮人、领防人以外的人名标签。"""
     shot = pick(pack)
     if not shot:
         return None
@@ -275,10 +352,10 @@ def render_replay(clip: str, pack: dict, bed: Path, voice_pad: Path, dest: Path,
     goal = goal_time(pack, shot)
     frame = work / f"{clip}-release.png"
     subprocess.run([
-        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-ss", f"{release:.3f}", "-i", str(bed),
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-ss", f"{release:.3f}", "-i", str(source or bed),
         "-frames:v", "1", str(frame),
     ], check=True)
-    still = draw_still(frame, work / f"{clip}-freeze.png", pack, shot, font_path)
+    still = draw_still(frame, work / f"{clip}-freeze.png", pack, shot, font_path, others)
     total = float(pack.get("duration") or 0) + FREEZE_S
     graph = (
         f"[0:v]trim=0:{goal:.3f},setpts=PTS-STARTPTS[a];"
