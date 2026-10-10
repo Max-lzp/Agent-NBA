@@ -1,61 +1,112 @@
-"""Deep Court 编排 Agent，由 Bedrock AgentCore Runtime 托管。
+"""Deep Court 分析师。由 Bedrock AgentCore Runtime 托管。
 
-事件来自本地 CV 管线产出的结构化清单（pipeline/events，schema 0.1），
-Agent 只负责取回、校验并交还，不让任何模型看图生成事件。
+入口只用标准库，先在 8080 响应 /ping。boto3 留到第一次真正调用再导入。
+上次初始化在 30 秒内失败，是因为代码包没带上 bedrock-agentcore，进程导入即崩，
+平台把这个错误报成 Runtime initialization time exceeded。
 """
 
 from __future__ import annotations
 
 import json
 import os
+import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-import boto3
-from bedrock_agentcore.runtime import BedrockAgentCoreApp
+from converse_loop import answer, pipeline
+from tools import Ctx, Media
 
-app = BedrockAgentCoreApp()
 REGION = os.environ.get("AWS_REGION", "us-east-1")
-SCHEMA_VERSION = "0.1"
-TEAMS = {"HOU", "DAL"}
+RUNTIME = "bedrock-agentcore"
 
 
-@app.entrypoint
-def invoke(payload, context=None):
+def parse_payload(payload) -> dict:
     if isinstance(payload, (bytes, bytearray)):
         payload = payload.decode("utf-8")
     if isinstance(payload, str):
+        if not payload.strip():
+            return {}
         payload = json.loads(payload)
     if not isinstance(payload, dict):
-        payload = {}
-    bucket, key = payload.get("bucket") or "", payload.get("key") or ""
-    if not bucket or not key:
-        return {"ok": False, "error": "缺少 bucket/key", "runtime": "bedrock-agentcore"}
-    body = boto3.client("s3", region_name=REGION).get_object(Bucket=bucket, Key=key)["Body"].read()
-    stream = json.loads(body)
-    problems = check(stream)
-    return {
-        "ok": not problems,
-        "error": "；".join(problems),
-        "stream": stream if not problems else None,
-        "runtime": "bedrock-agentcore",
-    }
+        return {}
+    return payload
 
 
-def check(stream) -> list[str]:
-    if not isinstance(stream, dict):
-        return ["清单不是 JSON 对象"]
-    problems = []
-    if stream.get("version") != SCHEMA_VERSION:
-        problems.append(f"version 应为 {SCHEMA_VERSION}")
-    possessions = stream.get("possessions")
-    if not isinstance(possessions, list) or not possessions:
-        return problems + ["possessions 为空"]
-    for poss in possessions:
-        if poss.get("offense_team") not in TEAMS:
-            problems.append(f"{poss.get('possession_id')} 进攻方不是 HOU/DAL")
-        if not isinstance(poss.get("events"), list):
-            problems.append(f"{poss.get('possession_id')} 缺少 events")
-    return problems
+def resolve(payload: dict) -> tuple[str, str, str]:
+    bucket = str(payload.get("bucket") or os.environ.get("MEDIA_BUCKET") or "")
+    key = str(payload.get("key") or "")
+    job_id = str(payload.get("jobId") or payload.get("job_id") or "")
+    if not job_id and key.startswith("structured/") and key.endswith(".json"):
+        job_id = key.rsplit("/", 1)[-1][: -len(".json")]
+    if not key and job_id:
+        key = f"structured/{job_id}.json"
+    return bucket, job_id, key
+
+
+def _s3():
+    import boto3
+
+    return boto3.client("s3", region_name=REGION)
+
+
+def invoke(payload, context=None, s3=None, converse=None):
+    del context
+    try:
+        data = parse_payload(payload)
+    except json.JSONDecodeError:
+        return {"ok": False, "error": "payload 不是 JSON", "runtime": RUNTIME}
+    bucket, job_id, key = resolve(data)
+    question = str(data.get("question") or "").strip()
+    if not bucket or not job_id:
+        return {"ok": False, "error": "缺少 bucket 或 jobId", "runtime": RUNTIME}
+    if any(token in job_id for token in ("/", "\\", "..")):
+        return {"ok": False, "error": "jobId 不合法", "runtime": RUNTIME}
+    ctx = Ctx(media=Media(s3 or _s3(), bucket), bucket=bucket, job_id=job_id, key=key)
+    data = dict(data)
+    data["jobId"] = job_id
+    data["bucket"] = bucket
+    data["key"] = key
+    if question:
+        data["question"] = question
+        return answer(data, ctx, converse)
+    return pipeline(data, ctx, converse)
+
+
+class Handler(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+
+    def do_GET(self):
+        if self.path.split("?", 1)[0] != "/ping":
+            self._send(404, {"error": "not found"})
+            return
+        self._send(200, {"status": "Healthy", "time_of_last_update": int(time.time())})
+
+    def do_POST(self):
+        if self.path.split("?", 1)[0] != "/invocations":
+            self._send(404, {"error": "not found"})
+            return
+        length = int(self.headers.get("Content-Length") or 0)
+        raw = self.rfile.read(length) if length else b""
+        try:
+            self._send(200, invoke(raw))
+        except Exception as exc:  # noqa: BLE001 — 运行时要收到 JSON，而不是断连接
+            self._send(500, {"ok": False, "error": str(exc)[:500], "runtime": RUNTIME})
+
+    def log_message(self, fmt, *args):
+        return
+
+    def _send(self, status: int, payload: dict) -> None:
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+
+def serve() -> None:
+    port = int(os.environ.get("PORT", "8080"))
+    ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()
 
 
 if __name__ == "__main__":
-    app.run()
+    serve()

@@ -1,0 +1,2467 @@
+{
+  "season": "2025-26",
+  "teams": [
+    "DAL",
+    "HOU"
+  ],
+  "note": "百分数已经是 0–100。null 表示没有这项数据，不是 0。出手数为 0 时命中率是 null。",
+  "players": [
+    {
+      "team": "DAL",
+      "player_id": "1642358",
+      "player_name": "AJ Johnson",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 24,
+          "fga": 54,
+          "fg_pct": 44.4
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 1,
+          "fga": 7,
+          "fg_pct": 14.3
+        },
+        "three_point": {
+          "fgm": 5,
+          "fga": 32,
+          "fg_pct": 15.6
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 20,
+          "opponent_fga": 29,
+          "opponent_fg_pct": 69.0,
+          "normal_fg_pct": 60.5,
+          "diff_pct_points": 8.4,
+          "tracking_games": 16,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 16,
+          "opponent_fga": 38,
+          "opponent_fg_pct": 42.1,
+          "normal_fg_pct": 37.0,
+          "diff_pct_points": 5.1,
+          "tracking_games": 15,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 8,
+          "opponent_fga": 22,
+          "opponent_fg_pct": 36.4,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 23,
+        "height_cm": 195.58,
+        "height_ft_in": "6-5",
+        "position": "Guard",
+        "draft_year": 2024,
+        "draft_round": 1,
+        "draft_overall_pick": 23,
+        "draft_status": "drafted",
+        "wingspan_cm": 204.47,
+        "wingspan_year": 2024
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "203076",
+      "player_name": "Anthony Davis",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 105,
+          "fga": 163,
+          "fg_pct": 64.4
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 54,
+          "fga": 134,
+          "fg_pct": 40.3
+        },
+        "three_point": {
+          "fgm": 10,
+          "fga": 37,
+          "fg_pct": 27.0
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 67,
+          "opponent_fga": 122,
+          "opponent_fg_pct": 54.9,
+          "normal_fg_pct": 64.6,
+          "diff_pct_points": -9.6,
+          "tracking_games": 20,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 41,
+          "opponent_fga": 101,
+          "opponent_fg_pct": 40.6,
+          "normal_fg_pct": 35.5,
+          "diff_pct_points": 5.1,
+          "tracking_games": 19,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 37,
+          "opponent_fga": 89,
+          "opponent_fg_pct": 41.6,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 20,
+        "height_cm": 208.28,
+        "height_ft_in": "6-10",
+        "position": "Forward-Center",
+        "draft_year": 2012,
+        "draft_round": 1,
+        "draft_overall_pick": 1,
+        "draft_status": "drafted",
+        "wingspan_cm": 227.33,
+        "wingspan_year": 2012
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1630314",
+      "player_name": "Brandon Williams",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 185,
+          "fga": 309,
+          "fg_pct": 59.9
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 70,
+          "fga": 153,
+          "fg_pct": 45.8
+        },
+        "three_point": {
+          "fgm": 36,
+          "fga": 155,
+          "fg_pct": 23.2
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 110,
+          "opponent_fga": 142,
+          "opponent_fg_pct": 77.5,
+          "normal_fg_pct": 62.2,
+          "diff_pct_points": 15.2,
+          "tracking_games": 55,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 78,
+          "opponent_fga": 233,
+          "opponent_fg_pct": 33.5,
+          "normal_fg_pct": 35.4,
+          "diff_pct_points": -1.9,
+          "tracking_games": 64,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 67,
+          "opponent_fga": 146,
+          "opponent_fg_pct": 45.9,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 66,
+        "height_cm": 185.42,
+        "height_ft_in": "6-1",
+        "position": "Guard",
+        "draft_year": null,
+        "draft_round": null,
+        "draft_overall_pick": null,
+        "draft_status": "undrafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1628997",
+      "player_name": "Caleb Martin",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 51,
+          "fga": 85,
+          "fg_pct": 60.0
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 14,
+          "fga": 47,
+          "fg_pct": 29.8
+        },
+        "three_point": {
+          "fgm": 20,
+          "fga": 57,
+          "fg_pct": 35.1
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 70,
+          "opponent_fga": 121,
+          "opponent_fg_pct": 57.9,
+          "normal_fg_pct": 63.5,
+          "diff_pct_points": -5.7,
+          "tracking_games": 45,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 38,
+          "opponent_fga": 115,
+          "opponent_fg_pct": 33.0,
+          "normal_fg_pct": 36.6,
+          "diff_pct_points": -3.6,
+          "tracking_games": 46,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 41,
+          "opponent_fga": 93,
+          "opponent_fg_pct": 44.1,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 58,
+        "height_cm": 195.58,
+        "height_ft_in": "6-5",
+        "position": "Forward",
+        "draft_year": null,
+        "draft_round": null,
+        "draft_overall_pick": null,
+        "draft_status": "undrafted",
+        "wingspan_cm": 208.28,
+        "wingspan_year": 2018
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1642843",
+      "player_name": "Cooper Flagg",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 272,
+          "fga": 447,
+          "fg_pct": 60.9
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 215,
+          "fga": 503,
+          "fg_pct": 42.7
+        },
+        "three_point": {
+          "fgm": 72,
+          "fga": 244,
+          "fg_pct": 29.5
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 214,
+          "opponent_fga": 360,
+          "opponent_fg_pct": 59.4,
+          "normal_fg_pct": 63.9,
+          "diff_pct_points": -4.5,
+          "tracking_games": 70,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 139,
+          "opponent_fga": 401,
+          "opponent_fg_pct": 34.7,
+          "normal_fg_pct": 36.1,
+          "diff_pct_points": -1.5,
+          "tracking_games": 70,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 76,
+          "opponent_fga": 181,
+          "opponent_fg_pct": 42.0,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 70,
+        "height_cm": 205.74,
+        "height_ft_in": "6-9",
+        "position": "Forward",
+        "draft_year": 2025,
+        "draft_round": 1,
+        "draft_overall_pick": 1,
+        "draft_status": "drafted",
+        "wingspan_cm": 213.36,
+        "wingspan_year": 2025
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1626156",
+      "player_name": "D'Angelo Russell",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 24,
+          "fga": 41,
+          "fg_pct": 58.5
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 37,
+          "fga": 79,
+          "fg_pct": 46.8
+        },
+        "three_point": {
+          "fgm": 33,
+          "fga": 112,
+          "fg_pct": 29.5
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 35,
+          "opponent_fga": 49,
+          "opponent_fg_pct": 71.4,
+          "normal_fg_pct": 60.7,
+          "diff_pct_points": 10.7,
+          "tracking_games": 20,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 27,
+          "opponent_fga": 91,
+          "opponent_fg_pct": 29.7,
+          "normal_fg_pct": 36.4,
+          "diff_pct_points": -6.8,
+          "tracking_games": 25,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 24,
+          "opponent_fga": 52,
+          "opponent_fg_pct": 46.2,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 26,
+        "height_cm": 190.5,
+        "height_ft_in": "6-3",
+        "position": "Guard",
+        "draft_year": 2015,
+        "draft_round": 1,
+        "draft_overall_pick": 2,
+        "draft_status": "drafted",
+        "wingspan_cm": 207.645,
+        "wingspan_year": 2015
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1629655",
+      "player_name": "Daniel Gafford",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 195,
+          "fga": 291,
+          "fg_pct": 67.0
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 12,
+          "fga": 25,
+          "fg_pct": 48.0
+        },
+        "three_point": {
+          "fgm": 0,
+          "fga": 0,
+          "fg_pct": null
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 153,
+          "opponent_fga": 288,
+          "opponent_fg_pct": 53.1,
+          "normal_fg_pct": 64.2,
+          "diff_pct_points": -11.1,
+          "tracking_games": 54,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 67,
+          "opponent_fga": 215,
+          "opponent_fg_pct": 31.2,
+          "normal_fg_pct": 35.8,
+          "diff_pct_points": -4.6,
+          "tracking_games": 52,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 101,
+          "opponent_fga": 190,
+          "opponent_fg_pct": 53.2,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 55,
+        "height_cm": 208.28,
+        "height_ft_in": "6-10",
+        "position": "Forward-Center",
+        "draft_year": 2019,
+        "draft_round": 2,
+        "draft_overall_pick": 38,
+        "draft_status": "drafted",
+        "wingspan_cm": 219.71,
+        "wingspan_year": 2019
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1641726",
+      "player_name": "Dereck Lively II",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 10,
+          "fga": 16,
+          "fg_pct": 62.5
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 1,
+          "fga": 2,
+          "fg_pct": 50.0
+        },
+        "three_point": {
+          "fgm": 0,
+          "fga": 0,
+          "fg_pct": null
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 20,
+          "opponent_fga": 38,
+          "opponent_fg_pct": 52.6,
+          "normal_fg_pct": 63.5,
+          "diff_pct_points": -10.8,
+          "tracking_games": 7,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 9,
+          "opponent_fga": 21,
+          "opponent_fg_pct": 42.9,
+          "normal_fg_pct": 37.0,
+          "diff_pct_points": 5.9,
+          "tracking_games": 7,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 9,
+          "opponent_fga": 19,
+          "opponent_fg_pct": 47.4,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 7,
+        "height_cm": 215.9,
+        "height_ft_in": "7-1",
+        "position": "Center",
+        "draft_year": 2023,
+        "draft_round": 1,
+        "draft_overall_pick": 12,
+        "draft_status": "drafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "203939",
+      "player_name": "Dwight Powell",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 62,
+          "fga": 91,
+          "fg_pct": 68.1
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 1,
+          "fga": 3,
+          "fg_pct": 33.3
+        },
+        "three_point": {
+          "fgm": 2,
+          "fga": 7,
+          "fg_pct": 28.6
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 110,
+          "opponent_fga": 176,
+          "opponent_fg_pct": 62.5,
+          "normal_fg_pct": 65.1,
+          "diff_pct_points": -2.6,
+          "tracking_games": 50,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 43,
+          "opponent_fga": 119,
+          "opponent_fg_pct": 36.1,
+          "normal_fg_pct": 36.1,
+          "diff_pct_points": 0.1,
+          "tracking_games": 45,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 75,
+          "opponent_fga": 151,
+          "opponent_fg_pct": 49.7,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 63,
+        "height_cm": 208.28,
+        "height_ft_in": "6-10",
+        "position": "Forward-Center",
+        "draft_year": 2014,
+        "draft_round": 2,
+        "draft_overall_pick": 45,
+        "draft_status": "drafted",
+        "wingspan_cm": 214.63,
+        "wingspan_year": 2014
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1630702",
+      "player_name": "Jaden Hardy",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 15,
+          "fga": 31,
+          "fg_pct": 48.4
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 17,
+          "fga": 39,
+          "fg_pct": 43.6
+        },
+        "three_point": {
+          "fgm": 46,
+          "fga": 124,
+          "fg_pct": 37.1
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 26,
+          "opponent_fga": 39,
+          "opponent_fg_pct": 66.7,
+          "normal_fg_pct": 63.9,
+          "diff_pct_points": 2.7,
+          "tracking_games": 21,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 16,
+          "opponent_fga": 43,
+          "opponent_fg_pct": 37.2,
+          "normal_fg_pct": 35.4,
+          "diff_pct_points": 1.8,
+          "tracking_games": 21,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 15,
+          "opponent_fga": 34,
+          "opponent_fg_pct": 44.1,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 34,
+        "height_cm": 190.5,
+        "height_ft_in": "6-3",
+        "position": "Guard",
+        "draft_year": 2022,
+        "draft_round": 2,
+        "draft_overall_pick": 37,
+        "draft_status": "drafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1630526",
+      "player_name": "Jeremiah Robinson-Earl",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 5,
+          "fga": 7,
+          "fg_pct": 71.4
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 1,
+          "fga": 2,
+          "fg_pct": 50.0
+        },
+        "three_point": {
+          "fgm": 2,
+          "fga": 8,
+          "fg_pct": 25.0
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 8,
+          "opponent_fga": 9,
+          "opponent_fg_pct": 88.9,
+          "normal_fg_pct": 66.2,
+          "diff_pct_points": 22.7,
+          "tracking_games": 4,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 1,
+          "opponent_fga": 3,
+          "opponent_fg_pct": 33.3,
+          "normal_fg_pct": 36.0,
+          "diff_pct_points": -2.7,
+          "tracking_games": 3,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 4,
+          "opponent_fga": 6,
+          "opponent_fg_pct": 66.7,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 5,
+        "height_cm": 205.74,
+        "height_ft_in": "6-9",
+        "position": "Forward",
+        "draft_year": 2021,
+        "draft_round": 2,
+        "draft_overall_pick": 32,
+        "draft_status": "drafted",
+        "wingspan_cm": 207.645,
+        "wingspan_year": 2021
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1642967",
+      "player_name": "John Poulakidas",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 1,
+          "fga": 2,
+          "fg_pct": 50.0
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 7,
+          "fga": 12,
+          "fg_pct": 58.3
+        },
+        "three_point": {
+          "fgm": 31,
+          "fga": 77,
+          "fg_pct": 40.3
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 25,
+          "opponent_fga": 32,
+          "opponent_fg_pct": 78.1,
+          "normal_fg_pct": 62.1,
+          "diff_pct_points": 16.0,
+          "tracking_games": 11,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 15,
+          "opponent_fga": 44,
+          "opponent_fg_pct": 34.1,
+          "normal_fg_pct": 37.0,
+          "diff_pct_points": -2.9,
+          "tracking_games": 11,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 10,
+          "opponent_fga": 21,
+          "opponent_fg_pct": 47.6,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 13,
+        "height_cm": 198.12,
+        "height_ft_in": "6-6",
+        "position": "Guard",
+        "draft_year": null,
+        "draft_round": null,
+        "draft_overall_pick": null,
+        "draft_status": "undrafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "203114",
+      "player_name": "Khris Middleton",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 10,
+          "fga": 22,
+          "fg_pct": 45.5
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 53,
+          "fga": 131,
+          "fg_pct": 40.5
+        },
+        "three_point": {
+          "fgm": 34,
+          "fga": 87,
+          "fg_pct": 39.1
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 44,
+          "opponent_fga": 56,
+          "opponent_fg_pct": 78.6,
+          "normal_fg_pct": 65.1,
+          "diff_pct_points": 13.5,
+          "tracking_games": 27,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 38,
+          "opponent_fga": 94,
+          "opponent_fg_pct": 40.4,
+          "normal_fg_pct": 36.1,
+          "diff_pct_points": 4.3,
+          "tracking_games": 26,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 24,
+          "opponent_fga": 43,
+          "opponent_fg_pct": 55.8,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 29,
+        "height_cm": 200.66,
+        "height_ft_in": "6-7",
+        "position": "Forward",
+        "draft_year": 2012,
+        "draft_round": 2,
+        "draft_overall_pick": 39,
+        "draft_status": "drafted",
+        "wingspan_cm": 210.185,
+        "wingspan_year": 2012
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "202691",
+      "player_name": "Klay Thompson",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 31,
+          "fga": 55,
+          "fg_pct": 56.4
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 53,
+          "fga": 146,
+          "fg_pct": 36.3
+        },
+        "three_point": {
+          "fgm": 202,
+          "fga": 527,
+          "fg_pct": 38.3
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 86,
+          "opponent_fga": 139,
+          "opponent_fg_pct": 61.9,
+          "normal_fg_pct": 63.0,
+          "diff_pct_points": -1.1,
+          "tracking_games": 62,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 54,
+          "opponent_fga": 154,
+          "opponent_fg_pct": 35.1,
+          "normal_fg_pct": 35.9,
+          "diff_pct_points": -0.8,
+          "tracking_games": 65,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 37,
+          "opponent_fga": 106,
+          "opponent_fg_pct": 34.9,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 69,
+        "height_cm": 195.58,
+        "height_ft_in": "6-5",
+        "position": "Guard-Forward",
+        "draft_year": 2011,
+        "draft_round": 1,
+        "draft_overall_pick": 11,
+        "draft_status": "drafted",
+        "wingspan_cm": 205.74,
+        "wingspan_year": 2011
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1628963",
+      "player_name": "Marvin Bagley III",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 68,
+          "fga": 107,
+          "fg_pct": 63.6
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 16,
+          "fga": 25,
+          "fg_pct": 64.0
+        },
+        "three_point": {
+          "fgm": 16,
+          "fga": 33,
+          "fg_pct": 48.5
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 61,
+          "opponent_fga": 105,
+          "opponent_fg_pct": 58.1,
+          "normal_fg_pct": 65.3,
+          "diff_pct_points": -7.2,
+          "tracking_games": 21,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 30,
+          "opponent_fga": 80,
+          "opponent_fg_pct": 37.5,
+          "normal_fg_pct": 35.4,
+          "diff_pct_points": 2.1,
+          "tracking_games": 22,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 31,
+          "opponent_fga": 62,
+          "opponent_fg_pct": 50.0,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 22,
+        "height_cm": 208.28,
+        "height_ft_in": "6-10",
+        "position": "Forward",
+        "draft_year": 2018,
+        "draft_round": 1,
+        "draft_overall_pick": 2,
+        "draft_status": "drafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1631108",
+      "player_name": "Max Christie",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 96,
+          "fga": 162,
+          "fg_pct": 59.3
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 44,
+          "fga": 117,
+          "fg_pct": 37.6
+        },
+        "three_point": {
+          "fgm": 180,
+          "fga": 446,
+          "fg_pct": 40.4
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 160,
+          "opponent_fga": 234,
+          "opponent_fg_pct": 68.4,
+          "normal_fg_pct": 63.4,
+          "diff_pct_points": 4.9,
+          "tracking_games": 70,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 116,
+          "opponent_fga": 318,
+          "opponent_fg_pct": 36.5,
+          "normal_fg_pct": 36.6,
+          "diff_pct_points": -0.1,
+          "tracking_games": 77,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 101,
+          "opponent_fga": 227,
+          "opponent_fg_pct": 44.5,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 77,
+        "height_cm": 195.58,
+        "height_ft_in": "6-5",
+        "position": "Guard",
+        "draft_year": 2022,
+        "draft_round": 2,
+        "draft_overall_pick": 35,
+        "draft_status": "drafted",
+        "wingspan_cm": 205.105,
+        "wingspan_year": 2022
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1642939",
+      "player_name": "Miles Kelly",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 3,
+          "fga": 6,
+          "fg_pct": 50.0
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 3,
+          "fga": 5,
+          "fg_pct": 60.0
+        },
+        "three_point": {
+          "fgm": 10,
+          "fga": 33,
+          "fg_pct": 30.3
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 11,
+          "opponent_fga": 13,
+          "opponent_fg_pct": 84.6,
+          "normal_fg_pct": 63.7,
+          "diff_pct_points": 20.9,
+          "tracking_games": 6,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 5,
+          "opponent_fga": 11,
+          "opponent_fg_pct": 45.5,
+          "normal_fg_pct": 34.2,
+          "diff_pct_points": 11.3,
+          "tracking_games": 7,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 5,
+          "opponent_fga": 9,
+          "opponent_fg_pct": 55.6,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 14,
+        "height_cm": 193.04,
+        "height_ft_in": "6-4",
+        "position": "Guard",
+        "draft_year": null,
+        "draft_round": null,
+        "draft_overall_pick": null,
+        "draft_status": "undrafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1630619",
+      "player_name": "Moussa Cisse",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 64,
+          "fga": 111,
+          "fg_pct": 57.7
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 2,
+          "fga": 4,
+          "fg_pct": 50.0
+        },
+        "three_point": {
+          "fgm": 0,
+          "fga": 0,
+          "fg_pct": null
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 82,
+          "opponent_fga": 158,
+          "opponent_fg_pct": 51.9,
+          "normal_fg_pct": 63.1,
+          "diff_pct_points": -11.2,
+          "tracking_games": 35,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 18,
+          "opponent_fga": 75,
+          "opponent_fg_pct": 24.0,
+          "normal_fg_pct": 35.2,
+          "diff_pct_points": -11.2,
+          "tracking_games": 28,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 23,
+          "opponent_fga": 54,
+          "opponent_fg_pct": 42.6,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 38,
+        "height_cm": 210.82,
+        "height_ft_in": "6-11",
+        "position": "Center",
+        "draft_year": null,
+        "draft_round": null,
+        "draft_overall_pick": null,
+        "draft_status": "undrafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1630230",
+      "player_name": "Naji Marshall",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 203,
+          "fga": 307,
+          "fg_pct": 66.1
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 154,
+          "fga": 301,
+          "fg_pct": 51.2
+        },
+        "three_point": {
+          "fgm": 62,
+          "fga": 213,
+          "fg_pct": 29.1
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 148,
+          "opponent_fga": 200,
+          "opponent_fg_pct": 74.0,
+          "normal_fg_pct": 64.1,
+          "diff_pct_points": 9.9,
+          "tracking_games": 68,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 103,
+          "opponent_fga": 314,
+          "opponent_fg_pct": 32.8,
+          "normal_fg_pct": 35.7,
+          "diff_pct_points": -2.9,
+          "tracking_games": 73,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 78,
+          "opponent_fga": 164,
+          "opponent_fg_pct": 47.6,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 74,
+        "height_cm": 198.12,
+        "height_ft_in": "6-6",
+        "position": "Forward",
+        "draft_year": null,
+        "draft_round": null,
+        "draft_overall_pick": null,
+        "draft_status": "undrafted",
+        "wingspan_cm": 215.265,
+        "wingspan_year": 2020
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1629023",
+      "player_name": "P.J. Washington",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 158,
+          "fga": 283,
+          "fg_pct": 55.8
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 62,
+          "fga": 141,
+          "fg_pct": 44.0
+        },
+        "three_point": {
+          "fgm": 76,
+          "fga": 234,
+          "fg_pct": 32.5
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 163,
+          "opponent_fga": 278,
+          "opponent_fg_pct": 58.6,
+          "normal_fg_pct": 63.8,
+          "diff_pct_points": -5.2,
+          "tracking_games": 55,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 106,
+          "opponent_fga": 286,
+          "opponent_fg_pct": 37.1,
+          "normal_fg_pct": 35.5,
+          "diff_pct_points": 1.6,
+          "tracking_games": 56,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 85,
+          "opponent_fga": 179,
+          "opponent_fg_pct": 47.5,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 56,
+        "height_cm": 200.66,
+        "height_ft_in": "6-7",
+        "position": "Forward",
+        "draft_year": 2019,
+        "draft_round": 1,
+        "draft_overall_pick": 12,
+        "draft_status": "drafted",
+        "wingspan_cm": 219.71,
+        "wingspan_year": 2019
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1642948",
+      "player_name": "Ryan Nembhard",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 38,
+          "fga": 64,
+          "fg_pct": 59.4
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 76,
+          "fga": 191,
+          "fg_pct": 39.8
+        },
+        "three_point": {
+          "fgm": 48,
+          "fga": 135,
+          "fg_pct": 35.6
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 67,
+          "opponent_fga": 87,
+          "opponent_fg_pct": 77.0,
+          "normal_fg_pct": 63.4,
+          "diff_pct_points": 13.6,
+          "tracking_games": 42,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 58,
+          "opponent_fga": 165,
+          "opponent_fg_pct": 35.2,
+          "normal_fg_pct": 36.1,
+          "diff_pct_points": -1.0,
+          "tracking_games": 52,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 44,
+          "opponent_fga": 101,
+          "opponent_fg_pct": 43.6,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 60,
+        "height_cm": 180.34,
+        "height_ft_in": "5-11",
+        "position": "Guard",
+        "draft_year": null,
+        "draft_round": null,
+        "draft_overall_pick": null,
+        "draft_status": "undrafted",
+        "wingspan_cm": 188.595,
+        "wingspan_year": 2025
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1641890",
+      "player_name": "Tyler Smith",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 10,
+          "fga": 12,
+          "fg_pct": 83.3
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 1,
+          "fga": 3,
+          "fg_pct": 33.3
+        },
+        "three_point": {
+          "fgm": 10,
+          "fga": 35,
+          "fg_pct": 28.6
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 13,
+          "opponent_fga": 19,
+          "opponent_fg_pct": 68.4,
+          "normal_fg_pct": 60.8,
+          "diff_pct_points": 7.7,
+          "tracking_games": 8,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 12,
+          "opponent_fga": 22,
+          "opponent_fg_pct": 54.5,
+          "normal_fg_pct": 35.9,
+          "diff_pct_points": 18.7,
+          "tracking_games": 10,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 5,
+          "opponent_fga": 9,
+          "opponent_fg_pct": 55.6,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 12,
+        "height_cm": 205.74,
+        "height_ft_in": "6-9",
+        "position": "Forward",
+        "draft_year": 2024,
+        "draft_round": 2,
+        "draft_overall_pick": 33,
+        "draft_status": "drafted",
+        "wingspan_cm": 215.9,
+        "wingspan_year": 2024
+      }
+    },
+    {
+      "team": "DAL",
+      "player_id": "1626145",
+      "player_name": "Tyus Jones",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 3,
+          "fga": 6,
+          "fg_pct": 50.0
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 6,
+          "fga": 9,
+          "fg_pct": 66.7
+        },
+        "three_point": {
+          "fgm": 4,
+          "fga": 19,
+          "fg_pct": 21.1
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 7,
+          "opponent_fga": 8,
+          "opponent_fg_pct": 87.5,
+          "normal_fg_pct": 66.3,
+          "diff_pct_points": 21.2,
+          "tracking_games": 6,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 7,
+          "opponent_fga": 24,
+          "opponent_fg_pct": 29.2,
+          "normal_fg_pct": 34.9,
+          "diff_pct_points": -5.8,
+          "tracking_games": 8,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 5,
+          "opponent_fga": 10,
+          "opponent_fg_pct": 50.0,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 8,
+        "height_cm": 182.88,
+        "height_ft_in": "6-0",
+        "position": "Guard",
+        "draft_year": 2015,
+        "draft_round": 1,
+        "draft_overall_pick": 24,
+        "draft_status": "drafted",
+        "wingspan_cm": 195.58,
+        "wingspan_year": 2015
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1628988",
+      "player_name": "Aaron Holiday",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 19,
+          "fga": 31,
+          "fg_pct": 61.3
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 19,
+          "fga": 51,
+          "fg_pct": 37.3
+        },
+        "three_point": {
+          "fgm": 67,
+          "fga": 170,
+          "fg_pct": 39.4
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 49,
+          "opponent_fga": 65,
+          "opponent_fg_pct": 75.4,
+          "normal_fg_pct": 63.9,
+          "diff_pct_points": 11.5,
+          "tracking_games": 31,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 36,
+          "opponent_fga": 125,
+          "opponent_fg_pct": 28.8,
+          "normal_fg_pct": 35.1,
+          "diff_pct_points": -6.3,
+          "tracking_games": 46,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 30,
+          "opponent_fga": 73,
+          "opponent_fg_pct": 41.1,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 57,
+        "height_cm": 182.88,
+        "height_ft_in": "6-0",
+        "position": "Guard",
+        "draft_year": 2018,
+        "draft_round": 1,
+        "draft_overall_pick": 23,
+        "draft_status": "drafted",
+        "wingspan_cm": 201.93,
+        "wingspan_year": 2018
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1630578",
+      "player_name": "Alperen Sengun",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 376,
+          "fga": 572,
+          "fg_pct": 65.7
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 167,
+          "fga": 420,
+          "fg_pct": 39.8
+        },
+        "three_point": {
+          "fgm": 40,
+          "fga": 131,
+          "fg_pct": 30.5
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 326,
+          "opponent_fga": 521,
+          "opponent_fg_pct": 62.6,
+          "normal_fg_pct": 64.0,
+          "diff_pct_points": -1.5,
+          "tracking_games": 71,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 159,
+          "opponent_fga": 405,
+          "opponent_fg_pct": 39.3,
+          "normal_fg_pct": 35.5,
+          "diff_pct_points": 3.7,
+          "tracking_games": 70,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 132,
+          "opponent_fga": 293,
+          "opponent_fg_pct": 45.1,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 72,
+        "height_cm": 210.82,
+        "height_ft_in": "6-11",
+        "position": "Center",
+        "draft_year": 2021,
+        "draft_round": 1,
+        "draft_overall_pick": 16,
+        "draft_status": "drafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1641708",
+      "player_name": "Amen Thompson",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 408,
+          "fga": 610,
+          "fg_pct": 66.9
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 124,
+          "fga": 318,
+          "fg_pct": 39.0
+        },
+        "three_point": {
+          "fgm": 25,
+          "fga": 116,
+          "fg_pct": 21.6
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 119,
+          "opponent_fga": 200,
+          "opponent_fg_pct": 59.5,
+          "normal_fg_pct": 63.4,
+          "diff_pct_points": -3.9,
+          "tracking_games": 70,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 102,
+          "opponent_fga": 308,
+          "opponent_fg_pct": 33.1,
+          "normal_fg_pct": 35.7,
+          "diff_pct_points": -2.6,
+          "tracking_games": 77,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 85,
+          "opponent_fga": 213,
+          "opponent_fg_pct": 39.9,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 79,
+        "height_cm": 200.66,
+        "height_ft_in": "6-7",
+        "position": "Guard-Forward",
+        "draft_year": 2023,
+        "draft_round": 1,
+        "draft_overall_pick": 4,
+        "draft_status": "drafted",
+        "wingspan_cm": 213.36,
+        "wingspan_year": 2023
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "203991",
+      "player_name": "Clint Capela",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 107,
+          "fga": 195,
+          "fg_pct": 54.9
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 10,
+          "fga": 30,
+          "fg_pct": 33.3
+        },
+        "three_point": {
+          "fgm": 1,
+          "fga": 2,
+          "fg_pct": 50.0
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 91,
+          "opponent_fga": 201,
+          "opponent_fg_pct": 45.3,
+          "normal_fg_pct": 63.4,
+          "diff_pct_points": -18.2,
+          "tracking_games": 64,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 32,
+          "opponent_fga": 133,
+          "opponent_fg_pct": 24.1,
+          "normal_fg_pct": 34.6,
+          "diff_pct_points": -10.6,
+          "tracking_games": 61,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 51,
+          "opponent_fga": 119,
+          "opponent_fg_pct": 42.9,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 75,
+        "height_cm": 208.28,
+        "height_ft_in": "6-10",
+        "position": "Center",
+        "draft_year": 2014,
+        "draft_round": 1,
+        "draft_overall_pick": 25,
+        "draft_status": "drafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1627827",
+      "player_name": "Dorian Finney-Smith",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 16,
+          "fga": 29,
+          "fg_pct": 55.2
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 1,
+          "fga": 3,
+          "fg_pct": 33.3
+        },
+        "three_point": {
+          "fgm": 27,
+          "fga": 100,
+          "fg_pct": 27.0
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 50,
+          "opponent_fga": 66,
+          "opponent_fg_pct": 75.8,
+          "normal_fg_pct": 64.3,
+          "diff_pct_points": 11.4,
+          "tracking_games": 31,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 30,
+          "opponent_fga": 93,
+          "opponent_fg_pct": 32.3,
+          "normal_fg_pct": 35.1,
+          "diff_pct_points": -2.9,
+          "tracking_games": 35,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 26,
+          "opponent_fga": 56,
+          "opponent_fg_pct": 46.4,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 37,
+        "height_cm": 200.66,
+        "height_ft_in": "6-7",
+        "position": "Forward",
+        "draft_year": null,
+        "draft_round": null,
+        "draft_overall_pick": null,
+        "draft_status": "undrafted",
+        "wingspan_cm": 212.725,
+        "wingspan_year": 2016
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1642384",
+      "player_name": "Isaiah Crawford",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 5,
+          "fga": 8,
+          "fg_pct": 62.5
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 2,
+          "fga": 3,
+          "fg_pct": 66.7
+        },
+        "three_point": {
+          "fgm": 3,
+          "fga": 13,
+          "fg_pct": 23.1
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 6,
+          "opponent_fga": 8,
+          "opponent_fg_pct": 75.0,
+          "normal_fg_pct": 60.3,
+          "diff_pct_points": 14.7,
+          "tracking_games": 5,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 2,
+          "opponent_fga": 11,
+          "opponent_fg_pct": 18.2,
+          "normal_fg_pct": 35.2,
+          "diff_pct_points": -17.0,
+          "tracking_games": 6,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 0,
+          "opponent_fga": 3,
+          "opponent_fg_pct": 0.0,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 14,
+        "height_cm": 198.12,
+        "height_ft_in": "6-6",
+        "position": "Forward",
+        "draft_year": null,
+        "draft_round": null,
+        "draft_overall_pick": null,
+        "draft_status": "undrafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1631120",
+      "player_name": "JD Davison",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 9,
+          "fga": 14,
+          "fg_pct": 64.3
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 7,
+          "fga": 18,
+          "fg_pct": 38.9
+        },
+        "three_point": {
+          "fgm": 8,
+          "fga": 32,
+          "fg_pct": 25.0
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 13,
+          "opponent_fga": 20,
+          "opponent_fg_pct": 65.0,
+          "normal_fg_pct": 61.9,
+          "diff_pct_points": 3.1,
+          "tracking_games": 12,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 11,
+          "opponent_fga": 29,
+          "opponent_fg_pct": 37.9,
+          "normal_fg_pct": 34.9,
+          "diff_pct_points": 3.0,
+          "tracking_games": 15,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 7,
+          "opponent_fga": 22,
+          "opponent_fg_pct": 31.8,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 28,
+        "height_cm": 185.42,
+        "height_ft_in": "6-1",
+        "position": "Guard",
+        "draft_year": 2022,
+        "draft_round": 2,
+        "draft_overall_pick": 53,
+        "draft_status": "drafted",
+        "wingspan_cm": 199.39,
+        "wingspan_year": 2022
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1631095",
+      "player_name": "Jabari Smith Jr.",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 135,
+          "fga": 207,
+          "fg_pct": 65.2
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 126,
+          "fga": 280,
+          "fg_pct": 45.0
+        },
+        "three_point": {
+          "fgm": 177,
+          "fga": 488,
+          "fg_pct": 36.3
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 185,
+          "opponent_fga": 334,
+          "opponent_fg_pct": 55.4,
+          "normal_fg_pct": 63.0,
+          "diff_pct_points": -7.6,
+          "tracking_games": 76,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 140,
+          "opponent_fga": 381,
+          "opponent_fg_pct": 36.7,
+          "normal_fg_pct": 35.8,
+          "diff_pct_points": 1.0,
+          "tracking_games": 75,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 109,
+          "opponent_fga": 239,
+          "opponent_fg_pct": 45.6,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 77,
+        "height_cm": 210.82,
+        "height_ft_in": "6-11",
+        "position": "Forward",
+        "draft_year": 2022,
+        "draft_round": 1,
+        "draft_overall_pick": 3,
+        "draft_status": "drafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1630256",
+      "player_name": "Jae'Sean Tate",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 40,
+          "fga": 56,
+          "fg_pct": 71.4
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 6,
+          "fga": 21,
+          "fg_pct": 28.6
+        },
+        "three_point": {
+          "fgm": 10,
+          "fga": 32,
+          "fg_pct": 31.2
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 27,
+          "opponent_fga": 41,
+          "opponent_fg_pct": 65.9,
+          "normal_fg_pct": 62.1,
+          "diff_pct_points": 3.7,
+          "tracking_games": 23,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 15,
+          "opponent_fga": 54,
+          "opponent_fg_pct": 27.8,
+          "normal_fg_pct": 36.4,
+          "diff_pct_points": -8.6,
+          "tracking_games": 29,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 21,
+          "opponent_fga": 42,
+          "opponent_fg_pct": 50.0,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 46,
+        "height_cm": 193.04,
+        "height_ft_in": "6-4",
+        "position": "Forward",
+        "draft_year": null,
+        "draft_round": null,
+        "draft_overall_pick": null,
+        "draft_status": "undrafted",
+        "wingspan_cm": null,
+        "wingspan_year": null
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "201145",
+      "player_name": "Jeff Green",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 8,
+          "fga": 11,
+          "fg_pct": 72.7
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 5,
+          "fga": 13,
+          "fg_pct": 38.5
+        },
+        "three_point": {
+          "fgm": 12,
+          "fga": 44,
+          "fg_pct": 27.3
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 14,
+          "opponent_fga": 22,
+          "opponent_fg_pct": 63.6,
+          "normal_fg_pct": 59.7,
+          "diff_pct_points": 3.9,
+          "tracking_games": 14,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 9,
+          "opponent_fga": 44,
+          "opponent_fg_pct": 20.5,
+          "normal_fg_pct": 33.9,
+          "diff_pct_points": -13.4,
+          "tracking_games": 19,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 6,
+          "opponent_fga": 16,
+          "opponent_fg_pct": 37.5,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 30,
+        "height_cm": 203.2,
+        "height_ft_in": "6-8",
+        "position": "Forward",
+        "draft_year": 2007,
+        "draft_round": 1,
+        "draft_overall_pick": 5,
+        "draft_status": "drafted",
+        "wingspan_cm": 216.535,
+        "wingspan_year": 2007
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1629006",
+      "player_name": "Josh Okogie",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 55,
+          "fga": 111,
+          "fg_pct": 49.5
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 8,
+          "fga": 22,
+          "fg_pct": 36.4
+        },
+        "three_point": {
+          "fgm": 62,
+          "fga": 161,
+          "fg_pct": 38.5
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 71,
+          "opponent_fga": 116,
+          "opponent_fg_pct": 61.2,
+          "normal_fg_pct": 63.9,
+          "diff_pct_points": -2.7,
+          "tracking_games": 57,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 74,
+          "opponent_fga": 177,
+          "opponent_fg_pct": 41.8,
+          "normal_fg_pct": 35.1,
+          "diff_pct_points": 6.7,
+          "tracking_games": 63,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 53,
+          "opponent_fga": 108,
+          "opponent_fg_pct": 49.1,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 78,
+        "height_cm": 193.04,
+        "height_ft_in": "6-4",
+        "position": "Guard",
+        "draft_year": 2018,
+        "draft_round": 1,
+        "draft_overall_pick": 20,
+        "draft_status": "drafted",
+        "wingspan_cm": 213.36,
+        "wingspan_year": 2018
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "201142",
+      "player_name": "Kevin Durant",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 125,
+          "fga": 164,
+          "fg_pct": 76.2
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 405,
+          "fga": 762,
+          "fg_pct": 53.1
+        },
+        "three_point": {
+          "fgm": 186,
+          "fga": 450,
+          "fg_pct": 41.3
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 158,
+          "opponent_fga": 274,
+          "opponent_fg_pct": 57.7,
+          "normal_fg_pct": 63.4,
+          "diff_pct_points": -5.7,
+          "tracking_games": 73,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 143,
+          "opponent_fga": 405,
+          "opponent_fg_pct": 35.3,
+          "normal_fg_pct": 35.8,
+          "diff_pct_points": -0.5,
+          "tracking_games": 78,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 63,
+          "opponent_fga": 184,
+          "opponent_fg_pct": 34.2,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 78,
+        "height_cm": 210.82,
+        "height_ft_in": "6-11",
+        "position": "Forward",
+        "draft_year": 2007,
+        "draft_round": 1,
+        "draft_overall_pick": 2,
+        "draft_status": "drafted",
+        "wingspan_cm": 225.425,
+        "wingspan_year": 2007
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1642263",
+      "player_name": "Reed Sheppard",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 77,
+          "fga": 137,
+          "fg_pct": 56.2
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 103,
+          "fga": 233,
+          "fg_pct": 44.2
+        },
+        "three_point": {
+          "fgm": 227,
+          "fga": 576,
+          "fg_pct": 39.4
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 180,
+          "opponent_fga": 240,
+          "opponent_fg_pct": 75.0,
+          "normal_fg_pct": 63.1,
+          "diff_pct_points": 11.9,
+          "tracking_games": 71,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 125,
+          "opponent_fga": 362,
+          "opponent_fg_pct": 34.5,
+          "normal_fg_pct": 36.0,
+          "diff_pct_points": -1.5,
+          "tracking_games": 80,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 95,
+          "opponent_fga": 232,
+          "opponent_fg_pct": 40.9,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 82,
+        "height_cm": 187.96,
+        "height_ft_in": "6-2",
+        "position": "Guard",
+        "draft_year": 2024,
+        "draft_round": 1,
+        "draft_overall_pick": 3,
+        "draft_status": "drafted",
+        "wingspan_cm": 191.135,
+        "wingspan_year": 2024
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "203500",
+      "player_name": "Steven Adams",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 64,
+          "fga": 123,
+          "fg_pct": 52.0
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 6,
+          "fga": 16,
+          "fg_pct": 37.5
+        },
+        "three_point": {
+          "fgm": 0,
+          "fga": 0,
+          "fg_pct": null
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 95,
+          "opponent_fga": 145,
+          "opponent_fg_pct": 65.5,
+          "normal_fg_pct": 64.0,
+          "diff_pct_points": 1.5,
+          "tracking_games": 31,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 37,
+          "opponent_fga": 116,
+          "opponent_fg_pct": 31.9,
+          "normal_fg_pct": 33.4,
+          "diff_pct_points": -1.5,
+          "tracking_games": 32,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 28,
+          "opponent_fga": 93,
+          "opponent_fg_pct": 30.1,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 32,
+        "height_cm": 210.82,
+        "height_ft_in": "6-11",
+        "position": "Center",
+        "draft_year": 2013,
+        "draft_round": 1,
+        "draft_overall_pick": 12,
+        "draft_status": "drafted",
+        "wingspan_cm": 224.79,
+        "wingspan_year": 2013
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1631106",
+      "player_name": "Tari Eason",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 126,
+          "fga": 214,
+          "fg_pct": 58.9
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 22,
+          "fga": 106,
+          "fg_pct": 20.8
+        },
+        "three_point": {
+          "fgm": 93,
+          "fga": 260,
+          "fg_pct": 35.8
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 102,
+          "opponent_fga": 153,
+          "opponent_fg_pct": 66.7,
+          "normal_fg_pct": 64.1,
+          "diff_pct_points": 2.6,
+          "tracking_games": 56,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 81,
+          "opponent_fga": 210,
+          "opponent_fg_pct": 38.6,
+          "normal_fg_pct": 35.6,
+          "diff_pct_points": 3.0,
+          "tracking_games": 60,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 48,
+          "opponent_fga": 145,
+          "opponent_fg_pct": 33.1,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 60,
+        "height_cm": 203.2,
+        "height_ft_in": "6-8",
+        "position": "Forward",
+        "draft_year": 2022,
+        "draft_round": 1,
+        "draft_overall_pick": 17,
+        "draft_status": "drafted",
+        "wingspan_cm": 218.44,
+        "wingspan_year": 2022
+      }
+    },
+    {
+      "team": "HOU",
+      "player_id": "1641803",
+      "player_name": "Tristen Newton",
+      "offense": {
+        "near_six_ft": {
+          "fgm": 0,
+          "fga": 2,
+          "fg_pct": 0.0
+        },
+        "other_two_point_ge_six_ft": {
+          "fgm": 2,
+          "fga": 2,
+          "fg_pct": 100.0
+        },
+        "three_point": {
+          "fgm": 2,
+          "fga": 5,
+          "fg_pct": 40.0
+        }
+      },
+      "defense": {
+        "near_six_ft": {
+          "opponent_fgm": 3,
+          "opponent_fga": 3,
+          "opponent_fg_pct": 100.0,
+          "normal_fg_pct": 52.9,
+          "diff_pct_points": 47.1,
+          "tracking_games": 1,
+          "derived": false
+        },
+        "three_point": {
+          "opponent_fgm": 1,
+          "opponent_fga": 1,
+          "opponent_fg_pct": 100.0,
+          "normal_fg_pct": 25.3,
+          "diff_pct_points": 74.7,
+          "tracking_games": 1,
+          "derived": false
+        },
+        "other_two_point_ge_six_ft": {
+          "opponent_fgm": 0,
+          "opponent_fga": 1,
+          "opponent_fg_pct": 0.0,
+          "normal_fg_pct": null,
+          "diff_pct_points": null,
+          "tracking_games": null,
+          "derived": true
+        }
+      },
+      "profile": {
+        "gp_for_team": 1,
+        "height_cm": 195.58,
+        "height_ft_in": "6-5",
+        "position": "Guard",
+        "draft_year": 2024,
+        "draft_round": 2,
+        "draft_overall_pick": 49,
+        "draft_status": "drafted",
+        "wingspan_cm": 200.025,
+        "wingspan_year": 2024
+      }
+    }
+  ]
+}
