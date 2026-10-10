@@ -10,6 +10,8 @@ import math
 import subprocess
 from pathlib import Path
 
+from pipeline.enrich.season_zones import profile_line, zone_lines
+
 FREEZE_S = 5.0
 OUT_W, OUT_H = 1280, 720
 RED = (255, 43, 43, 255)
@@ -104,6 +106,9 @@ def card_lines(pack: dict, shot: dict) -> list[tuple]:
     不再写比分条：比分跟着记分牌走，定格卡只讲这一投和领防。"""
     lines: list[tuple[str, str]] = [("head", "回放 · 出手瞬间")]
     lines.append(("off", f"{shot['name']} #{shot.get('number') or ''}（{shooter_source(shot)}）"))
+    bio = profile_line(shot.get("shooterProfile"))
+    if bio:
+        lines.append(("line", bio))
     season = shot.get("season")
     ranked = rank_rows(shot.get("shooterRank"), OFF_RANKS)
     lines.extend(ranked)
@@ -121,12 +126,20 @@ def card_lines(pack: dict, shot: dict) -> list[tuple]:
         lines.append(("line", text))
     lines.append(("def", "防守"))
     d = shot.get("defender")
+
+    def add_defender_bio() -> None:
+        bio = profile_line(d.get("profile") if isinstance(d, dict) else None)
+        if bio:
+            lines.append(("line", bio))
+
     if not d or not d.get("name"):
         team = f"{TEAM_ZH.get(d.get('team'), d.get('team'))}球员，" if d and d.get("team") else ""
         lines.append(("line", f"领防：{team}号码没读出"))
+        add_defender_bio()
     else:
         who = d.get("display") or d["name"]
         lines.append(("line", f"领防：{who} #{d['number']}（画面，出手前贴防 {float(d['guard_seconds']):.1f} 秒）"))
+        add_defender_bio()
         vs = d.get("vs_shooter")
         if vs:
             lines.append(("line", f"本场对位 {round(vs['seconds'] / 60)} 分钟，{shot['name']} {vs['fgm']}/{vs['fga']}、得 {vs['points']} 分"))
@@ -135,6 +148,7 @@ def card_lines(pack: dict, shot: dict) -> list[tuple]:
         lines.extend(ranked)
         if ds and not ranked:
             lines.append(("line", f"赛季场均 抢断 {ds['stl']} · 盖帽 {ds['blk']} · 防守篮板 {ds['dreb']}"))
+    lines.extend(("line", text) for text in zone_lines(shot.get("seasonZone")))
     return lines
 
 

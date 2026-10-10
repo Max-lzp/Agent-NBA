@@ -18,6 +18,7 @@ from typing import Optional
 from .deep_season import season_profile_for_play
 from .margin import season_margin
 from .official import DATA, calibrate_side, clock_seconds, game_roster, load_game, on_court, period_number
+from .season_zones import attach_event
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "pipeline" / "vision" / "results" / "local"
@@ -169,7 +170,7 @@ def official_detail(play: dict, players: dict, shots: list) -> dict:
             if key in quality:
                 detail[key] = quality[key]
         if quality.get("defender_id"):
-            detail["defender"] = _ref(players, quality["defender_id"])
+            detail["defender"] = {**_ref(players, quality["defender_id"]), "person_id": quality["defender_id"]}
     return detail
 
 
@@ -224,6 +225,8 @@ def enrich(stream: dict, scoreboard: dict, game: dict, game_id: str) -> dict:
             if side:
                 ev["official"]["side"] = side
                 ev["official"]["side_basis"] = "official" if play.get("side") else side_basis
+        if play["kind"] == "shot":
+            attach_event(ev)
 
     # 1. 清单里已有的出手：先按比分精确对，再按时间窗口对
     for poss in stream["possessions"]:
