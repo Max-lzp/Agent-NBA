@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DEEP COURT 播放器</title>
-  <link rel="stylesheet" href="styles.css?v=21">
+  <link rel="stylesheet" href="styles.css?v=26">
 </head>
 <body>
   <div class="court court-tr"></div>
@@ -13,6 +13,11 @@
     <h1 class="player-title">DEEP COURT <span class="accent">播放器</span></h1>
     <p class="subhead" id="subhead">Team 04 · 打开即看。比分和出手卡来自记分牌与官方逐回合，人名来自球衣号码。</p>
     <nav class="clip-switch" id="clip-switch" aria-label="选择片段"></nav>
+    <nav class="watch-switch" id="watch-switch" aria-label="观看风格">
+      <button type="button" data-watch="commentary">解说向</button>
+      <button type="button" data-watch="date">陪女友观看</button>
+      <span class="soon">陪孩子观看<small>Coming Soon</small></span>
+    </nav>
     <hr class="rule">
 
     <div class="replay">
@@ -26,10 +31,6 @@
           <div class="fill" id="fill"></div>
           <div class="ticks" id="ticks"></div>
         </div>
-        <section class="floor" id="floor" hidden aria-label="场上球员">
-          <div id="floor-offense"></div>
-          <div id="floor-defense"></div>
-        </section>
         <section class="share" aria-labelledby="share-title">
           <div class="share-head">
             <h2 id="share-title">分享</h2>
@@ -64,11 +65,15 @@
           </div>
         </section>
       </div>
-      <aside class="rail" aria-label="这一球">
+      <aside class="rail" aria-label="这一球" hidden>
         <p class="rail-kicker">半场落点 · 官方坐标</p>
         <div id="court"></div>
         <div id="detail"></div>
       </aside>
+      <section class="floor" id="floor" hidden aria-label="场上球员">
+        <div id="floor-home"></div>
+        <div id="floor-away"></div>
+      </section>
     </div>
 
     <div class="transport">
@@ -118,6 +123,6 @@
   <script src="config.js"></script>
   <script src="replay/clips.js?v=3"></script>
   <script src="replay-freeze.js?v=4"></script>
-  <script src="game.js?v=18"></script>
+  <script src="game.js?v=24"></script>
 </body>
 </html>

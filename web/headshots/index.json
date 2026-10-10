@@ -1,0 +1,329 @@
+{
+  "size": "1040x760",
+  "players": [
+    {
+      "team": "DAL",
+      "name": "Max Christie",
+      "jersey": "00",
+      "position": "G",
+      "id": 1631108,
+      "bytes": 166866,
+      "file": "headshots/dal/1631108.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Brandon Williams",
+      "jersey": "10",
+      "position": "G",
+      "id": 1630314,
+      "bytes": 175990,
+      "file": "headshots/dal/1630314.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Kyrie Irving",
+      "jersey": "11",
+      "position": "G",
+      "id": 202681,
+      "bytes": 206718,
+      "file": "headshots/dal/202681.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Naji Marshall",
+      "jersey": "13",
+      "position": "F",
+      "id": 1630230,
+      "bytes": 188598,
+      "file": "headshots/dal/1630230.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Caleb Martin",
+      "jersey": "16",
+      "position": "F",
+      "id": 1628997,
+      "bytes": 179477,
+      "file": "headshots/dal/1628997.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Dereck Lively II",
+      "jersey": "2",
+      "position": "C",
+      "id": 1641726,
+      "bytes": 230423,
+      "file": "headshots/dal/1641726.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Khris Middleton",
+      "jersey": "20",
+      "position": "F",
+      "id": 203114,
+      "bytes": 231316,
+      "file": "headshots/dal/203114.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Daniel Gafford",
+      "jersey": "21",
+      "position": "F-C",
+      "id": 1629655,
+      "bytes": 198215,
+      "file": "headshots/dal/1629655.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Tyler Smith",
+      "jersey": "21",
+      "position": "F",
+      "id": 1641890,
+      "bytes": 165144,
+      "file": "headshots/dal/1641890.png"
+    },
+    {
+      "team": "DAL",
+      "name": "P.J. Washington",
+      "jersey": "25",
+      "position": "F",
+      "id": 1629023,
+      "bytes": 174994,
+      "file": "headshots/dal/1629023.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Anthony Davis",
+      "jersey": "3",
+      "position": "F",
+      "id": 203076,
+      "bytes": 215407,
+      "file": "headshots/dal/203076.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Moussa Cisse",
+      "jersey": "30",
+      "position": "C",
+      "id": 1630619,
+      "bytes": 208369,
+      "file": "headshots/dal/1630619.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Klay Thompson",
+      "jersey": "31",
+      "position": "G",
+      "id": 202691,
+      "bytes": 172171,
+      "file": "headshots/dal/202691.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Cooper Flagg",
+      "jersey": "32",
+      "position": "F",
+      "id": 1642843,
+      "bytes": 178624,
+      "file": "headshots/dal/1642843.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Marvin Bagley III",
+      "jersey": "35",
+      "position": "F",
+      "id": 1628963,
+      "bytes": 222793,
+      "file": "headshots/dal/1628963.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Dwight Powell",
+      "jersey": "7",
+      "position": "F-C",
+      "id": 203939,
+      "bytes": 168709,
+      "file": "headshots/dal/203939.png"
+    },
+    {
+      "team": "DAL",
+      "name": "AJ Johnson",
+      "jersey": "8",
+      "position": "G",
+      "id": 1642358,
+      "bytes": 178259,
+      "file": "headshots/dal/1642358.png"
+    },
+    {
+      "team": "DAL",
+      "name": "Ryan Nembhard",
+      "jersey": "9",
+      "position": "G",
+      "id": 1642948,
+      "bytes": 151349,
+      "file": "headshots/dal/1642948.png"
+    },
+    {
+      "team": "DAL",
+      "name": "John Poulakidas",
+      "jersey": "",
+      "position": "G",
+      "id": 1642967,
+      "bytes": 151993,
+      "file": "headshots/dal/1642967.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Aaron Holiday",
+      "jersey": "0",
+      "position": "G",
+      "id": 1628988,
+      "bytes": 235884,
+      "file": "headshots/hou/1628988.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Amen Thompson",
+      "jersey": "1",
+      "position": "G-F",
+      "id": 1641708,
+      "bytes": 200740,
+      "file": "headshots/hou/1641708.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Jabari Smith Jr.",
+      "jersey": "10",
+      "position": "F",
+      "id": 1631095,
+      "bytes": 209507,
+      "file": "headshots/hou/1631095.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Steven Adams",
+      "jersey": "12",
+      "position": "C",
+      "id": 203500,
+      "bytes": 205339,
+      "file": "headshots/hou/203500.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Tristen Newton",
+      "jersey": "13",
+      "position": "G",
+      "id": 1641803,
+      "bytes": 257207,
+      "file": "headshots/hou/1641803.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Reed Sheppard",
+      "jersey": "15",
+      "position": "G",
+      "id": 1642263,
+      "bytes": 204532,
+      "file": "headshots/hou/1642263.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Tari Eason",
+      "jersey": "17",
+      "position": "F",
+      "id": 1631106,
+      "bytes": 212354,
+      "file": "headshots/hou/1631106.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Dorian Finney-Smith",
+      "jersey": "2",
+      "position": "F",
+      "id": 1627827,
+      "bytes": 216080,
+      "file": "headshots/hou/1627827.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Josh Okogie",
+      "jersey": "20",
+      "position": "G",
+      "id": 1629006,
+      "bytes": 186335,
+      "file": "headshots/hou/1629006.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Isaiah Crawford",
+      "jersey": "27",
+      "position": "F",
+      "id": 1642384,
+      "bytes": 240293,
+      "file": "headshots/hou/1642384.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Alperen Sengun",
+      "jersey": "28",
+      "position": "C",
+      "id": 1630578,
+      "bytes": 176793,
+      "file": "headshots/hou/1630578.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Clint Capela",
+      "jersey": "30",
+      "position": "C",
+      "id": 203991,
+      "bytes": 228467,
+      "file": "headshots/hou/203991.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Jeff Green",
+      "jersey": "32",
+      "position": "F",
+      "id": 201145,
+      "bytes": 199470,
+      "file": "headshots/hou/201145.png"
+    },
+    {
+      "team": "HOU",
+      "name": "JD Davison",
+      "jersey": "4",
+      "position": "G",
+      "id": 1631120,
+      "bytes": 210691,
+      "file": "headshots/hou/1631120.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Fred VanVleet",
+      "jersey": "5",
+      "position": "G",
+      "id": 1627832,
+      "bytes": 228391,
+      "file": "headshots/hou/1627832.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Kevin Durant",
+      "jersey": "7",
+      "position": "F",
+      "id": 201142,
+      "bytes": 219512,
+      "file": "headshots/hou/201142.png"
+    },
+    {
+      "team": "HOU",
+      "name": "Jae'Sean Tate",
+      "jersey": "8",
+      "position": "F",
+      "id": 1630256,
+      "bytes": 204471,
+      "file": "headshots/hou/1630256.png"
+    }
+  ]
+}
