@@ -1,0 +1,506 @@
+{
+  "clip": {
+    "file": "double.mp4",
+    "duration_sec": 23.8,
+    "resolution": "1920x1080",
+    "fps": 60
+  },
+  "sources": [
+    "exam-pack.tgz official/*",
+    "exam-pack.tgz f_*.jpg",
+    "data/names/zh-names.json",
+    "data/season/2025-26/"
+  ],
+  "game": {
+    "gameId": "0022500356",
+    "date_local": "2025-12-06",
+    "gameCode": "20251206/HOUDAL",
+    "away": "HOU",
+    "home": "DAL",
+    "arena": "American Airlines Center",
+    "final": {
+      "HOU": 109,
+      "DAL": 122
+    },
+    "period": 2,
+    "offense": "DAL",
+    "defense": "HOU",
+    "jerseys": {
+      "DAL": "黑色城市版（DALLAS）",
+      "HOU": "红色（ROCKETS）"
+    },
+    "not_template_0022500701": true
+  },
+  "frames": [
+    {
+      "t": 0.5,
+      "clock": "5:12",
+      "shot_clock": "14",
+      "score_HOU_DAL": "44:40"
+    },
+    {
+      "t": 1,
+      "clock": "5:12",
+      "shot_clock": "14",
+      "score_HOU_DAL": "44:40"
+    },
+    {
+      "t": 3,
+      "clock": "5:10",
+      "shot_clock": "12",
+      "score_HOU_DAL": "44:40"
+    },
+    {
+      "t": 5.9,
+      "clock": "5:07",
+      "shot_clock": "9",
+      "score_HOU_DAL": "44:40"
+    },
+    {
+      "t": 7,
+      "clock": "5:06",
+      "shot_clock": "8",
+      "score_HOU_DAL": "44:40"
+    },
+    {
+      "t": 9,
+      "clock": "5:04",
+      "shot_clock": "6",
+      "score_HOU_DAL": "44:40"
+    },
+    {
+      "t": 11.9,
+      "clock": "5:01",
+      "shot_clock": "3.4",
+      "score_HOU_DAL": "44:40"
+    },
+    {
+      "t": 13,
+      "clock": "5:00",
+      "shot_clock": "2.2",
+      "score_HOU_DAL": "44:40"
+    },
+    {
+      "t": 15,
+      "clock": "4:58",
+      "shot_clock": "0.4",
+      "score_HOU_DAL": "44:40"
+    },
+    {
+      "t": 17.8,
+      "clock": "4:58",
+      "shot_clock": "24",
+      "score_HOU_DAL": "44:40",
+      "note": "停表"
+    },
+    {
+      "t": 19,
+      "clock": "4:58",
+      "shot_clock": "24",
+      "score_HOU_DAL": "44:4?→43",
+      "note": "记分牌翻牌中"
+    },
+    {
+      "t": 21,
+      "clock": "4:58",
+      "shot_clock": "24",
+      "score_HOU_DAL": "44:43"
+    },
+    {
+      "t": 23.1,
+      "clock": "4:58",
+      "shot_clock": "24",
+      "score_HOU_DAL": "44:43"
+    }
+  ],
+  "clock_mapping": {
+    "inferred": true,
+    "formula": "game_clock_remaining_sec ≈ 313.3 - video_sec（0.5–15.3 秒之间，记分牌向下取整显示）；shot_clock ≈ 15.3 - video_sec",
+    "video_start": {
+      "video_sec": 0.0,
+      "game_clock": "约 5:13.3"
+    },
+    "clock_stops": {
+      "video_sec": "约 15.0–15.3",
+      "game_clock": "4:58",
+      "reason": "犯规哨"
+    },
+    "video_end": {
+      "video_sec": 23.8,
+      "game_clock": "4:58（停表）"
+    },
+    "scoreboard_updates_to_44_43_at_video_sec": "19–21",
+    "score_44_44_in_clip": false,
+    "premise_correction": "片尾记分牌显示 44:43，不是 44:40"
+  },
+  "actions": [
+    {
+      "actionNumber": 268,
+      "clock": "PT05M28.00S",
+      "timeActual": "2025-12-07T02:23:21.9Z",
+      "teamTricode": "HOU",
+      "actionType": "2pt",
+      "subType": "Jump Shot",
+      "personId": 1631095,
+      "description": "J. Smith Jr. 9' driving floating Jump Shot (6 PTS) (K. Durant 2 AST)",
+      "scoreAway_HOU": "44",
+      "scoreHome_DAL": "40",
+      "in_clip": false,
+      "video_sec_inferred": null,
+      "note": "片头之前"
+    },
+    {
+      "actionNumber": 270,
+      "clock": "PT05M06.00S",
+      "timeActual": "2025-12-07T02:23:42.8Z",
+      "teamTricode": "DAL",
+      "actionType": "2pt",
+      "subType": "Jump Shot",
+      "personId": 1631108,
+      "description": "MISS M. Christie 8' driving floating Shot - blocked",
+      "scoreAway_HOU": "44",
+      "scoreHome_DAL": "40",
+      "in_clip": true,
+      "video_sec_inferred": "约 6"
+    },
+    {
+      "actionNumber": 271,
+      "clock": "PT05M06.00S",
+      "timeActual": "2025-12-07T02:23:42.8Z",
+      "teamTricode": "HOU",
+      "actionType": "block",
+      "subType": "",
+      "personId": 1631095,
+      "description": "J. Smith Jr. BLOCK (1 BLK)",
+      "scoreAway_HOU": "44",
+      "scoreHome_DAL": "40",
+      "in_clip": true,
+      "video_sec_inferred": "约 6"
+    },
+    {
+      "actionNumber": 272,
+      "clock": "PT05M03.00S",
+      "timeActual": "2025-12-07T02:23:45.8Z",
+      "teamTricode": "DAL",
+      "actionType": "rebound",
+      "subType": "offensive",
+      "personId": 203939,
+      "description": "D. Powell REBOUND (Off:1 Def:0)",
+      "scoreAway_HOU": "44",
+      "scoreHome_DAL": "40",
+      "in_clip": true,
+      "video_sec_inferred": "约 6.5–8",
+      "note": "官方时钟 5:03，但 9 秒截帧（5:04）里球已在克里斯蒂手里；以画面为准"
+    },
+    {
+      "actionNumber": 273,
+      "clock": "PT04M58.00S",
+      "timeActual": "2025-12-07T02:23:51.4Z",
+      "teamTricode": "DAL",
+      "actionType": "3pt",
+      "subType": "Jump Shot",
+      "personId": 1631108,
+      "description": "M. Christie 24' 3PT step back bank (3 PTS)",
+      "scoreAway_HOU": "44",
+      "scoreHome_DAL": "43",
+      "in_clip": true,
+      "video_sec_inferred": "约 14.8–15.3"
+    },
+    {
+      "actionNumber": 274,
+      "clock": "PT04M58.00S",
+      "timeActual": "2025-12-07T02:23:55.4Z",
+      "teamTricode": "HOU",
+      "actionType": "foul",
+      "subType": "personal",
+      "personId": 1631095,
+      "description": "J. Smith Jr. shooting personal FOUL (2 PF) (Christie 1 FT)",
+      "scoreAway_HOU": "44",
+      "scoreHome_DAL": "43",
+      "in_clip": true,
+      "video_sec_inferred": "约 15（哨响，推断）",
+      "note": "timeActual 比 273 晚 4.0 秒，只是录入时间；officialId 1628951 = John Butler #30"
+    },
+    {
+      "actionNumber": 276,
+      "clock": "PT04M58.00S",
+      "timeActual": "2025-12-07T02:24:25.4Z",
+      "teamTricode": "DAL",
+      "actionType": "freethrow",
+      "subType": "1 of 1",
+      "personId": 1631108,
+      "description": "M. Christie Free Throw 1 of 1 (4 PTS)",
+      "scoreAway_HOU": "44",
+      "scoreHome_DAL": "44",
+      "in_clip": false,
+      "video_sec_inferred": "约 49（片外，推断）",
+      "note": "timeActual 比 273 晚 34 秒"
+    },
+    {
+      "actionNumber": 277,
+      "clock": "PT04M42.00S",
+      "timeActual": "2025-12-07T02:24:43.5Z",
+      "teamTricode": "HOU",
+      "actionType": "3pt",
+      "subType": "Jump Shot",
+      "personId": 1631095,
+      "description": "MISS J. Smith Jr. 3PT",
+      "scoreAway_HOU": "44",
+      "scoreHome_DAL": "44",
+      "in_clip": false,
+      "video_sec_inferred": null,
+      "note": "片后"
+    }
+  ],
+  "actions_in_clip": [
+    270,
+    271,
+    272,
+    273,
+    274
+  ],
+  "lineups": {
+    "method": "boxscore 首发 + playbyplay 第 1–2 节全部 substitution，推到 action 270；片前最后换人 6:05，下一次 3:21",
+    "HOU": [
+      {
+        "jersey": "1",
+        "name": "Amen Thompson",
+        "personId": 1641708,
+        "name_zh": "阿门·汤普森",
+        "alias_zh": "阿门",
+        "frame_check": [
+          7
+        ]
+      },
+      {
+        "jersey": "7",
+        "name": "Kevin Durant",
+        "personId": 201142,
+        "name_zh": "凯文·杜兰特",
+        "alias_zh": "杜兰特",
+        "frame_check": [
+          3,
+          5.9,
+          7,
+          9
+        ]
+      },
+      {
+        "jersey": "10",
+        "name": "Jabari Smith Jr.",
+        "personId": 1631095,
+        "name_zh": "贾巴里·史密斯二世",
+        "alias_zh": "小史密斯",
+        "frame_check": [
+          3,
+          9,
+          15
+        ]
+      },
+      {
+        "jersey": "20",
+        "name": "Josh Okogie",
+        "personId": 1629006,
+        "name_zh": "约什·奥科吉",
+        "alias_zh": "奥科吉",
+        "frame_check": [
+          5.9,
+          7,
+          9,
+          15
+        ]
+      },
+      {
+        "jersey": "30",
+        "name": "Clint Capela",
+        "personId": 203991,
+        "name_zh": "克林特·卡佩拉",
+        "alias_zh": "卡佩拉",
+        "frame_check": [
+          5.9,
+          7,
+          9
+        ]
+      }
+    ],
+    "DAL": [
+      {
+        "jersey": "00",
+        "name": "Max Christie",
+        "personId": 1631108,
+        "name_zh": "马克斯·克里斯蒂",
+        "alias_zh": "克里斯蒂",
+        "frame_check": [
+          0.5,
+          3,
+          5.9,
+          9,
+          13,
+          17.8,
+          19
+        ]
+      },
+      {
+        "jersey": "7",
+        "name": "Dwight Powell",
+        "personId": 203939,
+        "name_zh": "德怀特·鲍威尔",
+        "alias_zh": "鲍威尔",
+        "frame_check": [
+          13,
+          15,
+          23.1
+        ]
+      },
+      {
+        "jersey": "10",
+        "name": "Brandon Williams",
+        "personId": 1630314,
+        "name_zh": "布兰登·威廉姆斯",
+        "alias_zh": "威廉姆斯",
+        "frame_check": [
+          7
+        ]
+      },
+      {
+        "jersey": "25",
+        "name": "P.J. Washington",
+        "personId": 1629023,
+        "name_zh": "P.J.华盛顿",
+        "alias_zh": "华盛顿",
+        "frame_check": [
+          3
+        ]
+      },
+      {
+        "jersey": "32",
+        "name": "Cooper Flagg",
+        "personId": 1642843,
+        "name_zh": "库珀·弗拉格",
+        "alias_zh": "弗拉格",
+        "frame_check": [
+          3,
+          5.9,
+          7,
+          15
+        ]
+      }
+    ],
+    "officials": [
+      {
+        "jersey": "19",
+        "name": "James Capers",
+        "personId": 1148
+      },
+      {
+        "jersey": "30",
+        "name": "John Butler",
+        "personId": 1628951,
+        "in_frames": "0.5–17.8 前景底线",
+        "called": [
+          274
+        ]
+      },
+      {
+        "jersey": "84",
+        "name": "Nate Cearley",
+        "personId": 1630879
+      }
+    ],
+    "jersey_collisions": [
+      "#30 裁判 John Butler / HOU 卡佩拉",
+      "#7 HOU 杜兰特 / DAL 鲍威尔",
+      "#10 HOU 小史密斯 / DAL B. 威廉姆斯"
+    ]
+  },
+  "events": [
+    {
+      "video_sec": "0–3",
+      "clock": "5:13–5:10",
+      "type": "setup",
+      "actor": null,
+      "official": null,
+      "note": "DAL 半场落位，截帧看不清传球和持球人"
+    },
+    {
+      "video_sec": "约 3",
+      "clock": "5:10",
+      "type": "possession",
+      "actor": 1631108,
+      "defender": 1631095,
+      "official": null,
+      "inferred": true
+    },
+    {
+      "video_sec": "约 4–6",
+      "clock": "5:09–5:07",
+      "type": "drive+shot",
+      "actor": 1631108,
+      "official": 270
+    },
+    {
+      "video_sec": "约 6",
+      "clock": "5:07",
+      "type": "block",
+      "actor": 1631095,
+      "official": 271
+    },
+    {
+      "video_sec": "约 6.5–8",
+      "clock": "5:06",
+      "type": "offensive_rebound",
+      "actor": 203939,
+      "official": 272,
+      "inferred": true
+    },
+    {
+      "video_sec": "约 8–9",
+      "clock": "5:05–5:04",
+      "type": "pass",
+      "actor": 203939,
+      "receiver": 1631108,
+      "official": null,
+      "inferred": true
+    },
+    {
+      "video_sec": "约 9–13",
+      "clock": "5:04–5:00",
+      "type": "perimeter_reset",
+      "actor": 1631108,
+      "official": null,
+      "inferred": true,
+      "note": "13 秒时鲍威尔靠近，推断为掩护"
+    },
+    {
+      "video_sec": "约 14–15",
+      "clock": "4:59–4:58",
+      "type": "shot_3pt_made",
+      "actor": 1631108,
+      "defender": 1631095,
+      "official": 273
+    },
+    {
+      "video_sec": "约 15",
+      "clock": "4:58",
+      "type": "shooting_foul",
+      "actor": 1631095,
+      "fouled": 1631108,
+      "official_referee": 1628951,
+      "official": 274
+    },
+    {
+      "video_sec": "19–21",
+      "clock": "4:58",
+      "type": "scoreboard_update",
+      "score_HOU_DAL": "44:43"
+    },
+    {
+      "video_sec": "约 49（片外）",
+      "clock": "4:58",
+      "type": "free_throw_made",
+      "actor": 1631108,
+      "official": 276,
+      "in_clip": false
+    }
+  ]
+}
