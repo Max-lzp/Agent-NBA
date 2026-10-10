@@ -148,6 +148,8 @@ class SyntheticTests(unittest.TestCase):
         self.assertNotIn("0/0", block_text + three_text)
         self.assertNotIn("臂展", block_text + three_text)
         self.assertNotIn("防守距离", block_text + three_text)
+        self.assertNotIn("队内", block_text + three_text)
+        self.assertNotIn("0星", block_text + three_text)
         joined = json.dumps(doc["highlights"], ensure_ascii=False)
         self.assertNotIn("1631095", joined)
         self.assertNotIn("1631108", joined)
@@ -236,6 +238,39 @@ class SyntheticTests(unittest.TestCase):
         self.assertLess(volume, -50)
         shutil.rmtree(work, ignore_errors=True)
 
+    def test_team_rank_stars_follow_rotation_cutoff(self):
+        def row(pid, name, team, gp, minutes, pts, fg, blk, ts, defense):
+            return pid, name, team, gp, minutes, pts, fg, blk, ts, defense
+
+        base_headers = ["PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION", "GP", "MIN", "PTS", "FG_PCT", "BLK", "STL", "DREB"]
+        adv_headers = ["PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION", "GP", "MIN", "TS_PCT", "DEF_RATING"]
+        people = [
+            row(9101, "High", "ZZZ", 40, 1200, 800, 0.5, 20, 0.62, 108),
+            row(9102, "Low", "ZZZ", 40, 1200, 400, 0.4, 40, 0.50, 114),
+            row(9103, "Short", "ZZZ", 8, 200, 80, 0.6, 10, 0.70, 100),
+        ]
+        base = {
+            "parameters": {"MeasureType": "Base", "TeamID": 99},
+            "resultSets": [{"headers": base_headers, "rowSet": [
+                [pid, name, team, gp, minutes, pts, fg, blk, 10, 100] for pid, name, team, gp, minutes, pts, fg, blk, _ts, _d in people
+            ]}],
+        }
+        advanced = {
+            "parameters": {"MeasureType": "Advanced", "TeamID": 99},
+            "resultSets": [{"headers": adv_headers, "rowSet": [
+                [pid, name, team, gp, minutes, ts, defense] for pid, name, team, gp, minutes, _pts, _fg, _blk, ts, defense in people
+            ]}],
+        }
+        ranks = highlights.load_team_ranks([base, advanced], Path("/tmp/no-season-here"))
+        self.assertNotIn(9103, ranks)
+        self.assertEqual(ranks[9101]["ts_pct"]["rank"], 1)
+        self.assertEqual(ranks[9101]["ts_pct"]["stars"], 5.0)
+        self.assertEqual(ranks[9102]["ts_pct"]["rank"], 2)
+        self.assertEqual(ranks[9102]["ts_pct"]["stars"], 4.5)
+        self.assertEqual(ranks[9101]["def_rating"]["rank"], 1)
+        self.assertEqual(ranks[9102]["blk"]["rank"], 1)
+        self.assertEqual(ranks[9101]["pts"]["of"], 2)
+
 
 def _ensure_exam():
     if (EXAM / "official" / "0022500356_playbyplay.json").is_file():
@@ -309,6 +344,14 @@ class ExamTests(unittest.TestCase):
         self.assertNotIn("44:44", block_text + three_text)
         self.assertNotIn("Butler", block_text + three_text)
         self.assertNotIn("卡佩拉", block_text + three_text)
+        for item in (block, three):
+            text = "\n".join(item["card"]["lines"])
+            self.assertIn("队内进攻", text)
+            self.assertIn("队内防守", text)
+            self.assertNotIn("0星", text)
+            starred = [stat["stars"] for stat in item["card"]["stats"] if stat.get("stars")]
+            self.assertGreaterEqual(len(starred), 2)
+            self.assertTrue(all(value >= 0.5 for value in starred))
         for item in (block, three):
             spoken = "".join(item["commentary"]["zh"]) + " " + "".join(item["commentary"]["en"])
             self.assertLessEqual(len(item["commentary"]["zh"]), 2)

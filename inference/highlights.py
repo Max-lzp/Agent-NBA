@@ -97,6 +97,10 @@ DEF_LABEL = {
     "dunk": "防守",
     "steal": "抢断",
 }
+OFF_KEYS = {"xfg", "distance", "fg3_pct", "zone_fg_pct", "blocks_against", "off_rank"}
+DEF_KEYS = {"season_blocks", "block_pct", "defense_fg", "matchup", "season_steals", "def_rank"}
+OFF_PICK = (("ts_pct", "真实命中率", True), ("pts", "得分", False), ("fg_pct", "命中率", True))
+DEF_PICK = (("def_rating", "防守效率", False), ("blk", "盖帽", False))
 
 
 def load_doc(source):
@@ -373,6 +377,7 @@ def _normalize(raw, order):
         "three": kind == "3pt" or "3pt" in description.lower(),
         "distance": _num(raw.get("shotDistance")),
         "area": raw.get("area") or "",
+        "side": str(raw.get("side") or "").lower(),
         "blockPersonId": raw.get("blockPersonId"),
         "blocked": "blocked" in description.lower() or raw.get("blockPersonId") is not None,
         "foulDrawn": raw.get("foulDrawnPersonId"),
@@ -598,6 +603,85 @@ def load_dash(roster_stats, season_dir: Path):
             record["_league"] = bool(league)
             slot[kind] = record
     return table
+
+
+def _rank_rules():
+    import sys
+
+    root = str(ROOT)
+    if root not in sys.path:
+        sys.path.insert(0, root)
+    from pipeline.enrich.defense import RANK_METRICS, RANK_MIN_GP, RANK_MIN_MPG, stars
+
+    return stars, RANK_MIN_GP, RANK_MIN_MPG, RANK_METRICS
+
+
+def _metric_value(getter, base, advanced):
+    try:
+        value = getter(base, advanced or {})
+    except (TypeError, ValueError, KeyError, ZeroDivisionError):
+        return None
+    number = _num(value)
+    return number
+
+
+def load_team_ranks(roster_stats, season_dir: Path):
+    """同队轮换（≥20 场、场均 ≥15 分钟）的赛季排名。星级用 defense.stars。"""
+    stars, min_gp, min_mpg, metrics = _rank_rules()
+    groups: dict[str, dict] = {}
+    league: dict[str, dict] = {}
+    for path, doc in _dash_docs(roster_stats, season_dir):
+        if not isinstance(doc, dict):
+            continue
+        params = doc.get("parameters") or {}
+        measure = str(params.get("MeasureType") or "")
+        kind = "advanced" if "adv" in measure.lower() else "base"
+        is_league = str(params.get("TeamID", "0")) in {"0", "None", ""} or (path is not None and "NBA" in path.name)
+        result = (doc.get("resultSets") or [None])[0] or {}
+        headers = result.get("headers") or []
+        if "PLAYER_ID" not in headers:
+            continue
+        target = league if is_league else groups
+        file_team = ""
+        if path is not None:
+            file_team = path.name.split("_", 1)[0]
+        for raw in result.get("rowSet") or []:
+            record = dict(zip(headers, raw))
+            try:
+                pid = int(record["PLAYER_ID"])
+            except (TypeError, ValueError, KeyError):
+                continue
+            team = str(record.get("TEAM_ABBREVIATION") or file_team or "").upper()
+            if not team or team == "NBA":
+                continue
+            target.setdefault(team, {}).setdefault(pid, {})[kind] = record
+    pools = dict(league)
+    pools.update(groups)
+    ranks: dict[int, dict] = {}
+    for players in pools.values():
+        pool = []
+        for pid, slot in players.items():
+            base = slot.get("base") or {}
+            games = _num(base.get("GP"))
+            minutes = _num(base.get("MIN"))
+            if games is None or games < min_gp or minutes is None or minutes / games < min_mpg:
+                continue
+            pool.append((pid, base, slot.get("advanced") or {}))
+        for name, (getter, low) in metrics.items():
+            valued = []
+            for pid, base, advanced in pool:
+                value = _metric_value(getter, base, advanced)
+                if value is not None:
+                    valued.append((value, pid))
+            valued.sort(key=lambda item: item[0], reverse=not low)
+            for index, (value, pid) in enumerate(valued):
+                ranks.setdefault(pid, {})[name] = {
+                    "value": round(value, 3),
+                    "rank": index + 1,
+                    "of": len(valued),
+                    "stars": stars(index + 1),
+                }
+    return ranks
 
 
 def _csv_rows(path: Path):
@@ -1140,6 +1224,50 @@ def _blocker_lines(dash):
     return rows
 
 
+def _rank_line(pid, ranks, picks, label_zh, label_en, key):
+    if pid is None:
+        return None
+    try:
+        row = (ranks or {}).get(int(pid))
+    except (TypeError, ValueError):
+        return None
+    if not row:
+        return None
+    for name, title, ratio in picks:
+        item = row.get(name)
+        if not item or not item.get("stars") or item["stars"] <= 0:
+            continue
+        shown = pct_text(item["value"]) if ratio else f"{item['value']:.1f}"
+        if not shown:
+            continue
+        zh = f"队内{label_zh} {title} {shown} 第 {item['rank']}/{item['of']}"
+        en = f"team {label_en}, {title} {shown}, {item['rank']} of {item['of']}"
+        return _stat(
+            key, dict(item), f"第 {item['rank']}/{item['of']}",
+            f"leaguedash.{name}", zh, en, stars=item["stars"],
+        )
+    return None
+
+
+def _panels(title, shooter, defender, kind, stats):
+    offense = [{"style": "title", "text": title, "stars": None}]
+    defense = []
+    if shooter:
+        number = f" #{shooter['number']}" if shooter.get("number") else ""
+        offense.append({"style": "off", "text": f"投篮 {_display_name(shooter)}{number}", "stars": None})
+    label = DEF_LABEL.get(kind, "防守")
+    number = f" #{defender['number']}" if defender and defender.get("named") and defender.get("number") else ""
+    who = (defender or {}).get("display") or "防守人"
+    defense.append({"style": "def", "text": f"{label} {who}{number}", "stars": None})
+    for stat in stats:
+        row = {"style": "rank" if stat.get("stars") else "line", "text": stat["lineZh"], "stars": stat.get("stars")}
+        if stat["key"] in DEF_KEYS:
+            defense.append(row)
+        else:
+            offense.append(row)
+    return {"offense": offense, "defense": defense}
+
+
 def build_card(item, context):
     shot = item.get("shot") or {}
     kind = item["type"]
@@ -1227,6 +1355,16 @@ def build_card(item, context):
         # 扣篮卡只补同区命中率，避免空的三分行。
         for row in _season_shooting(None, None, zone, area):
             stats.append(row)
+    off_rank = _rank_line(
+        (offense or {}).get("personId"), context.get("ranks"), OFF_PICK, "进攻", "offense", "off_rank",
+    )
+    def_rank = _rank_line(
+        (defense or {}).get("personId"), context.get("ranks"), DEF_PICK, "防守", "defense", "def_rank",
+    )
+    if off_rank:
+        stats.insert(0, off_rank)
+    if def_rank:
+        stats.append(def_rank)
     title = TITLES[kind]
     return {
         "type": kind,
@@ -1234,6 +1372,7 @@ def build_card(item, context):
         "shooter": offense,
         "defender": view,
         "stats": stats,
+        "panels": _panels(title, offense, view, kind, stats),
         "xfg": xfg,
         "actionNumbers": [
             number for number in (
@@ -1363,6 +1502,46 @@ def _received_counts(actions):
     return counts
 
 
+def _layout_hint(context, t, card, action):
+    samples = _identity_samples(context.get("identity"))
+    boxes, shooter_box, defender_box = [], None, None
+    if t is not None and samples:
+        near = [sample for sample in samples if abs(sample["t"] - t) <= 0.8]
+        if near:
+            stamp = min(near, key=lambda sample: abs(sample["t"] - t))["t"]
+            group = [sample for sample in near if abs(sample["t"] - stamp) <= 0.05]
+            boxes = [[float(value) for value in sample["box"]] for sample in group]
+            shooter = card.get("shooter")
+            officials = context.get("officials") or []
+            for sample in group:
+                if not _is_referee(sample, officials) and _same_player(sample, shooter):
+                    shooter_box = [float(value) for value in sample["box"]]
+                    break
+            if shooter_box:
+                sx, sy = _foot(tuple(shooter_box))
+                best = None
+                for sample in group:
+                    if _is_referee(sample, officials) or _same_player(sample, shooter):
+                        continue
+                    if shooter and shooter.get("team") and sample.get("team") == shooter.get("team"):
+                        continue
+                    if not sample.get("team"):
+                        continue
+                    fx, fy = _foot(sample["box"])
+                    dist = (fx - sx) ** 2 + (fy - sy) ** 2
+                    if best is None or dist < best[0]:
+                        best = (dist, [float(value) for value in sample["box"]])
+                if best:
+                    defender_box = best[1]
+    side = str((action or {}).get("side") or "").lower()
+    return {
+        "shotSide": side if side in {"left", "right"} else "",
+        "boxes": boxes,
+        "shooterBox": shooter_box,
+        "defenderBox": defender_box,
+    }
+
+
 def build_highlights(
     board,
     playbyplay,
@@ -1399,6 +1578,7 @@ def build_highlights(
         "matchups": load_doc(matchups) if not isinstance(matchups, dict) else matchups,
         "season": load_season(season_path),
         "dash": load_dash(roster_stats, season_path),
+        "ranks": load_team_ranks(roster_stats, season_path),
         "received": _received_counts(actions),
     }
     rows = []
@@ -1429,7 +1609,13 @@ def build_highlights(
                 "shooter": _public_person(card.get("shooter")),
                 "defender": _public_person(None, card.get("defender")),
             },
-            "card": {"title": card["title"], "lines": _card_lines(card), "stats": card["stats"]},
+            "card": {
+                "title": card["title"],
+                "lines": _card_lines(card),
+                "stats": card["stats"],
+                "panels": card.get("panels") or {},
+            },
+            "layout": _layout_hint(context, source["key"], card, anchor_action),
             "commentary": commentary,
             "_xfg": card.get("xfg"),
         })
@@ -1500,60 +1686,176 @@ def _wrap(draw, text, font, width):
     return lines or [text]
 
 
-def draw_overlay(highlight):
-    """1280×720 透明图层：左上标题，左侧数据卡，避开右下角转播记分牌。"""
+def _star_points(cx, cy, radius):
+    import math
+
+    points = []
+    for step in range(10):
+        angle = -math.pi / 2 + step * math.pi / 5
+        arm = radius if step % 2 == 0 else radius * 0.45
+        points.append((cx + arm * math.cos(angle), cy + arm * math.sin(angle)))
+    return points
+
+
+def _paint_stars(draw, x, y, size, rating):
     from PIL import Image, ImageDraw
 
-    image = Image.new("RGBA", (OUT_W, OUT_H), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image)
-    title_font = _font(34)
-    head_font = _font(22)
-    body_font = _font(18)
-    title = highlight.get("title") or "精彩回放"
-    banner_w = int(draw.textlength(title, font=title_font)) + 48
-    draw.rectangle((24, 22, 24 + banner_w, 78), fill=PANEL)
-    draw.rectangle((24, 22, 30, 78), fill=RED)
-    draw.text((42, 32), title, font=title_font, fill=RED)
-
-    rows = []
-    for line in (highlight.get("card") or {}).get("lines") or []:
-        if line == title:
+    for index in range(5):
+        cx = x + index * (size + 2) + size / 2
+        cy = y + size / 2
+        radius = size / 2
+        draw.polygon(_star_points(cx, cy, radius), fill=(88, 80, 70, 255))
+        fill = min(max(float(rating) - index, 0.0), 1.0)
+        if fill <= 0:
             continue
-        style = "off" if line.startswith("投篮") else "def" if line[:2] in {"盖帽", "犯规", "防守", "抢断"} else "line"
-        font = head_font if style in {"off", "def"} else body_font
-        rows.append((style, line, font))
-    if not rows:
-        return image
-    card_w = 520
+        width = int(size) + 2
+        star = Image.new("L", (width, width), 0)
+        ImageDraw.Draw(star).polygon(_star_points(width / 2, width / 2, radius), fill=255)
+        if fill < 1:
+            star.paste(0, (int(width * fill), 0, width, width))
+        draw._image.paste(Image.new("RGBA", (width, width), GOLD), (int(cx - width / 2), int(cy - width / 2)), star)
+
+
+def _render_panel(rows, width, edge):
+    from PIL import Image, ImageDraw
+
+    image = Image.new("RGBA", (width, 8), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    head = _font(22)
+    body = _font(18)
+    title = _font(28)
     wrapped = []
-    for style, line, font in rows:
-        for piece in _wrap(draw, line, font, card_w - 46):
-            wrapped.append((style if piece == line else "line", piece, font))
+    for row in rows or []:
+        style = row.get("style") or "line"
+        font = title if style == "title" else head if style in {"off", "def"} else body
+        for piece in _wrap(draw, row.get("text") or "", font, width - 36):
+            wrapped.append((style if piece == row.get("text") else "line", piece, font, row.get("stars") if piece == row.get("text") else None))
+    if not wrapped:
+        return image
     heights = []
-    for style, _line, font in wrapped:
-        heights.append(draw.textbbox((0, 0), "字", font=font)[3] + (12 if style in {"off", "def"} else 8))
-    card_h = sum(heights) + 28
-    x0, y0 = 24, 96
-    draw.rectangle((x0, y0, x0 + card_w, y0 + card_h), fill=PANEL)
-    draw.rectangle((x0, y0, x0 + 5, y0 + card_h), fill=RED)
-    y = y0 + 14
-    for (style, line, font), height in zip(wrapped, heights):
-        color = CREAM if style in {"off", "def"} else MUTED
-        x = x0 + 18
+    for style, _text, font, stars in wrapped:
+        line_h = draw.textbbox((0, 0), "字", font=font)[3] + (10 if style in {"title", "off", "def"} else 6)
+        if stars:
+            line_h += 18
+        heights.append(line_h)
+    height = sum(heights) + 22
+    image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((0, 0, width, height), fill=PANEL)
+    draw.rectangle((0, 0, 5, height), fill=edge)
+    y = 10
+    for (style, text, font, stars), line_h in zip(wrapped, heights):
+        color = RED if style == "title" else CREAM if style in {"off", "def"} else MUTED
+        x = 16
         if style in {"off", "def"}:
             draw.ellipse((x, y + 6, x + 10, y + 16), fill=RED if style == "off" else GOLD)
-            x += 18
-        draw.text((x, y), line, font=font, fill=color)
-        y += height
+            x += 16
+        draw.text((x, y), text, font=font, fill=color)
+        if stars:
+            _paint_stars(draw, x, y + draw.textbbox((0, 0), "字", font=font)[3] + 2, 12, stars)
+        y += line_h
+    return image
+
+
+def _fit_boxes(boxes, width, height):
+    fitted = []
+    raw = []
+    for box in boxes or []:
+        if not box or len(box) < 4:
+            continue
+        raw.append(tuple(float(value) for value in box[:4]))
+    if not raw:
+        return []
+    max_x = max(box[0] + box[2] for box in raw)
+    max_y = max(box[1] + box[3] for box in raw)
+    if max_x <= 1.5 and max_y <= 1.5:
+        scale_x, scale_y = width, height
+    elif max_x > width * 1.05 or max_y > height * 1.05:
+        scale_x = width / max_x
+        scale_y = height / max_y
+    else:
+        scale_x = scale_y = 1
+    for x, y, w, h in raw:
+        fitted.append((x * scale_x, y * scale_y, w * scale_x, h * scale_y))
+    return fitted
+
+
+def _broadcast_bugs(width, height):
+    return [
+        (width * 0.70, height * 0.78, width * 0.30, height * 0.22),
+        (width * 0.84, 0, width * 0.16, height * 0.18),
+    ]
+
+
+def _card_sides(frame, highlight):
+    from card_layout import basket_side
+
+    basket = basket_side(frame) if frame is not None else None
+    layout = highlight.get("layout") or {}
+    if basket is None and layout.get("shotSide") in {"left", "right"}:
+        basket = layout["shotSide"]
+    shooter, defender = layout.get("shooterBox"), layout.get("defenderBox")
+    if basket is None and shooter and defender and len(shooter) >= 3 and len(defender) >= 3:
+        shooter_x = shooter[0] + shooter[2] / 2
+        defender_x = defender[0] + defender[2] / 2
+        basket = "right" if defender_x >= shooter_x else "left"
+    layout["basket"] = basket
+    highlight["layout"] = layout
+    if basket == "left":
+        return "right", "left"
+    return "left", "right"
+
+
+def draw_overlay(highlight, frame=None):
+    """1280×720 透明图层。进攻卡远离篮筐，防守卡靠近篮筐，都放在空地上。"""
+    from PIL import Image
+
+    from card_layout import place_cards
+
+    image = Image.new("RGBA", (OUT_W, OUT_H), (0, 0, 0, 0))
+    panels = (highlight.get("card") or {}).get("panels") or {}
+    offense = _render_panel(panels.get("offense") or [], 360, RED)
+    defense = _render_panel(panels.get("defense") or [], 360, GOLD)
+    if offense.height <= 8 and defense.height <= 8:
+        return image
+    analysis = None
+    if frame is not None:
+        shot = frame if isinstance(frame, Image.Image) else Image.open(frame)
+        analysis = shot.convert("RGB")
+        if analysis.size != (OUT_W, OUT_H):
+            analysis = analysis.resize((OUT_W, OUT_H))
+    offense_side, defense_side = _card_sides(analysis, highlight)
+    boxes = _fit_boxes((highlight.get("layout") or {}).get("boxes"), OUT_W, OUT_H)
+    canvas = analysis if analysis is not None else Image.new("RGB", (OUT_W, OUT_H), (24, 28, 32))
+    cards = []
+    panels_drawn = []
+    if offense.height > 8:
+        cards.append({"id": "offense", "w": offense.width, "h": offense.height})
+        panels_drawn.append(offense)
+    if defense.height > 8:
+        cards.append({"id": "defense", "w": defense.width, "h": defense.height})
+        panels_drawn.append(defense)
+    positions = place_cards(
+        canvas, boxes, cards,
+        {"offense": offense_side, "defense": defense_side},
+        scorebug_boxes=_broadcast_bugs(OUT_W, OUT_H),
+    )
+    highlight.setdefault("layout", {})["positions"] = positions
+    for panel, pos in zip(panels_drawn, positions):
+        if pos["w"] != panel.width or pos["h"] != panel.height:
+            panel = panel.resize((max(1, pos["w"]), max(1, pos["h"])))
+        x = max(0, min(int(pos["x"]), OUT_W - panel.width))
+        y = max(0, min(int(pos["y"]), OUT_H - panel.height))
+        image.alpha_composite(panel, (x, y))
     return image
 
 
 def burn_card(frame, highlight, dest):
-    """把数据卡叠到一帧上，供截图验收。"""
+    """把进攻卡和防守卡叠到一帧上，供截图验收。"""
     from PIL import Image
 
     base = Image.open(frame).convert("RGBA").resize((OUT_W, OUT_H))
-    out = Image.alpha_composite(base, draw_overlay(highlight)).convert("RGB")
+    out = Image.alpha_composite(base, draw_overlay(highlight, base)).convert("RGB")
     dest = Path(dest)
     dest.parent.mkdir(parents=True, exist_ok=True)
     out.save(dest)
@@ -1693,7 +1995,18 @@ def render_highlights(
         segment["srcStart"] = min(segment["srcStart"], max(0.0, probed - 0.5))
         segment["srcEnd"] = min(max(segment["srcEnd"], segment["srcStart"] + 0.5), probed)
         overlay = work / f"card-{index}.png"
-        draw_overlay(highlight).save(overlay)
+        still = work / f"still-{index}.jpg"
+        try:
+            _run([
+                "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+                "-ss", f"{max(0.0, highlight['sourceSeconds']['key']):.3f}",
+                "-i", str(video), "-frames:v", "1", str(still),
+            ])
+            from PIL import Image
+            shot = Image.open(still)
+        except (RuntimeError, OSError):
+            shot = None
+        draw_overlay(highlight, shot).save(overlay)
         piece = work / f"replay-{index}.mp4"
         _encode_replay(video, highlight, overlay, piece, preset)
         length = _probe(piece)[0]
