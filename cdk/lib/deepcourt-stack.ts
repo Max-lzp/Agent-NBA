@@ -252,6 +252,9 @@ export class DeepCourtStack extends cdk.Stack {
       memoryLimit: 512,
     });
 
+    new cdk.CfnOutput(this, 'DistributionId', {
+      value: distribution.distributionId,
+    });
     new cdk.CfnOutput(this, 'CloudFrontUrl', {
       value: `https://${distribution.distributionDomainName}/`,
     });
@@ -269,7 +272,7 @@ export class DeepCourtStack extends cdk.Stack {
     });
 
     if (this.node.tryGetContext('enableP1') !== 'false') {
-      addP1(this, { mediaBucket, jobs, events, analyzeFn, code });
+      addP1(this, { mediaBucket, webBucket, distribution, jobs, events, analyzeFn, code });
     }
     if (this.node.tryGetContext('enableP2') !== 'false') {
       addP2(this, {

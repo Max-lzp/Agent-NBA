@@ -163,7 +163,7 @@ def read_clip(clip_id: str) -> dict:
     from rapidocr_onnxruntime import RapidOCR
 
     clip = CLIPS[clip_id]
-    ocr = RapidOCR()
+    ocr = RapidOCR(det_limit_side_len=640)
     cap = cv2.VideoCapture(str((ROOT / clip["video"]).resolve()))
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     step = max(1, round(fps / SAMPLE_FPS))

@@ -95,7 +95,7 @@ const els = {
 const params = new URLSearchParams(location.search);
 const jobId = params.get("jobId");
 const clips = window.DEEPCOURT_CLIPS || {};
-const clipName = params.get("clip") || (clips.flagg ? "flagg" : Object.keys(clips)[0] || "");
+const clipName = params.get("clip") || window.DEEPCOURT_LEAD || (clips.flagg ? "flagg" : Object.keys(clips)[0] || "");
 
 const state = {
   pack: null,

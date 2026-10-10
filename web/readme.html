@@ -41,7 +41,7 @@
     <p>本地追踪写出结构化清单，上传到 S3 <code>structured/</code>。Lambda 调 Bedrock AgentCore 校验；Agent 不可用时 Lambda 直接读清单，回放不会停住。页面通过 CloudFront 打开成片。上传入口在 <a href="/index.html">/index.html</a>，只给我们自己用。</p>
     <ol>
       <li>收片：浏览器经 CloudFront、API Gateway、Lambda 把视频直传到 S3，任务记在 DynamoDB。本地命令也可以直接读文件。</li>
-      <li>追踪和记分牌：追踪提交到 Batch，机器是 c7i.48xlarge。记分牌仍用本机 RapidOCR，不走 Textract。本机 MPS 也能出片。</li>
+      <li>追踪和记分牌：考试片交给 Batch，机器是保持开着的 c7i.48xlarge。同一台机器读记分牌，再用 ffmpeg 把比分烧进成片，直接放进网页桶。训练片仍可以在本机用 MPS 出片。记分牌检测边长限制在 640；球衣号码的裁切限制在 192。不走 Textract。</li>
       <li>事件清单在本地生成，再用本地的官方逐回合数据补出手人、助攻和预期命中率。独行侠的出手还会按当时分差，带上 2025-26 赛季效率。对得上的人再带上赛季出手质量、引力和关键度。每次出手还会找到球离手那一帧，记下投篮人。再从出手往前看 5 秒，跟住投篮人，贴他最久的对方球员就是领防人。号码只在当时在场的人里认，读不准就写「号码没读出」，不拿对位表顶替。投篮人和领防人还会带上队内排名：得分、命中率、抢断、盖帽、防守效率等，队内第 1 名五星，每往后一名少半星。</li>
       <li>回放时，进球后画面跳回出手那一帧，定格 5 秒：投篮人脚下画红圈，领防人脚下画黄色虚线圈；卡片写当时比分、投篮人和领防人的队内排名星级；认出领防人才写他的名字、本场对位和赛季场均。右栏是投篮人的分区热区图，红圈标出这一投，并写出这个位置的预期命中率。</li>
       <li>清单放到 S3。Lambda 调 Bedrock AgentCore 校验，页面事件写入 DynamoDB。</li>
@@ -53,12 +53,12 @@
       </thead>
       <tbody>
         <tr><td>收片、任务</td><td>CloudFront、API Gateway、Lambda、S3、DynamoDB</td><td>主路径</td></tr>
-        <tr><td>追踪</td><td>Batch、EC2 c7i.48xlarge、EBS、ECR、S3</td><td>部署中。G/VT 配额为 0，改用 192 vCPU 的 c7i.48xlarge</td></tr>
-        <tr><td>记分牌、认人、事件、官方数据</td><td>无。Textract 只做过探测</td><td>本地</td></tr>
+        <tr><td>追踪</td><td>Batch、EC2 c7i.48xlarge、EBS、ECR、S3</td><td>部署中。192 vCPU 保持开着，镜像正在烤</td></tr>
+        <tr><td>记分牌、认人、事件、官方数据</td><td>考试片的记分牌在同一台机器上。Textract 只做过探测</td><td>记分牌部署中。认人、事件、官方数据仍在本地</td></tr>
         <tr><td>校验清单</td><td>Lambda、Bedrock AgentCore、DynamoDB、CloudWatch Logs</td><td>主路径</td></tr>
         <tr><td>回放</td><td>CloudFront、S3、API Gateway、Lambda</td><td>主路径</td></tr>
         <tr><td>解说</td><td>Bedrock、Polly、S3</td><td>成片仍用本机语音</td></tr>
-        <tr><td>成片</td><td>无。MediaConvert 模板已建</td><td>本地 ffmpeg。还没提交转码作业</td></tr>
+        <tr><td>成片</td><td>同一台机器上的 ffmpeg，写入网页桶。MediaConvert 模板已建</td><td>部署中。MediaConvert 还没提交转码作业</td></tr>
         <tr><td>观测和密钥</td><td>CloudWatch、X-Ray、Secrets Manager、Cost Explorer</td><td>已接通。密钥是空占位</td></tr>
       </tbody>
     </table>

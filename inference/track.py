@@ -51,11 +51,13 @@ def _track(bucket_name: str, video: str, threads: int) -> list[dict]:
     if not bucket_name or not video:
         raise RuntimeError("缺少 MEDIA_BUCKET 或 VIDEO_S3")
     s3 = boto3.client("s3", region_name=REGION)
-    model_dir = Path("/tmp/models")
+    baked = Path("/opt/track/models")
+    model_dir = baked if all((baked / name).is_file() for name in MODELS) else Path("/tmp/models")
     model_dir.mkdir(parents=True, exist_ok=True)
     for name in MODELS:
         dest = model_dir / name
-        s3.download_file(bucket_name, f"bootstrap/models/{name}", str(dest))
+        if not dest.is_file():
+            s3.download_file(bucket_name, f"bootstrap/models/{name}", str(dest))
     local_video = Path("/tmp/video.mp4")
     video_bucket, video_key = _split_s3(video)
     s3.download_file(video_bucket, video_key, str(local_video))

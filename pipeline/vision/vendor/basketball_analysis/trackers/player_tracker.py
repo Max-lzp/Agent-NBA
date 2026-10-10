@@ -34,7 +34,7 @@ class PlayerTracker:
         Returns:
             list: YOLO detection results for each frame.
         """
-        batch_size=4 
+        batch_size=16 
         detections = [] 
         for i in range(0,len(frames),batch_size):
             detections_batch = self.model.predict(frames[i:i+batch_size],conf=0.5)

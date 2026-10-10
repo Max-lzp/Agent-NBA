@@ -93,7 +93,7 @@
       <li>
         <span class="step">04</span>
         <b>成片</b>
-        <span>Batch 做 GPU 跟踪，Textract 读记分牌，MediaConvert 合成。</span>
+        <span>同一台 c7i.48xlarge 跟踪、读记分牌并合成，成片直传网页桶。</span>
       </li>
       <li>
         <span class="step">05</span>
@@ -129,7 +129,7 @@
         <article>
           <h3>跟踪与成片</h3>
           <ul>
-            <li><b>AWS Batch</b><span>c7i.48xlarge，192 vCPU，空闲时缩到 0</span></li>
+            <li><b>AWS Batch</b><span>c7i.48xlarge，192 vCPU，保持开着</span></li>
             <li><b>Amazon EC2 · EBS</b><span>跟踪实例与加密系统盘</span></li>
             <li><b>Amazon ECR</b><span>跟踪镜像 deepcourt-tracker</span></li>
             <li><b>Textract · MediaConvert</b><span>记分牌文字，叠加层合成 1080p</span></li>
