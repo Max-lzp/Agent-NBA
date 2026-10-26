@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent辅助NBA观赛 · 本地回放</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="player.css">
+  <script type="module" src="player.js"></script>
+</head>
+<body>
+  <header><a class="wordmark" href="index.html">DEEP COURT<span> / LOCAL REPLAY</span></a><nav aria-label="主导航"><a href="index.html">项目介绍</a><a href="#timeline-title">事件时间线</a></nav></header>
+  <main>
+    <section class="player-intro">
+      <p class="eyebrow">第一阶段 / 无 AWS 回放</p>
+      <h1>这一球，自己掌握。</h1>
+      <p>播放、切换观看模式、点击事件跳转，也可以选择自己的视频并添加标记。</p>
+      <p class="caption">默认影片由项目自行绘制，球员、回合和数据均为合成示例。选择的本地视频只在浏览器播放，不上传、不执行 AI 识别。</p>
+      <div class="toolbar">
+        <button type="button" id="sample">恢复教学样例</button>
+        <label class="file-button">选择本地视频<input id="video-file" type="file" accept="video/*"></label>
+        <label class="file-button">导入时间线 JSON<input id="timeline-file" type="file" accept="application/json,.json" disabled></label>
+        <button type="button" id="export" disabled>导出时间线</button>
+      </div>
+      <p id="status" role="status" aria-live="polite">正在加载教学样例…</p>
+      <p class="caption">本地视频和标记不会自动保存。切换视频或刷新前请导出时间线；下次先选择同一视频，再导入 JSON。</p>
+    </section>
+    <div class="replay-layout">
+      <div>
+        <video id="video" controls playsinline preload="metadata" aria-label="回放视频"></video>
+        <p id="source" class="caption"></p>
+        <section class="annotations" aria-labelledby="annotation-title">
+          <h2 id="annotation-title">标记当前时刻</h2>
+          <p class="caption">添加你自己的观察，不会自动识别人物、比分或事件。</p>
+          <form id="annotation-form">
+            <label for="event-title">事件名称</label><input id="event-title" maxlength="120" required placeholder="例如：出手、传球、需要复盘的时刻">
+            <label for="event-note">观察说明</label><textarea id="event-note" maxlength="2000" rows="3" required placeholder="记录看到的内容或待核实的问题"></textarea>
+            <button type="submit" id="add-event" disabled>在当前时刻添加标记</button>
+          </form>
+        </section>
+      </div>
+      <aside aria-label="事件说明">
+        <div class="modes" role="group" aria-label="观看模式">
+          <button type="button" data-mode="expert" aria-pressed="false">老球迷</button>
+          <button type="button" data-mode="new" aria-pressed="true">新球迷</button>
+          <button type="button" data-mode="together" aria-pressed="false">一起看</button>
+        </div>
+        <div class="event-card" aria-live="polite" aria-atomic="true"><p class="eyebrow" id="event-time">00:00</p><h2 id="event-heading">等待视频加载</h2><p id="event-description"></p><p class="caption" id="event-origin"></p></div>
+        <h2 id="timeline-title">事件时间线</h2><p class="caption">点击事件跳转并暂停，便于逐帧观察。</p>
+        <ol id="timeline"></ol>
+        <button id="remove-event" type="button" disabled>删除当前标记</button>
+      </aside>
+    </div>
+    <section class="local-qa" aria-labelledby="qa-title">
+      <p class="eyebrow">LOCAL LOOKUP / 本地事件查询</p><h2 id="qa-title">从已记录的内容找答案。</h2>
+      <p class="caption">只检索当前时间线，返回记录原文与时间。不是大模型问答，不补充记录中不存在的结论。</p>
+      <form id="lookup-form"><label for="query">事件名称或关键词</label><input id="query" maxlength="120" required placeholder="例如：三分、传球"><button type="submit">查询记录</button></form>
+      <div id="lookup-result" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+  <footer>Agent辅助NBA观赛 · 原团队项目 Deep Court / Team 04 · 本地文件仅保留于当前页面会话</footer>
+</body>
+</html>

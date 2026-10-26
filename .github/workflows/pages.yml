@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'portfolio/**'
+      - 'scripts/qa/check_timeline.mjs'
+      - 'scripts/qa/check_local_replay.py'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -27,6 +29,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate timeline data contract
+        run: node scripts/qa/check_timeline.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
