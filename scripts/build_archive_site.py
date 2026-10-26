@@ -71,10 +71,15 @@ def build(output):
     for name in ["game.html", "styles.css", "game.js", "replay-freeze.js", "analyst.js", "archive.js", "archive.css", "arch.html", "official-clips.html", "official-clips.css", "official-clips.js", "rulebook.html", "rulebook.js"]:
         shutil.copy2(web / name, output / name)
     shutil.copy2(web / "game.html", output / "index.html")
+    # Set the deployment profile before first paint, rather than waiting for JS.
+    for name in ["index.html", "game.html"]:
+        page = (output / name).read_text().replace("<body>", '<body class="offline">', 1)
+        (output / name).write_text(page)
     for name in ["fonts", "logos", "headshots", "schedules", "brands"]:
         shutil.copytree(web / name, output / name)
     (output / "assets").mkdir()
     shutil.copy2(web / pack["video"], output / pack["video"])
+    shutil.copy2(web / "assets/flagg-poster.jpg", output / "assets/flagg-poster.jpg")
     (output / "replay").mkdir()
     for name in ["official-clips.json", "official-clips-validation.json", "official-rulebook.json", "rulebook-validation.json"]:
         shutil.copy2(web / "replay" / name, output / "replay" / name)

@@ -142,7 +142,7 @@ const state = {
   freeze: null,
   replayed: new Set(),
   watch: initialMode(),
-  modePicked: MODES.indexOf(params.get("mode")) >= 0,
+  modePicked: CFG.offline || MODES.indexOf(params.get("mode")) >= 0,
   lang: initialLang(),
   switchingTrack: null,
   currentSrc: "",
@@ -152,7 +152,7 @@ let reelObjectURL = null;
 
 function initialMode() {
   const q = params.get("mode");
-  return MODES.indexOf(q) >= 0 ? q : "laofan";
+  return MODES.indexOf(q) >= 0 ? q : (CFG.offline ? "xinfan" : "laofan");
 }
 
 init();
@@ -339,7 +339,7 @@ async function setReelSrc(src) {
   const request = ++reelRequest;
   state.currentSrc = src || "";
   setStageStatus(src ? "loading" : null);
-  if (CFG.offline && src) {
+  if (CFG.offline && src && ["127.0.0.1", "localhost", "[::1]"].includes(location.hostname)) {
     try {
       // Buffer the retained clip so preview servers without Range support can
       // still seek. Blob playback stays entirely on the client.
@@ -647,6 +647,9 @@ function syncWatch() {
   });
   const glossary = document.querySelector("#glossary");
   if (glossary) glossary.hidden = state.watch === "laofan";
+  const glossaryPanel = document.querySelector("#glossary-panel");
+  if (glossaryPanel) glossaryPanel.hidden = state.watch === "laofan";
+  window.dispatchEvent(new CustomEvent("deepcourt:mode", { detail: { mode: state.watch } }));
 }
 
 function initialLang() {

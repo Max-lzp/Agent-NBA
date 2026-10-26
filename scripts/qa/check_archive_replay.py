@@ -6,10 +6,12 @@ Requires Playwright and Chromium. Builds its own disposable site directory.
 import functools
 import importlib.util
 import json
+import mimetypes
 from pathlib import Path
 import shutil
 import tempfile
 import threading
+from urllib.parse import urlsplit
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 from playwright.sync_api import sync_playwright, expect
@@ -52,36 +54,56 @@ def main():
                 page.on("request", lambda request: requests.append(request.url))
                 page.on("response", lambda response: failed.append((response.status, response.url)) if response.status >= 400 else None)
                 assert page.goto(base + "/").status == 200
-                expect(page.locator("#mode-modal")).to_be_visible()
-                page.locator('[data-mode="xinfan"]').click()
                 expect(page.locator("#mode-modal")).to_be_hidden()
+                expect(page.locator('[data-watch="xinfan"]')).to_have_attribute("aria-pressed", "true")
                 page.wait_for_function('document.querySelector("video").readyState >= 2')
+                expect(page.locator("#primary-insight .insight-row")).to_have_count(3)
+                assert page.locator("video").evaluate("v => v.getBoundingClientRect().bottom <= innerHeight")
                 assert abs(page.locator("video").evaluate("v => v.duration") - pack["duration"]) < .1
                 assert page.evaluate('getComputedStyle(document.documentElement).getPropertyValue("--orange").trim()') == "#f1681e"
                 assert page.evaluate('getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()') == "#14110e"
                 page.locator("video").evaluate("v => v.play()")
                 page.wait_for_function('document.querySelector("video").currentTime > .1')
+                explanations = []
                 for mode in ["laofan", "xinfan", "daikan"]:
                     page.locator(f'[data-watch="{mode}"]').click()
                     expect(page.locator(f'[data-watch="{mode}"]')).to_have_attribute("aria-pressed", "true")
-                    if mode == "laofan": expect(page.locator("#glossary")).to_be_hidden()
-                    else: expect(page.locator("#glossary")).to_be_visible()
+                    if mode == "laofan": expect(page.locator("#glossary-panel")).to_be_hidden()
+                    else: expect(page.locator("#glossary-panel")).to_be_visible()
+                    explanations.append(page.locator("#primary-insight").inner_text())
+                assert len(set(explanations)) == 3
+                page.locator("#roster-details > summary").click()
                 expect(page.locator("#floor img[alt$='头部特写']")).not_to_have_count(0)
                 expect(page.locator("#floor")).to_contain_text("Cooper Flagg")
+                page.locator("#full-timeline > summary").click()
                 page.locator("#events button").filter(has_text="弗拉格 2 分命中").click()
                 assert abs(page.locator("video").evaluate("v => v.currentTime") - 17.02) < .1
                 expect(page.locator("#detail")).to_contain_text("50.4%")
                 assert page.locator("video").evaluate("v => v.paused")
+                page.locator("#advanced-data > summary").click()
                 page.locator("#events button").filter(has_text="出手定格回看").click()
                 assert abs(page.locator("video").evaluate("v => v.currentTime") - 21.037) < .1
                 expect(page.locator("#court svg")).to_be_visible()
                 assert page.locator("#freeze").count() == 0  # no duplicate JS freeze
+                page.locator(".guided-followup > summary").click()
                 page.locator(".archive-questions button").first.click()
                 expect(page.locator(".archive-answer")).to_contain_text("50.4%")
                 expect(page.locator(".archive-source")).to_contain_text("快照")
                 for width in [1440, 390]:
                     page.set_viewport_size({"width": width, "height": 1000})
                     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), width
+                # Fresh mobile entry must expose the entire player without choosing a mode.
+                page.set_viewport_size({"width": 390, "height": 844})
+                page.goto(base + "/")
+                page.wait_for_function('document.querySelector("video").readyState >= 2')
+                expect(page.locator("#mode-modal")).to_be_hidden()
+                rect = page.locator("video").evaluate("v => {const r=v.getBoundingClientRect();return {top:r.top,bottom:r.bottom}}")
+                assert 0 <= rect["top"] and rect["bottom"] <= 844, rect
+                expect(page.locator("#replay-chapters button")).to_have_count(3)
+                for button in page.locator("#replay-chapters button").all():
+                    button.click()
+                    assert abs(page.locator("video").evaluate("v => v.currentTime") - float(button.get_attribute("data-time"))) < .15
+                    assert page.locator("video").evaluate("v => v.paused")
                 # Legacy job IDs and absent clips must not poll AWS or break playback.
                 page.goto(base + "/game.html?jobId=exam&clip=amen&mode=xinfan")
                 page.wait_for_function('document.querySelector("video").readyState >= 2')
@@ -94,6 +116,32 @@ def main():
                 assert not failed, failed
                 assert all(url.startswith((base, "blob:")) for url in requests), requests
                 assert not any("/api/" in url for url in requests)
+                # Exercise the public-site native streaming path with a local
+                # Range-capable fixture, without waiting for an actual deployment.
+                native = browser.new_page(viewport={"width": 1440, "height": 900})
+                native_errors = []
+                native.on("pageerror", lambda error: native_errors.append(str(error)))
+                def serve_static(route):
+                    path = site / (urlsplit(route.request.url).path.lstrip("/") or "index.html")
+                    if not path.is_file():
+                        route.fulfill(status=404, body="Missing fixture")
+                        return
+                    content = path.read_bytes()
+                    kind = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
+                    requested = route.request.headers.get("range")
+                    if requested and requested.startswith("bytes="):
+                        first, last = requested[6:].split("-", 1)
+                        start, end = int(first or 0), int(last) if last else len(content) - 1
+                        route.fulfill(status=206, content_type=kind, headers={"Accept-Ranges": "bytes", "Content-Range": f"bytes {start}-{end}/{len(content)}"}, body=content[start:end + 1])
+                    else:
+                        route.fulfill(status=200, content_type=kind, headers={"Accept-Ranges": "bytes"}, body=content)
+                native.route("https://static-replay.test/**", serve_static)
+                native.goto("https://static-replay.test/")
+                native.wait_for_function('document.querySelector("video").readyState >= 2')
+                assert native.locator("video").get_attribute("src").startswith("assets/")
+                native.locator("#replay-chapters button").nth(2).click()
+                assert abs(native.locator("video").evaluate("v => v.currentTime") - 21.037) < .15
+                assert not native_errors, native_errors
                 browser.close()
         finally:
             server.shutdown()
