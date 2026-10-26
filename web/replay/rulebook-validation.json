@@ -1,0 +1,21 @@
+{
+  "results": [
+    {
+      "id": "illegal-screen",
+      "checkedAt": "2026-10-26T09:23:14.537676+00:00",
+      "status": "source_and_media_verified",
+      "duration": 23.089733,
+      "mediaSha256": "62b74945ca307ef22c13b58ceb38f174d7606d2a108047af180b5c8528da52b8",
+      "bytes": 23914792
+    },
+    {
+      "id": "gather-travel",
+      "checkedAt": "2026-10-26T09:23:16.743787+00:00",
+      "status": "source_and_media_verified",
+      "duration": 27.994633,
+      "mediaSha256": "8137d856c1692bfb331790c8ee520eccf798f1ae3c931c2d6d1309b4b1990f1b",
+      "bytes": 28920723
+    }
+  ],
+  "browserPlayback": "Two exact downloaded MP4 files passed local Chromium playback and UI tests; visitor CDN connectivity not guaranteed."
+}

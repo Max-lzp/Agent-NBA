@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "publisher": "NBA Video Rulebook",
+  "clips": [
+    {
+      "id": "illegal-screen",
+      "title": "挡拆：掩护人为什么被吹进攻犯规？",
+      "officialTitle": "Illegal Screen, Pick’n Roll, screener pushes defender with two hands",
+      "officialPage": "https://videorulebook.nba.com/archive/illegal-screen-pickn-roll-screener-pushes-defender-with-two-hands-4/",
+      "videoUrl": "https://ak-static.cms.nba.com/wp-content/uploads/sites/25/2026/01/26_Screens_916_Seq_DTerry_vo.mp4?id=0",
+      "sourcePageSha256": "a648d389254a157b73b23c1388d23cebfdc221f71d68e816fa59a9dcd269a747",
+      "checkedAt": "2026-10-26T09:23:04.894688+00:00",
+      "duration": 23.089733,
+      "mediaSha256": "62b74945ca307ef22c13b58ceb38f174d7606d2a108047af180b5c8528da52b8",
+      "bytes": 23914792,
+      "mediaCheck": "source_page_and_mp4_verified",
+      "browserCheck": "exact_real_media_playback_verified_locally; visitor_to_CDN_connection_separate",
+      "notes": {
+        "expert": "NBA 官方将这次接触判为非法掩护：掩护人向身体前方伸臂，与正在移动的防守者发生非法接触。看挡拆时，可将掩护位置与伸臂推人分开观察。",
+        "new": "挡拆可以理解为队友帮持球人挡一下防守者。但不能用伸出的手臂推开对手；这段示例因此被判进攻犯规。",
+        "together": "一起看掩护人的双手：他是在站位掩护，还是伸手推了防守人？可以暂停再对照 NBA 的官方解释。"
+      },
+      "interpretation": "Chinese educational summary based on the official ruling; not AI detection or full tactical analysis"
+    },
+    {
+      "id": "gather-travel",
+      "title": "新球迷入门：收球后为什么算走步？",
+      "officialTitle": "Travel on the perimeter, gather, then too many steps",
+      "officialPage": "https://videorulebook.nba.com/archive/travel-on-the-perimeter-gather-then-too-many-steps/",
+      "videoUrl": "https://ak-static.cms.nba.com/wp-content/uploads/sites/25/2024/01/23_Travel_723_Seq_KIrving_vo.mp4?id=0",
+      "sourcePageSha256": "9edd492f9bc5c349137ac24fb1c360e0dbcb9ef31b60c111bb053ed6c0245b14",
+      "checkedAt": "2026-10-26T09:23:05.126862+00:00",
+      "duration": 27.994633,
+      "mediaSha256": "8137d856c1692bfb331790c8ee520eccf798f1ae3c931c2d6d1309b4b1990f1b",
+      "bytes": 28920723,
+      "mediaCheck": "source_page_and_mp4_verified",
+      "browserCheck": "exact_real_media_playback_verified_locally; visitor_to_CDN_connection_separate",
+      "notes": {
+        "expert": "NBA 官方指出：欧文收球时右脚仍接触地面，随后在出手前走了超过允许的两步。应先识别收球，再判断后续步数，不能把运球和收球后的脚步混算。",
+        "new": "不是拿球后就能一直走。看这段示例时，先找到球员结束运球、控制住球的时刻，再观察出手前的脚步。官方判定这次走步。",
+        "together": "试着一起暂停：他什么时候收住球？接下来踩了几步？先描述看到的动作，再对照官方判例，不必只凭动作快慢判断。"
+      },
+      "interpretation": "Chinese educational summary based on the official ruling; not AI detection or full tactical analysis"
+    }
+  ]
+}

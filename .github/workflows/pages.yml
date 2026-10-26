@@ -8,7 +8,10 @@ on:
       - 'web/**'
       - 'scripts/build_archive_site.py'
       - 'scripts/package_official_clips.py'
+      - 'scripts/package_rulebook.py'
+      - 'data/official-rulebook/**'
       - 'scripts/qa/check_official_clips.py'
+      - 'scripts/qa/check_rulebook.py'
       - 'scripts/qa/check_archive_replay.py'
       - 'scripts/qa/check_timeline.mjs'
       - 'scripts/qa/check_local_replay.py'
@@ -45,6 +48,7 @@ jobs:
       - name: Build original competition replay
         run: |
           python3 scripts/package_official_clips.py
+          python3 scripts/package_rulebook.py
           python3 scripts/build_archive_site.py --output "${{ runner.temp }}/agent-nba-site"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

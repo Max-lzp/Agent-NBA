@@ -25,13 +25,31 @@
 
 **本地测试动画只用于自动化测试，不在官方样本页面替代真实视频。这些通过结果不证明 NBA 真实媒体已播放成功。**
 
-## 当前实际阻塞
+## 网络恢复后的实际结果
 
-本次云环境访问 `www.nba.com`、`videos.nba.com` 和 `stats.nba.com`，连接层返回 `Tunnel connection failed: 403 Forbidden`。三条媒体探测均记录为 `network_blocked`，不是通过，也不能判断 NBA 源站本身已拒绝或链接失效。
+环境配置生效后，NBA 官方事件页已能返回 HTTP 200。原三个出手链接也返回 200，但它们返回的文件完全相同：869,898 字节、15.015 秒、SHA-256 `afcfdc3190903e3fc13c56c054fa40c39d1775af4a53d40ce040d6a25ea3ad3e`。抽帧确认为“VIDEO NOT AVAILABLE”占位画面，不能用于球员/事件测试，继续保留为未通过。
 
-网络配置草稿已保留现有规则并添加 `www.nba.com`、`nba.com`、`videos.nba.com`、`stats.nba.com`。草稿保存不自动应用；用户需在云环境设置中保存并发布相关配置后再重试。
+因此新增 NBA Video Rulebook 官方规则示例作为可用的教学样本，而不尝试绕过原出手 CDN 的访问限制。网络无须再次申请放行。
 
-探测报告在 `web/replay/official-clips-validation.json`。放行后仍须验证真实文件、视频流与时长，并核对画面中的球员、比分、节次及事件。仅凭官方事件 ID 和相同视频时长不能证明逐帧对应，当前没有添加出手帧和人物框。
+探测报告在 `web/replay/official-clips-validation.json`。这些原始统计记录依然有来源价值，但不因统计记录真实就视为视频可用；当前没有为它们添加出手帧和人物框。
+
+## 已通过的官方规则样本
+
+网站 `rulebook.html` 提供两个真实示例，来源为 NBA 官方 [Video Rulebook](https://videorulebook.nba.com/)：
+
+- [挡拆中伸出双臂推防守人的非法掩护](https://videorulebook.nba.com/archive/illegal-screen-pickn-roll-screener-pushes-defender-with-two-hands-4/)，约 23.09 秒。
+- [收球后超过允许步数的走步](https://videorulebook.nba.com/archive/travel-on-the-perimeter-gather-then-too-many-steps/)，约 27.99 秒。
+
+来源页面、MP4 地址、视频内容哈希、媒体格式和时长均已通过普通 HTTPS 请求核对。实际下载的同一份视频已通过本地 Chromium 解码与播放测试，并检查官方画面；浏览器测试并非合成动画替代。这与访客浏览器到 NBA CDN 的实时连通仍是不同验证范围。
+
+网站直接引用 NBA 原站视频，不重新托管这两段文件。中文解释根据官方判例整理，可切换老球迷、新球迷、一起看三种说明。没有给规则示例添加不存在的出手概率、逐帧追踪或比赛事件 ID。
+
+数据和证据位于 `data/official-rulebook/clips.json`、`web/replay/official-rulebook.json` 和 `rulebook-validation.json`。
+
+```bash
+python3 scripts/package_rulebook.py --probe
+python3 scripts/qa/check_rulebook.py --media-dir /tmp/agent-nba-rulebook-cache
+```
 
 ## 重现
 

@@ -5,23 +5,41 @@
     {
       "id": "0022500701-63",
       "url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/63/6b5bdefd-2fd8-42ae-0d15-c636486947d7_1280x720.mp4",
-      "checkedAt": "2026-10-26T07:50:42.548880+00:00",
-      "status": "network_blocked",
-      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+      "checkedAt": "2026-10-26T09:23:16.823811+00:00",
+      "httpStatus": 200,
+      "contentType": "video/mp4",
+      "expectedDuration": 8.483,
+      "bytes": 869898,
+      "mediaSha256": "afcfdc3190903e3fc13c56c054fa40c39d1775af4a53d40ce040d6a25ea3ad3e",
+      "duration": 15.015,
+      "status": "media_not_verified",
+      "error": "Duration differs from official snapshot; reject possible placeholder"
     },
     {
       "id": "0022500701-228",
       "url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/228/7640a886-7f98-a40f-4b37-a08e609af090_1280x720.mp4",
-      "checkedAt": "2026-10-26T07:50:42.562717+00:00",
-      "status": "network_blocked",
-      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+      "checkedAt": "2026-10-26T09:23:17.526939+00:00",
+      "httpStatus": 200,
+      "contentType": "video/mp4",
+      "expectedDuration": 9.716,
+      "bytes": 869898,
+      "mediaSha256": "afcfdc3190903e3fc13c56c054fa40c39d1775af4a53d40ce040d6a25ea3ad3e",
+      "duration": 15.015,
+      "status": "media_not_verified",
+      "error": "Duration differs from official snapshot; reject possible placeholder"
     },
     {
       "id": "0022500491-18",
       "url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/18/de494c5f-9758-43d2-8836-f40621f59753_1280x720.mp4",
-      "checkedAt": "2026-10-26T07:50:42.567175+00:00",
-      "status": "network_blocked",
-      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+      "checkedAt": "2026-10-26T09:23:18.292051+00:00",
+      "httpStatus": 200,
+      "contentType": "video/mp4",
+      "expectedDuration": 11.533,
+      "bytes": 869898,
+      "mediaSha256": "afcfdc3190903e3fc13c56c054fa40c39d1775af4a53d40ce040d6a25ea3ad3e",
+      "duration": 15.015,
+      "status": "media_not_verified",
+      "error": "Duration differs from official snapshot; reject possible placeholder"
     }
   ]
 }

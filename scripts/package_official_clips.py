@@ -56,9 +56,11 @@ def probe(clip):
     try:
         request = urllib.request.Request(clip["videoUrl"], headers={"User-Agent": "Agent-NBA/1.0 official-source-check"})
         with urllib.request.urlopen(request, timeout=20) as response, tempfile.TemporaryDirectory() as directory:
+            record.update(httpStatus=response.status, contentType=response.headers.get("Content-Type"), expectedDuration=clip["expectedDuration"])
             if urllib.parse.urlsplit(response.url).hostname != "videos.nba.com":
                 raise ValueError("Unexpected media redirect; not followed for publication")
             data = response.read(24 * 1024 * 1024 + 1)
+            record.update(bytes=len(data), mediaSha256=hashlib.sha256(data).hexdigest())
             if len(data) > 24 * 1024 * 1024:
                 raise ValueError("Media exceeds sample limit; possible placeholder or wrong asset")
             if b"ftyp" not in data[:64]:
@@ -68,6 +70,7 @@ def probe(clip):
             result = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration:stream=codec_type", "-of", "json", str(path)], check=True, capture_output=True, text=True, timeout=20)
             media = json.loads(result.stdout)
             duration = float(media["format"]["duration"])
+            record["duration"] = duration
             if not any(row.get("codec_type") == "video" for row in media["streams"]):
                 raise ValueError("No video stream")
             if abs(duration - clip["expectedDuration"]) > .6:
