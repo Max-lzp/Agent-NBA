@@ -7,6 +7,8 @@ on:
       - 'portfolio/**'
       - 'web/**'
       - 'scripts/build_archive_site.py'
+      - 'scripts/package_official_clips.py'
+      - 'scripts/qa/check_official_clips.py'
       - 'scripts/qa/check_archive_replay.py'
       - 'scripts/qa/check_timeline.mjs'
       - 'scripts/qa/check_local_replay.py'
@@ -41,7 +43,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Build original competition replay
-        run: python3 scripts/build_archive_site.py --output "${{ runner.temp }}/agent-nba-site"
+        run: |
+          python3 scripts/package_official_clips.py
+          python3 scripts/build_archive_site.py --output "${{ runner.temp }}/agent-nba-site"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

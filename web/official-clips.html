@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deep Court · NBA 官方片段测试</title>
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="official-clips.css">
+  <script src="official-clips.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <p class="kicker"><span class="mark">DEEP COURT</span> · 官方来源样本</p>
+    <h1 class="player-title">NBA 官方<span class="accent">片段测试</span></h1>
+    <p>从 NBA 官方出手记录选取片段，将结果、预期命中率和来源封装为独立样本。与首页的历史成片分开，避免套用错误时间线。</p>
+    <p><a href="game.html">← 返回比赛回放</a></p>
+    <p class="source-notice">来源快照已核对。当前云环境访问 NBA 源站被拦截，真实媒体尚未完成在线验证。视频由 NBA 原站提供，仅在你点击后加载；无法播放时可打开官方页面。</p>
+    <p class="status" id="official-status" role="status" aria-live="polite">正在读取官方样本目录…</p>
+    <div class="official-grid">
+      <section aria-label="官方视频"><video id="official-video" controls playsinline preload="none"></video><p class="muted">不添加未经核实的出手帧、人名框或旧片段标记；元数据按官方比赛 ID 与事件 ID 关联。</p><div id="official-detail" aria-live="polite"></div></section>
+      <nav id="official-list" aria-label="选择官方样本"></nav>
+    </div>
+    <section class="official-method"><h2>这组样本测试什么？</h2><p>比较高概率机会命中、三分未中与较低概率机会命中。预期命中率描述机会质量，不代表这一球必然命中，也不能凭一次结果判断球员水平。</p><p>当前展示是官方历史数据查询，不是实时识别或战术生成。源站连通、浏览器解码、时长匹配和画面语义核对是不同验证步骤。</p></section>
+  </main>
+</body>
+</html>

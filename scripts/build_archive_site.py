@@ -68,7 +68,7 @@ def build(output):
     (output / ".agent-nba-generated").touch()
     (output / ".nojekyll").touch()
     web = ROOT / "web"
-    for name in ["game.html", "styles.css", "game.js", "replay-freeze.js", "analyst.js", "archive.js", "archive.css", "arch.html"]:
+    for name in ["game.html", "styles.css", "game.js", "replay-freeze.js", "analyst.js", "archive.js", "archive.css", "arch.html", "official-clips.html", "official-clips.css", "official-clips.js"]:
         shutil.copy2(web / name, output / name)
     shutil.copy2(web / "game.html", output / "index.html")
     for name in ["fonts", "logos", "headshots", "schedules", "brands"]:
@@ -76,6 +76,8 @@ def build(output):
     (output / "assets").mkdir()
     shutil.copy2(web / pack["video"], output / pack["video"])
     (output / "replay").mkdir()
+    for name in ["official-clips.json", "official-clips-validation.json"]:
+        shutil.copy2(web / "replay" / name, output / "replay" / name)
     (output / "replay/clips.js").write_text("window.DEEPCOURT_CLIPS=" + json.dumps({"flagg": pack}, ensure_ascii=False) + ";\nwindow.DEEPCOURT_LEAD='flagg';\n")
     config = {"offline": True, "examOnly": False, "webNames": False, "hiddenTracks": [], "sampleClips": [], "githubUrl": "https://github.com/Max-lzp/Agent-NBA", "analystPresets": []}
     (output / "config.js").write_text("window.DEEPCOURT_CONFIG=" + json.dumps(config, ensure_ascii=False) + ";\n")

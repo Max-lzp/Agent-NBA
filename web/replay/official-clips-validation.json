@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "notes": "MP4/duration checks do not verify frame-level event alignment or usage rights",
+  "results": [
+    {
+      "id": "0022500701-63",
+      "url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/63/6b5bdefd-2fd8-42ae-0d15-c636486947d7_1280x720.mp4",
+      "checkedAt": "2026-10-26T07:50:42.548880+00:00",
+      "status": "network_blocked",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "id": "0022500701-228",
+      "url": "https://videos.nba.com/nba/pbp/media/2026/01/31/0022500701/228/7640a886-7f98-a40f-4b37-a08e609af090_1280x720.mp4",
+      "checkedAt": "2026-10-26T07:50:42.562717+00:00",
+      "status": "network_blocked",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    },
+    {
+      "id": "0022500491-18",
+      "url": "https://videos.nba.com/nba/pbp/media/2026/01/03/0022500491/18/de494c5f-9758-43d2-8836-f40621f59753_1280x720.mp4",
+      "checkedAt": "2026-10-26T07:50:42.567175+00:00",
+      "status": "network_blocked",
+      "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+    }
+  ]
+}
