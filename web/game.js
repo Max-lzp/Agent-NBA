@@ -293,7 +293,7 @@ function loadPack(pack) {
   state.events = pack.events || [];
   state.clipDuration = pack.duration || 1;
   state.active = nearestEventIndex(pack.anchor || 0);
-  els.subhead.innerHTML = `Team 04 · ${pack.title || pack.clip}${pack.gameId ? " · 官方 " + pack.gameId : ""}`;
+  els.subhead.innerHTML = `${CFG.offline ? "个人优化作品" : "Team 04"} · ${pack.title || pack.clip}${pack.gameId ? " · 官方 " + pack.gameId : ""}`;
   const start = Number(pack.anchor) || 0;
   if (pack.tracks) HIDDEN_TRACKS.forEach((k) => { delete pack.tracks[k]; });
   if (pack.tracks && !pack.tracks[state.lang]) {
