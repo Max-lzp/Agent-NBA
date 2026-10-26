@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Deep Court：将比赛视频、官方数据和 AI 分析组合为分层观看体验的产品案例。">
+  <title>Agent辅助NBA观赛 · Deep Court 产品案例</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="demo.js" defer></script>
+</head>
+<body>
+  <header><a class="wordmark" href="#">DEEP COURT<span> / PRODUCT CASE</span></a><nav aria-label="主导航"><a href="#demo">体验</a><a href="#decisions">产品决策</a><a href="#stack">技术方案</a></nav></header>
+  <main>
+    <section class="hero">
+      <p class="eyebrow">NBA × AWS 黑客松项目 · 作品集展示版</p>
+      <h1>看见这一球。<br><span>看懂为什么。</span></h1>
+      <p class="intro">把比赛视频、官方篮球数据与 AI 分析放进同一个回放体验，让不同篮球知识水平的观众，都能找到适合自己的解释。</p>
+      <a class="primary" href="#demo">体验观看模式 ↗</a>
+      <p class="caption">原比赛云端服务已下线。本页展示产品方案与合成回合交互，不提供实时视频分析。</p>
+    </section>
+    <section id="demo">
+      <div class="section-head"><div><p class="eyebrow">01 / EXPERIENCE</p><h2>同一回合，三种解释方式。</h2></div><p>选择观看模式，比较信息密度。</p></div>
+      <div class="demo-grid">
+        <div class="court-panel">
+          <p class="label">合成回合 · 非真实比赛数据</p>
+          <svg viewBox="0 0 600 360" role="img" aria-labelledby="court-title court-desc">
+            <title id="court-title">篮球回合示意图</title><desc id="court-desc">A 队 7 号从左侧向右侧篮筐出手，橙色虚线表示投篮路径。</desc>
+            <rect class="court" x="12" y="12" width="576" height="336" rx="6"/>
+            <path class="line" d="M300 12v336 M588 100H460v160h128 M588 136h-46v88h46 M490 12v48 Q240 180 490 300v48"/>
+            <circle class="line" cx="300" cy="180" r="48"/><circle class="rim" cx="559" cy="180" r="10"/>
+            <path class="shot" d="M390 90 Q470 20 559 180"/>
+            <circle class="player" cx="390" cy="90" r="20"/><text x="390" y="96" text-anchor="middle">7</text>
+            <circle class="defender" cx="432" cy="125" r="18"/><text x="432" y="131" text-anchor="middle">12</text>
+            <text class="court-label" x="34" y="320">A 队进攻 →</text>
+          </svg>
+          <div class="score"><strong>A 72 <span>:</span> 70 B</strong><span>第四节 · 02:14</span></div>
+        </div>
+        <div class="explanation">
+          <div class="modes" role="group" aria-label="观看模式">
+            <button type="button" data-mode="expert" aria-pressed="false">老球迷</button>
+            <button type="button" data-mode="new" aria-pressed="true">新球迷</button>
+            <button type="button" data-mode="together" aria-pressed="false">一起看</button>
+          </div>
+          <div aria-live="polite" aria-atomic="true"><p class="eyebrow" id="mode-label">先看懂发生了什么</p><h3 id="headline">7 号投进一记三分。</h3><p id="explanation">三分线外投进可得 3 分。这个回合让 A 队从领先 2 分变成领先 5 分。</p><p class="data-note" id="detail">读图提示：橙色虚线代表出手路线，圆点表示球员位置。</p></div>
+          <p class="caption">此处为预写文案和合成数据，用于演示交互设计；没有调用大模型。</p>
+          <noscript><p>启用 JavaScript 后可切换模式；当前展示新球迷模式。</p></noscript>
+        </div>
+      </div>
+    </section>
+    <section id="decisions">
+      <p class="eyebrow">02 / PRODUCT THINKING</p><h2>从用户问题，到 AI 能力边界。</h2>
+      <div class="cards">
+        <article><span class="number">01</span><h3>信息按观看目的组织</h3><p>老球迷关注数据与对位，新观众需要术语解释，陪伴观看需要话题引导。三种模式探索同一内容的不同表达。</p><p class="caption">待验证：增强信息是否提升理解，是否干扰观看。</p></article>
+        <article><span class="number">02</span><h3>回答有来源，缺失不编造</h3><p>分析师通过工具查询事件清单、官方逐回合和赛季统计；校验人名与数字，不让模型凭画面编造比赛事件。</p><p class="caption">评测重点：事实准确性、来源支撑、缺失值处理。</p></article>
+        <article><span class="number">03</span><h3>基础回放优先</h3><p>为分析师冷启动或调用异常设计事件清单兜底，减少增强能力失败对基础回放的影响。</p><p class="caption">完整云端链路需在恢复服务后重新验收。</p></article>
+      </div>
+    </section>
+    <section id="stack">
+      <p class="eyebrow">03 / SYSTEM DESIGN</p><h2>技术选择服务于观看体验。</h2>
+      <ol class="pipeline">
+        <li><strong>视频理解</strong><p>YOLO + ByteTrack<br>Qwen3-VL · Rekognition · OCR</p><small>目标追踪、球衣号码和身份辅助识别</small></li>
+        <li><strong>数据与分析</strong><p>Python · Claude Sonnet 4.6<br>Bedrock Converse · AgentCore</p><small>关联官方数据，通过工具调用生成解释</small></li>
+        <li><strong>任务编排</strong><p>S3 · Lambda · DynamoDB<br>EventBridge · Step Functions · Batch</p><small>上传、处理、任务状态及异常兜底</small></li>
+        <li><strong>回放交付</strong><p>FFmpeg · JavaScript<br>CloudFront · TypeScript / AWS CDK</p><small>视频合成、网页交互和基础设施定义</small></li>
+      </ol>
+      <p class="caption">上图为原项目实现方案。AgentCore 修复与新版状态机在仓库中标注为待部署；当前 GitHub Pages 仅托管本静态页面。</p>
+    </section>
+    <section class="closing">
+      <p class="eyebrow">04 / REFLECTION</p><h2>让原型成为可验证的产品。</h2>
+      <p>下一步关注三件事：用真实任务验证观众理解度；将模拟评测与真实模型评测分开报告；记录端到端耗时、成本及失败恢复结果。</p>
+      <p>项目为团队黑客松实践，本人参与大部分工作；具体模块分工待进一步补充。历史模拟评测 20/20，历史线上评测 0/20，二者不能互相替代。</p>
+      <a href="https://github.com/Max-lzp/Agent-NBA">查看个人项目仓库 ↗</a> · <a href="https://github.com/jasonlovegugu/nba-hackathon-team04">原团队项目 ↗</a>
+    </section>
+  </main>
+  <footer>DEEP COURT / Team 04 · 合成示例不代表真实比赛或模型输出 · 本页未分发比赛录像</footer>
+</body>
+</html>
