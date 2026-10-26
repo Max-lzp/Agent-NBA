@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - 'portfolio/**'
+      - 'web/**'
+      - 'scripts/build_archive_site.py'
+      - 'scripts/qa/check_archive_replay.py'
       - 'scripts/qa/check_timeline.mjs'
       - 'scripts/qa/check_local_replay.py'
       - '.github/workflows/pages.yml'
@@ -34,10 +37,15 @@ jobs:
           node-version: '20'
       - name: Validate timeline data contract
         run: node scripts/qa/check_timeline.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build original competition replay
+        run: python3 scripts/build_archive_site.py --output "${{ runner.temp }}/agent-nba-site"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: portfolio
+          path: ${{ runner.temp }}/agent-nba-site
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

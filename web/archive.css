@@ -1,0 +1,11 @@
+/* Restore the competition layout and palette; do not replace styles.css. */
+.archive-note{margin:16px 0 20px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--orange);border-radius:8px;font-size:13px;line-height:1.8}
+.archive-note p{margin:0 0 8px}.archive-note nav{display:flex;gap:16px;flex-wrap:wrap}.archive-note a{color:var(--teal);text-underline-offset:4px}
+.archive-timeline{margin:16px 0 24px}.archive-timeline h2{font-size:18px;margin:0 0 8px}.archive-timeline p{font-size:12px;color:var(--muted)}
+.archive-timeline .events{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.archive-timeline .event{min-width:0;border-radius:7px;overflow-wrap:anywhere}.archive-timeline .event .l{font-size:12px}
+body.offline .rail{display:block!important;background:var(--panel);padding:18px;border:1px solid var(--line);border-radius:10px;min-width:0}
+body.offline .replay{grid-template-columns:minmax(0,1fr) minmax(220px,.4fr)}body.offline .page{width:min(1280px,100%)}
+body.offline .floor{grid-column:1/-1}body.offline .share{display:none}body.offline .player-col{min-width:0}
+.archive-qa{margin-top:24px;padding:20px;background:var(--panel);border:1px solid var(--line);border-radius:12px}.archive-qa h2{font-size:21px;margin:0 0 8px}.archive-qa>p{color:var(--muted);font-size:13px}.archive-questions{display:flex;gap:8px;flex-wrap:wrap}.archive-questions button{background:var(--bg);border:1px solid var(--line);border-radius:18px;padding:8px 12px;font-size:13px}.archive-questions button:hover{border-color:var(--orange)}.archive-answer{line-height:1.8;white-space:pre-wrap}.archive-source{font-size:12px;color:var(--teal)}
+@media(max-width:900px){body.offline .replay{grid-template-columns:1fr}.archive-timeline .events{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.archive-note{padding:12px}.archive-timeline .events{grid-template-columns:1fr 1fr}.archive-questions button{max-width:100%;text-align:left}.player-title{font-size:28px}.readme-fab{position:absolute;font-size:12px}}

@@ -1,5 +1,7 @@
 # Deep Court
 
+当前个人作品集：[打开原比赛回放](https://max-lzp.github.io/Agent-NBA/)。首页已恢复比赛时的播放器风格，使用保留的弗拉格成片和历史数据快照，无需 AWS；上传分析与实时 AI 问答尚未恢复。构建与验证见 [恢复说明](docs/restored-competition-replay.md)。以下比赛交付记录保留为项目历史，旧 CloudFront 地址及云端状态不代表当前可用服务。
+
 Team 04 · NBA × AWS Broadcast Code 12H · 珠海初赛 / 澳门决赛
 
 **一句话：** Deep Court 读取一段 NBA 比赛视频和官方深度数据，在云上生成带记分牌、人名和数据的回放。分析师跑在 Amazon Bedrock AgentCore 上，观众从 Amazon CloudFront 打开成片。

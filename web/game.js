@@ -93,7 +93,7 @@ const els = {
 };
 
 const params = new URLSearchParams(location.search);
-const jobId = params.get("jobId");
+const jobId = window.DEEPCOURT_CONFIG?.offline ? null : params.get("jobId");
 const clips = window.DEEPCOURT_CLIPS || {};
 const CFG = window.DEEPCOURT_CONFIG || {};
 const EXAM_ONLY = CFG.examOnly !== false;
@@ -126,7 +126,7 @@ function visibleClipNames() {
 const requestedClip = params.get("clip");
 // 主片由 DEEPCOURT_LEAD 决定；主片被隐藏或不存在时退回第一支可见片。?clip= 直达任意片（含隐藏片）
 const clipName = (function resolveClip() {
-  if (requestedClip) return requestedClip;
+  if (requestedClip && clips[requestedClip]) return requestedClip;
   const lead = window.DEEPCOURT_LEAD || "";
   if (lead && clips[lead] && !isHiddenClip(lead)) return lead;
   return visibleClipNames()[0] || "";
@@ -147,6 +147,8 @@ const state = {
   switchingTrack: null,
   currentSrc: "",
 };
+let reelRequest = 0;
+let reelObjectURL = null;
 
 function initialMode() {
   const q = params.get("mode");
@@ -333,9 +335,25 @@ function renderSwitcher() {
   }).join("");
 }
 
-function setReelSrc(src) {
+async function setReelSrc(src) {
+  const request = ++reelRequest;
   state.currentSrc = src || "";
   setStageStatus(src ? "loading" : null);
+  if (CFG.offline && src) {
+    try {
+      // Buffer the retained clip so preview servers without Range support can
+      // still seek. Blob playback stays entirely on the client.
+      const response = await fetch(src);
+      if (!response.ok) throw new Error(`视频返回 ${response.status}`);
+      const blob = await response.blob();
+      if (request !== reelRequest) return;
+      if (reelObjectURL) URL.revokeObjectURL(reelObjectURL);
+      els.reel.src = reelObjectURL = URL.createObjectURL(blob);
+    } catch (error) {
+      if (request === reelRequest) setStageStatus("error");
+    }
+    return;
+  }
   els.reel.src = src || "";
 }
 
@@ -355,6 +373,7 @@ function setStageStatus(mode) {
 
 function retryVideo() {
   if (!state.currentSrc) return;
+  if (CFG.offline) { setReelSrc(state.currentSrc); return; }
   setStageStatus("loading");
   if (els.reel.getAttribute("src") !== state.currentSrc) els.reel.src = state.currentSrc;
   els.reel.load();
@@ -418,6 +437,7 @@ function endFreeze(resume) {
 }
 
 function maybeFreeze() {
+  if (state.pack?.preRenderedFreeze) return false;
   if (!window.DeepFreeze || !state.pack || state.paused || state.freeze) return false;
   const t = els.reel.currentTime;
   const shot = window.DeepFreeze.candidates(state.pack).find((item) => !state.replayed.has(item.t)
@@ -623,6 +643,7 @@ function setWatch(next) {
 function syncWatch() {
   document.querySelectorAll("[data-watch]").forEach((button) => {
     button.classList.toggle("on", button.dataset.watch === state.watch);
+    button.setAttribute("aria-pressed", String(button.dataset.watch === state.watch));
   });
   const glossary = document.querySelector("#glossary");
   if (glossary) glossary.hidden = state.watch === "laofan";

@@ -6,6 +6,8 @@
  * 也可以给容器写 data-job-id，或者设置 window.DEEPCOURT_JOB_ID。
  */
 (function () {
+  // Offline replay uses archive.js to show archived records, never cloud calls.
+  if (window.DEEPCOURT_CONFIG?.offline) return;
   var STYLE = [
     "#deepcourt-analyst{margin:28px 0 8px;padding:18px 18px 16px;border:1px solid var(--line,#332c24);border-radius:16px;background:var(--panel,#1c1814);color:var(--cream,#f3ede2)}",
     "#deepcourt-analyst *{box-sizing:border-box}",

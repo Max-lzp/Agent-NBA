@@ -2,21 +2,22 @@
 
 ## 发布范围
 
-`portfolio/` 是独立、无构建依赖的静态站点，包含产品介绍、三种观看模式的合成回合交互、技术方案和项目局限。新增 `player.html` 提供无 AWS 的视频播放、事件跳转、本地文件标记、JSON 导入导出和本地查询，详见 [local-replay.md](local-replay.md)。所有站内资源使用相对路径，适配 GitHub Pages 的仓库子路径。
+网站首页现已恢复原比赛版播放器。`scripts/build_archive_site.py` 复用 `web/` 的页面、主题和交互，配合已核对的弗拉格成片生成独立静态站点；`portfolio/` 作为辅助案例说明和本地标记工具放在 `case-study/` 子路径。详见 [restored-competition-replay.md](restored-competition-replay.md)。
 
-只上传 `portfolio/`，其中教学视频为项目自制合成动画。不上传 `web/`、比赛视频、官方原始数据、账号配置或后端服务。仓库 `docs/LICENSING.md` 限定比赛录像仅用于黑客松评审；在取得公开展示许可前，不将比赛录像拷入此目录。
+只上传构建器生成的目录，不直接上传整个仓库。用户已明确确认仓库保留片段可公开展示，本次包含已核对的 `flagg-replay.mp4`。不包含账号配置、凭证、上传后台或运维发布台。
 
-页面明确标注合成数据与预写文案，不伪装成实时 AI 输出。原上传、问答、云端视频分析与原播放器未迁移到此站点。后续恢复这些功能需要可用的后端。
+首页使用真实成片和原分析快照，明确标注离线归档能力；辅助工具保留合成教学片。二者都不伪装成实时 AI 输出。上传分析和实时大模型问答仍需后续实现。
 
 ## 本地预览
 
 在仓库根目录运行：
 
 ```bash
-python3 -m http.server 8000 --directory .
+python3 scripts/build_archive_site.py --output /tmp/agent-nba-site
+python3 -m http.server 8000 --directory /tmp/agent-nba-site
 ```
 
-本地检查 `/portfolio/` 页面和三种模式切换。无需 npm、AWS 凭证或模型权重。
+本地检查根页面和三种模式切换。无需 npm、AWS 凭证或模型权重。
 
 ## GitHub 发布
 

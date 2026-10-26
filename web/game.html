@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DEEP COURT 播放器</title>
   <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="archive.css?v=1">
 </head>
 <body>
-  <a class="readme-fab" href="/readme" aria-label="打开作品说明 Read Me">Read Me</a>
+  <a class="readme-fab" href="readme.html" aria-label="打开原作品说明">Read Me</a>
   <div class="mode-modal" id="mode-modal" role="dialog" aria-modal="true" aria-labelledby="mode-title" hidden>
     <div class="mode-sheet">
       <p class="mode-kicker">NBA × AWS BROADCAST CODE 12 · Team 04</p>
@@ -36,12 +37,16 @@
   <main class="page">
     <p class="kicker"><span class="mark">NBA × AWS BROADCAST CODE 12</span>　·　Team 04　·　DEEP COURT 播放器</p>
     <h1 class="player-title">DEEP COURT <span class="accent">播放器</span></h1>
-    <p class="tagline">上传一段比赛录像，AI 识别球员、对齐官方数据，渲染成带数据叠加和解说的深度回放——打开即看。</p>
+    <p class="tagline">比赛回放、球员信息、出手数据与定格卡——回到 Deep Court 最初的观赛体验。</p>
+    <div class="archive-note" id="archive-note" hidden>
+      <p><b>黑客松作品回放 · 无 AWS 展示版</b>　直接播放原项目保留的弗拉格成片，数据为比赛时保存的分析快照，不是实时识别。</p>
+      <nav aria-label="项目入口"><a href="case-study/index.html">产品与技术说明</a><a href="case-study/player.html">本地视频标记工具</a><a href="arch.html">原项目架构</a></nav>
+    </div>
     <p class="subhead" id="subhead">Team 04 · 比分和出手卡来自记分牌与官方逐回合，人名来自球衣号码。</p>
     <p class="howto" aria-label="怎么看这段回放">
       <span><i class="dot red"></i>红圈 = 投篮人</span>
       <span><i class="dot gold"></i>黄色虚线圈 = 领防人</span>
-      <span>进球后定格卡回看这一投</span>
+      <span>成片包含出手定格回放与数据卡</span>
     </p>
     <nav class="watch-switch" id="watch-switch" aria-label="观看方式">
       <button type="button" data-watch="laofan">老球迷</button>
@@ -70,6 +75,11 @@
           <video id="reel" controls playsinline preload="metadata"></video>
           <canvas id="names" aria-hidden="true"></canvas>
           <div class="stage-status" id="stage-status" role="status" aria-live="polite" hidden></div>
+        </section>
+        <section class="archive-timeline" aria-labelledby="timeline-title">
+          <h2 id="timeline-title">这一回合的时间线</h2>
+          <p class="muted">点击事件跳转并暂停。传接球标记来自原视觉处理快照，可能存在识别误差。</p>
+          <nav class="events" id="events" aria-label="事件时间线"></nav>
         </section>
         <section class="share" aria-labelledby="share-title">
           <div class="share-head">
@@ -101,7 +111,7 @@
           </div>
         </section>
       </div>
-      <aside class="rail" aria-label="这一球" hidden>
+      <aside class="rail" aria-label="这一球">
         <p class="rail-kicker">半场落点 · 官方坐标</p>
         <div id="court"></div>
         <div id="detail"></div>
@@ -142,11 +152,12 @@
       <p class="ks-status" id="share-status"></p>
     </form>
   </div>
-  <script src="config.js?v=5"></script>
+  <script src="config.js?v=6"></script>
   <script src="replay/clips.js?v=6"></script>
   <script src="replay-freeze.js?v=5"></script>
   <script src="game.js?v=35"></script>
   <!-- 问分析师面板（PR #31 web/analyst.js）。接口报错/超时时面板内部优雅降级；脚本缺失时静默移除，均不影响播放器 -->
   <script src="analyst.js?v=2" onerror="this.remove()"></script>
+  <script src="archive.js?v=1"></script>
 </body>
 </html>
